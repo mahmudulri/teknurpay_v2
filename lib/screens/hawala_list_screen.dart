@@ -532,6 +532,9 @@ class HawalaDetailsDialog extends StatelessWidget {
 
   RxBool isopen = true.obs;
 
+  final GlobalKey catpureKey = GlobalKey();
+  final GlobalKey _shareKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
@@ -884,7 +887,7 @@ class HawalaDetailsDialog extends StatelessWidget {
                       flex: 1,
                       child: GestureDetector(
                         onTap: () async {
-                          capturePng();
+                          capturePng(catpureKey);
                         },
                         child: Container(
                           decoration: BoxDecoration(

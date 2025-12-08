@@ -56,6 +56,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   final box = GetStorage();
   bool showprice = false;
 
+  final GlobalKey _captureKey = GlobalKey();
+  final GlobalKey shareKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
@@ -82,7 +85,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 RepaintBoundary(
-                  key: catpureKey,
+                  key: _captureKey,
                   child: RepaintBoundary(
                     key: shareKey,
                     child: Container(
@@ -310,8 +313,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                             fontWeight: FontWeight.w400,
                                           ),
                                           SizedBox(width: 5),
-                                          convertToDate(
-                                            widget.createDate.toString(),
+                                          Text(
+                                            convertToDate(
+                                              widget.createDate.toString(),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -328,8 +333,10 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                             fontWeight: FontWeight.w400,
                                           ),
                                           SizedBox(width: 5),
-                                          convertToLocalTime(
-                                            widget.createDate.toString(),
+                                          Text(
+                                            convertToLocalTime(
+                                              widget.createDate.toString(),
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -501,7 +508,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                 flex: 1,
                                 child: GestureDetector(
                                   onTap: () async {
-                                    capturePng();
+                                    capturePng(_captureKey);
                                   },
                                   child: Container(
                                     decoration: BoxDecoration(

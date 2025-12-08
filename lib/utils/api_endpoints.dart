@@ -1,8 +1,8 @@
 class ApiEndPoints {
-  static String baseUrl = "https://app-api-vpro-tt.taktelcom.com/api/reseller/";
+  // static String baseUrl = "https://app-api-vpro-tt.taktelcom.com/api/reseller/";
 
-  // static String baseUrl =
-  //     "https://app-api-vpro-tn-teknurpay.milliekit.com/api/reseller/";
+  static String baseUrl =
+      "https://app-api-vpro-tn-teknurpay.milliekit.com/api/reseller/";
 
   static OtherendPoints otherendpoints = OtherendPoints();
 }

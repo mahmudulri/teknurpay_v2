@@ -25,7 +25,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.example.teknurpaypay"
+    namespace = "com.teknurpayapp.woosat"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -39,7 +39,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.teknurpaypay"
+        applicationId = "com.teknurpayapp.woosat"
         minSdk = flutter.minSdkVersion
         targetSdk = 35
         versionCode = flutterVersionCode

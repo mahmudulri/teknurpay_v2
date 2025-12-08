@@ -6,76 +6,30 @@ import 'package:teknurpay/global_controller/time_zone_controller.dart';
 
 import '../global_controller/font_controller.dart';
 
-final TimeZoneController timeZoneController = Get.put(TimeZoneController());
-final box = GetStorage();
-Text convertToDate(String utcTimeString) {
-  String localTimeString;
+String convertToDate(String utcTimeString) {
   try {
-    // Parse the UTC time
     DateTime utcTime = DateTime.parse(utcTimeString);
 
-    // Calculate the offset duration
-    Duration offset = Duration(
-      hours: int.parse(timeZoneController.hour),
-      minutes: int.parse(timeZoneController.minute),
-    );
+    Duration offset = DateTime.now().timeZoneOffset;
 
-    // Apply the offset (subtracting for negative)
+    DateTime localTime = utcTime.add(offset);
 
-    if (timeZoneController.sign == "+") {
-      DateTime localTime = utcTime.add(offset);
-      String formattedTime = DateFormat(
-        'yyyy-MM-dd',
-        'en_US',
-      ).format(localTime);
-      localTimeString = '$formattedTime';
-    } else {
-      DateTime localTime = utcTime.subtract(offset);
-      String formattedTime = DateFormat(
-        'yyyy-MM-dd',
-        'en_US',
-      ).format(localTime);
-
-      localTimeString = '$formattedTime';
-    }
+    return DateFormat('yyyy-MM-dd', 'en_US').format(localTime);
   } catch (e) {
-    localTimeString = '';
+    return "";
   }
-  return Text(
-    localTimeString,
-    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-  );
 }
 
-Text convertToLocalTime(String utcTimeString) {
-  String localTimeString;
+String convertToLocalTime(String utcTimeString) {
   try {
-    // Parse the UTC time
     DateTime utcTime = DateTime.parse(utcTimeString);
 
-    // Calculate the offset duration
-    Duration offset = Duration(
-      hours: int.parse(timeZoneController.hour),
-      minutes: int.parse(timeZoneController.minute),
-    );
+    Duration offset = DateTime.now().timeZoneOffset;
 
-    // Apply the offset (subtracting for negative)
+    DateTime localTime = utcTime.add(offset);
 
-    if (timeZoneController.sign == "+") {
-      DateTime localTime = utcTime.add(offset);
-      String formattedTime = DateFormat('hh:mm a', 'en_US').format(localTime);
-      localTimeString = '$formattedTime';
-    } else {
-      DateTime localTime = utcTime.subtract(offset);
-      String formattedTime = DateFormat('hh:mm a', 'en_US').format(localTime);
-
-      localTimeString = '$formattedTime';
-    }
+    return DateFormat('hh:mm:ss a', 'en_US').format(localTime);
   } catch (e) {
-    localTimeString = '';
+    return "";
   }
-  return Text(
-    localTimeString,
-    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-  );
 }
