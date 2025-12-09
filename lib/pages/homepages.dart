@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:in_app_update/in_app_update.dart';
 import 'package:teknurpay/screens/financial_screen.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:teknurpay/widgets/button.dart';
@@ -115,7 +116,7 @@ class _HomepagesState extends State<Homepages> {
   void initState() {
     // TODO: implement initState
     super.initState();
-
+    _checkforUpdate();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -127,6 +128,30 @@ class _HomepagesState extends State<Homepages> {
     countrylistController.fetchCountryData();
     dashboardController.fetchDashboardData();
     categorisListController.fetchcategories();
+  }
+
+  Future<void> _checkforUpdate() async {
+    print("checking");
+    await InAppUpdate.checkForUpdate()
+        .then((info) {
+          setState(() {
+            if (info.updateAvailability == UpdateAvailability.updateAvailable) {
+              print("update available");
+              _update();
+            }
+          });
+        })
+        .catchError((error) {
+          print(error.toString());
+        });
+  }
+
+  void _update() async {
+    print("Updating");
+    await InAppUpdate.startFlexibleUpdate();
+    InAppUpdate.completeFlexibleUpdate().then((_) {}).catchError((error) {
+      print(error.toString());
+    });
   }
 
   final companyController = Get.find<CompanyController>();

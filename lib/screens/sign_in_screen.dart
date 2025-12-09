@@ -402,21 +402,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
                           if (signInController.loginsuccess.value == false) {
                             dashboardController.fetchDashboardData();
-                            // Navigating to the BottomNavigationbar page
-                            // countryListController.fetchCountryData();
-                            Get.toNamed(basescreen);
 
-                            // if (box.read("direction") == "rtl") {
-                            //   setState(() {
-                            //     EasyLocalization.of(context)!
-                            //         .setLocale(Locale('ar', 'AE'));
-                            //   });
-                            // } else {
-                            //   setState(() {
-                            //     EasyLocalization.of(context)!
-                            //         .setLocale(Locale('en', 'US'));
-                            //   });
-                            // }
+                            Get.toNamed(basescreen);
                           } else {
                             print("Navigation conditions not met.");
                           }
@@ -424,16 +411,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       },
                     ),
                   ),
-                  // SizedBox(
-                  //   height: 80,
-                  // ),
-                  // Row(
-                  //   children: [
-                  //     KText(
-                  //         text: languagesController.tr("NOT_HAVE_AN_ACCOUNT")),
-                  //     KText(text: languagesController.tr("REGISTER_NOW")),
-                  //   ],
-                  // ),
+
                   SizedBox(height: 80),
                   Container(
                     height: 60,
