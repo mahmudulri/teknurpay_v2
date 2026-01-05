@@ -18,27 +18,26 @@ class NetworkController extends GetxController {
     if (connectivityResults.contains(ConnectivityResult.none)) {
       hasinternet.value = false;
 
-      // Show the alert dialog if internet is disconnected
       Get.dialog(
         AlertDialog(
           title: const Text('No Internet Connection'),
           content: const Text('Please connect to the internet.'),
-          // actions: [
-          //   ElevatedButton(
-          //     onPressed: () {
-          //       Get.back(); // Close the dialog manually
-          //     },
-          //     child: const Text('OK'),
-          //   ),
-          // ],
+          actions: [
+            // ElevatedButton(
+            //   onPressed: () {
+            //     Get.back(); // Close the dialog manually
+            //   },
+            //   child: const Text('OK'),
+            // ),
+          ],
         ),
         barrierDismissible:
             false, // Prevent dismissing the dialog by tapping outside
       );
     } else {
       hasinternet.value = true;
-      if (Get.isDialogOpen!) {
-        Get.back(); // Close the dialog when internet is restored
+      if (Get.isDialogOpen == true) {
+        Get.back();
       }
     }
   }

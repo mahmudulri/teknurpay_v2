@@ -253,7 +253,11 @@
 "FAILED_TO_CAPTURE_IMAGE": "Görsel yakalanamadı",
 "COMPANY_NAME": "Şirket Adı",
 "VALIDITY": "Geçerlilik",
-"UPDATE_GROUP": "Grubu Güncelle"
+"UPDATE_GROUP": "Grubu Güncelle",
+"TRY_AGAIN": "Tekrar dene",
+"ENTER_YOUR_PIN": "PIN kodunuzu girin",
+"VIEW_PACKAGES": "Paketleri görüntüle"
+
 
 
 

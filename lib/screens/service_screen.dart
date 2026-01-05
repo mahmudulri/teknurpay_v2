@@ -1,35 +1,16 @@
-import 'package:teknurpay/controllers/currency_controller.dart';
-import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:teknurpay/controllers/drawer_controller.dart';
+import 'package:teknurpay/utils/colors.dart';
 import 'package:teknurpay/widgets/bottomsheet.dart';
-import 'package:teknurpay/widgets/drawer.dart';
-import 'package:lottie/lottie.dart';
-import 'package:teknurpay/controllers/country_list_controller.dart';
-import 'package:teknurpay/controllers/custom_history_controller.dart';
-import 'package:teknurpay/controllers/custom_recharge_controller.dart';
+import 'package:teknurpay/controllers/bundle_controller.dart';
+import 'package:teknurpay/controllers/service_controller.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/global_controller/page_controller.dart';
-import 'package:teknurpay/pages/homepages.dart';
-import 'package:teknurpay/utils/colors.dart';
-import 'package:teknurpay/widgets/button_one.dart';
-
-import '../controllers/bundle_controller.dart';
-import '../controllers/categories_controller.dart';
-import '../controllers/company_controller.dart';
-import '../controllers/conversation_controller.dart';
-import '../controllers/dashboard_controller.dart';
-import '../controllers/service_controller.dart';
-import '../global_controller/font_controller.dart';
-import '../widgets/button.dart';
-import 'country_selection.dart';
+import '../widgets/custom_text.dart';
 import 'social_bundles.dart';
 
 class ServiceScreen extends StatefulWidget {
@@ -40,355 +21,280 @@ class ServiceScreen extends StatefulWidget {
 }
 
 class _ServiceScreenState extends State<ServiceScreen> {
-  final customhistoryController = Get.find<CustomHistoryController>();
+  final serviceController = Get.find<ServiceController>();
 
-  final countryListController = Get.find<CountryListController>();
+  final bundleController = Get.find<BundleController>();
   LanguagesController languagesController = Get.put(LanguagesController());
-  CurrencyController currencyController = Get.put(CurrencyController());
-  CustomRechargeController customRechargeController = Get.put(
-    CustomRechargeController(),
-  );
-  final box = GetStorage();
-  int selectedIndex = 0;
 
-  final FocusNode _focusNode = FocusNode();
-
-  RxList<bool> expandedIndices = <bool>[].obs;
+  // final confirmPinController = Get.find<ConfirmPinController>();
 
   final ScrollController scrollController = ScrollController();
 
-  final dashboardController = Get.find<DashboardController>();
-  final companyController = Get.find<CompanyController>();
-
-  ConversationController conversationController = Get.put(
-    ConversationController(),
-  );
-
-  Future<void> refresh() async {
-    final int totalPages =
-        customhistoryController
-            .allorderlist
-            .value
-            .payload
-            ?.pagination!
-            .totalPages ??
-        0;
-    final int currentPage = customhistoryController.initialpage;
-
-    // Prevent loading more pages if we've reached the last page
-    if (currentPage >= totalPages) {
-      print(
-        "End..........................................End.....................",
-      );
-      return;
-    }
-
-    // Check if the scroll position is at the bottom
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      customhistoryController.initialpage++;
-
-      // Prevent fetching if the next page exceeds total pages
-      if (customhistoryController.initialpage <= totalPages) {
-        print("Load More...................");
-        customhistoryController.fetchHistory();
-      } else {
-        customhistoryController.initialpage =
-            totalPages; // Reset to the last valid page
-        print("Already on the last page");
-      }
-    }
-  }
+  final box = GetStorage();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    currencyController.fetchCurrency();
-
+    serviceController.fetchservices();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: Color(0xff011A52), // Status bar background color
-        statusBarIconBrightness: Brightness.light, // For Android
+        statusBarColor: Colors.white, // Status bar background color
+        statusBarIconBrightness: Brightness.dark, // For Android
         statusBarBrightness: Brightness.light, // For iOS
       ),
     );
-
-    customRechargeController.numberController.addListener(() {
-      final text = customRechargeController.numberController.text;
-      companyController.matchCompanyByPhoneNumber(text);
-    });
-
-    customhistoryController.finalList.clear();
-    customhistoryController.initialpage = 1;
-    customhistoryController.fetchHistory();
-    scrollController.addListener(refresh);
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  MyDrawerController drawerController = Get.put(MyDrawerController());
-  final bundleController = Get.find<BundleController>();
-  final categorisListController = Get.find<CategorisListController>();
 
-  List serviceimages = [
-    "assets/images/cat1.png",
-    "assets/images/cat2.png",
-    "assets/images/cat3.png",
-    "assets/images/cat4.png",
-  ];
+  MyDrawerController drawerController = Get.put(MyDrawerController());
 
   @override
   Widget build(BuildContext context) {
     final Mypagecontroller mypagecontroller = Get.find();
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
-    // ignore: deprecated_member_use
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      key: _scaffoldKey,
-      body: Container(
-        height: screenHeight,
-        width: screenWidth,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/homeback.webp'),
-            fit: BoxFit.fill,
-          ),
-        ),
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(left: 15, right: 15, top: 40),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          conversationController.resetConversion();
-                          customRechargeController.amountController.clear();
-                          mypagecontroller.changePage(
-                            Homepages(),
-                            isMainPage: false,
-                          );
-                        },
-                        child: Container(
-                          height: 45,
-                          width: 45,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Icon(FontAwesomeIcons.chevronLeft),
+    return SafeArea(
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.white,
+        key: _scaffoldKey,
+        body: Container(
+          height: screenHeight,
+          width: screenWidth,
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 15, right: 15, top: 10),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            mypagecontroller.goBack();
+                          },
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Image.asset(
+                              "assets/icons/backicon.png",
+                              height: 40,
+                            ),
                           ),
                         ),
-                      ),
-                      Spacer(),
-                      Obx(
-                        () => Text(
-                          languagesController.tr("SERVICES"),
-                          style: TextStyle(
+                        Spacer(),
+                        Obx(
+                          () => KText(
+                            text: "${languagesController.tr("SERVICES")}",
                             fontWeight: FontWeight.bold,
                             fontSize: screenWidth * 0.045,
-                            color: Colors.white,
+                            color: Colors.black,
                           ),
                         ),
-                      ),
-                      Spacer(),
-                      GestureDetector(
-                        onTap: () {
-                          CustomFullScreenSheet.show(context);
-                        },
-                        child: Container(
-                          height: 42,
-                          width: 42,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Icon(Icons.menu, color: Colors.black),
+                        Spacer(),
+                        GestureDetector(
+                          onTap: () {
+                            CustomFullScreenSheet.show(context);
+                          },
+                          child: Image.asset(
+                            "assets/icons/drawericon.png",
+                            height: 40,
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 10),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 15),
-              child: Container(
-                height: 600,
-                width: screenWidth,
-                child: Obx(() {
-                  if (categorisListController.isLoading.value) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
+              SizedBox(height: 20),
 
-                  final categories = categorisListController
-                      .allcategorieslist
-                      .value
-                      .data!
-                      .servicecategories!;
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15),
+                  child: Obx(() {
+                    if (serviceController.isLoading.value) {
+                      return Center(
+                        child: CircularProgressIndicator(
+                          color: Colors.grey,
+                          strokeWidth: 1.0,
+                        ),
+                      );
+                    }
 
-                  // Responsive columns: 2 on phones, 3 on medium, 4 on wide
-                  final crossAxisCount = screenWidth > 900
-                      ? 4
-                      : screenWidth > 600
-                      ? 3
-                      : 2;
+                    final services =
+                        serviceController
+                            .allserviceslist
+                            .value
+                            .data
+                            ?.services ??
+                        [];
 
-                  return GridView.builder(
-                    padding: EdgeInsets.zero,
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: categories.length,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      // Tweak for taller or shorter cards
-                      childAspectRatio: 1.05,
-                    ),
-                    itemBuilder: (context, index) {
-                      final data = categories[index];
+                    if (services.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No services available',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      );
+                    }
 
-                      return GestureDetector(
-                        onTap: () {
-                          box.write("service_category_id", data.id);
+                    return GridView.builder(
+                      padding: EdgeInsets.symmetric(vertical: 5),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 5,
+                        mainAxisSpacing: 5,
+                        childAspectRatio: 0.85,
+                      ),
+                      itemCount: services.length,
+                      itemBuilder: (context, index) {
+                        final data = services[index];
 
-                          if (data.type.toString() == "nonsocial") {
-                            mypagecontroller.changePage(
-                              InternetPack(),
-                              isMainPage: false,
-                            );
-                          } else {
-                            box.write("validity_type", "");
-                            box.write("search_tag", "");
-                            box.write("service_category_id", data.id);
-                            box.write("country_id", "");
-                            box.write("company_id", "");
-                            bundleController.finalList.clear();
-                            bundleController.initialpage = 1;
+                        return GestureDetector(
+                          onTap: () {
+                            box.write("company_id", data.companyId);
 
+                            print(data.companyId.toString());
                             mypagecontroller.changePage(
                               SocialBundles(),
                               isMainPage: false,
                             );
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.06),
-                                blurRadius: 10,
-                                spreadRadius: 1,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                            border: Border.all(
-                              color: const Color(0xFFEAEAEA),
-                              width: 1,
-                            ),
-                          ),
+                          },
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 10,
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Icon / Image
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: SizedBox(
-                                    height: 48,
-                                    width: 48,
-                                    child: Image.network(
-                                      data.categoryImageUrl.toString(),
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return Container(
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade200,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: const Icon(
-                                                Icons.image_not_supported,
-                                              ),
-                                            );
-                                          },
-                                      loadingBuilder:
-                                          (context, child, loadingProgress) {
-                                            if (loadingProgress == null)
-                                              return child;
-                                            return Container(
-                                              alignment: Alignment.center,
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey.shade200,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
-                                              ),
-                                              child: const SizedBox(
-                                                height: 18,
-                                                width: 18,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              ),
-                                            );
-                                          },
+                            padding: const EdgeInsets.symmetric(horizontal: 5),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(15),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.2),
+                                    spreadRadius: 1,
+                                    blurRadius: 5,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  // Logo
+                                  Container(
+                                    height: 80,
+                                    width: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: CachedNetworkImage(
+                                      imageUrl: data.company?.companyLogo ?? '',
+                                      placeholder: (context, url) {
+                                        print('Loading image: $url');
+                                        return Center(
+                                          child: CircularProgressIndicator(
+                                            color: Colors.grey,
+                                            strokeWidth: 2.0,
+                                          ),
+                                        );
+                                      },
+                                      errorWidget: (context, url, error) {
+                                        print(
+                                          'Error loading image: $url, error: $error',
+                                        );
+                                        return Icon(
+                                          Icons.error,
+                                          size: 40,
+                                          color: Colors.grey.shade400,
+                                        );
+                                      },
+                                      fit: BoxFit.contain,
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
 
-                                // Title
-                                Flexible(
-                                  child: KText(
-                                    text: data.categoryName.toString(),
-                                    color: Colors.grey.shade800,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 14,
-                                    textAlign: TextAlign.center,
-                                    fontFamily:
-                                        box.read("language").toString() == "Fa"
-                                        ? Get.find<FontController>().currentFont
-                                        : null,
+                                  SizedBox(height: 12),
+
+                                  // Company Name
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: Text(
+                                      data.company?.companyName ?? 'Unknown',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
 
-                                const SizedBox(height: 8),
+                                  SizedBox(height: 12),
 
-                                // Subtle forward chevron
-                                Icon(
-                                  Icons.arrow_forward,
-                                  size: 16,
-                                  color: const Color(0xff919EAB),
-                                ),
-                              ],
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: AppColors.primaryColor
+                                              .withOpacity(0.050),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 4,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "VIEW_PACKAGES",
+                                                ),
+
+                                                fontSize: 12,
+                                                color: Color(0xff3498db),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              SizedBox(width: 4),
+                                              Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 12,
+                                                color: Color(0xff3498db),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                }),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
-            ),
-          ],
+              SizedBox(height: 10),
+            ],
+          ),
         ),
       ),
     );

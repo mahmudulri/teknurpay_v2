@@ -253,7 +253,11 @@
 "FAILED_TO_CAPTURE_IMAGE": "ছবি তুলতে ব্যর্থ হয়েছে",
 "COMPANY_NAME": "কোম্পানির নাম",
 "VALIDITY": "বৈধতা",
-"UPDATE_GROUP": "গ্রুপ আপডেট করুন"
+"UPDATE_GROUP": "গ্রুপ আপডেট করুন",
+"TRY_AGAIN": "আবার চেষ্টা করুন",
+"ENTER_YOUR_PIN": "আপনার পিন লিখুন",
+"VIEW_PACKAGES": "প্যাকেজ দেখুন"
+
 
 
 

@@ -253,7 +253,11 @@
 "FAILED_TO_CAPTURE_IMAGE": "فشل في التقاط الصورة",
 "COMPANY_NAME": "اسم الشركة",
 "VALIDITY": "الصلاحية",
-"UPDATE_GROUP": "تحديث المجموعة"
+"UPDATE_GROUP": "تحديث المجموعة",
+"TRY_AGAIN": "حاول مرة أخرى",
+"ENTER_YOUR_PIN": "أدخل رقمك السري",
+"VIEW_PACKAGES": "عرض الباقات"
+
 
 
 

@@ -253,7 +253,11 @@
 "FAILED_TO_CAPTURE_IMAGE": "انځور اخیستل ناکام شول",
 "COMPANY_NAME": "د شرکت نوم",
 "VALIDITY": "اعتبار",
-"UPDATE_GROUP": "ګروپ تازه کړئ"
+"UPDATE_GROUP": "ګروپ تازه کړئ",
+"TRY_AGAIN": "بیا هڅه وکړئ",
+"ENTER_YOUR_PIN": "خپل PIN دننه کړئ",
+"VIEW_PACKAGES": "بستې وګورئ"
+
 
 
 

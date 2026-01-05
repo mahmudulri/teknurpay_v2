@@ -98,10 +98,9 @@ class _CreditTransferState extends State<CreditTransfer> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currencyController.fetchCurrency();
-
+    customRechargeController.numberController.clear();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -168,11 +167,10 @@ class _CreditTransferState extends State<CreditTransfer> {
                         Obx(
                           () => GestureDetector(
                             onTap: () {
-                              customhistoryController.finalList.clear();
-                              customhistoryController.initialpage = 1;
-                              customhistoryController.fetchHistory();
-                              // countryListController.fetchCountryData();
-                              print(box.read("countryID"));
+                              print(
+                                customRechargeController.pinController.text
+                                    .toString(),
+                              );
                             },
                             child: Text(
                               languagesController.tr("CREDIT_TRANSFER"),
@@ -261,10 +259,12 @@ class _CreditTransferState extends State<CreditTransfer> {
                                       horizontal: 10,
                                     ),
                                     child: TextField(
+                                      maxLength: 10,
                                       keyboardType: TextInputType.phone,
                                       controller: customRechargeController
                                           .numberController,
                                       decoration: InputDecoration(
+                                        counterText: "",
                                         border: InputBorder.none,
                                         hintText: languagesController.tr(
                                           "PHONENUMBER",
@@ -397,40 +397,6 @@ class _CreditTransferState extends State<CreditTransfer> {
                           }),
                         ),
 
-                        // Container(
-                        //   height: 130,
-                        //   decoration: BoxDecoration(
-                        //     border: Border.all(
-                        //       width: 1,
-                        //       color: Colors.grey.shade300,
-                        //     ),
-                        //     borderRadius: BorderRadius.circular(10),
-                        //   ),
-                        //   child: Obx(() {
-                        //     final convertedList =
-                        //         conversationController.getConvertedValues();
-
-                        //     return Padding(
-                        //       padding: EdgeInsets.all(8.0),
-                        //       child: ListView.builder(
-                        //         padding: EdgeInsets.all(0),
-                        //         itemCount: convertedList.length,
-                        //         itemBuilder: (context, index) {
-                        //           final item = convertedList[index];
-                        //           return Row(
-                        //             mainAxisAlignment:
-                        //                 MainAxisAlignment.spaceBetween,
-                        //             children: [
-                        //               Text(
-                        //                   "${item['symbol']} (${item['name']}):"),
-                        //               Text("${item['value'].toStringAsFixed(2)}"),
-                        //             ],
-                        //           );
-                        //         },
-                        //       ),
-                        //     );
-                        //   }),
-                        // ),
                         DefaultButton1(
                           height: 50,
                           width: screenWidth,
@@ -458,368 +424,266 @@ class _CreditTransferState extends State<CreditTransfer> {
                             } else {
                               showDialog(
                                 context: context,
+                                barrierDismissible: false,
                                 builder: (context) {
                                   return AlertDialog(
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(17),
                                     ),
                                     contentPadding: EdgeInsets.zero,
-                                    content: StatefulBuilder(
-                                      builder: (context, setState) {
-                                        return Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              17,
-                                            ),
-                                            color: Colors.white,
-                                          ),
-                                          height: 150,
-                                          width: screenWidth,
-                                          child: Padding(
-                                            padding: EdgeInsets.all(15.0),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              children: [
-                                                SizedBox(height: 8),
-                                                Text(
+                                    content: Container(
+                                      height: 320,
+                                      width: screenWidth,
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(17),
+                                        color: Colors.white,
+                                      ),
+                                      child: Obx(() {
+                                        final state = customRechargeController
+                                            .rechargeState
+                                            .value;
+
+                                        /// ================= LOADING =================
+                                        if (state == RechargeState.loading) {
+                                          return Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Lottie.asset(
+                                                'assets/loties/recharge.json',
+                                                height: 200,
+                                              ),
+                                              const SizedBox(height: 15),
+                                              Text(
+                                                languagesController.tr(
+                                                  "PLEASE_WAIT",
+                                                ),
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 15,
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }
+
+                                        /// ================= SUCCESS =================
+                                        if (state == RechargeState.success) {
+                                          return Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Lottie.asset(
+                                                'assets/loties/loadsuccess.json',
+                                                height: 200,
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Text(
+                                                languagesController.tr(
+                                                  "RECHARGE_SUCCESSFULL",
+                                                ),
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.green,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  customRechargeController
+                                                      .resetState();
+                                                  Navigator.pop(
+                                                    context,
+                                                  ); // close pin dialog
+                                                },
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: Colors.green,
+                                                ),
+                                                child: Text(
                                                   languagesController.tr(
-                                                    "ARE_YOU_SURE_TO_TRANSFER",
+                                                    "CLOSE",
+                                                  ),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
                                                   ),
                                                 ),
-                                                SizedBox(
-                                                  height: 50,
-                                                  width: screenWidth,
-                                                  child: Row(
-                                                    children: [
-                                                      Expanded(
-                                                        flex: 3,
-                                                        child: GestureDetector(
-                                                          onTap: () {
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
-                                                            showDialog(
-                                                              context: context,
-                                                              builder: (context) {
-                                                                return AlertDialog(
-                                                                  shape: RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          17,
-                                                                        ),
-                                                                  ),
-                                                                  contentPadding:
-                                                                      EdgeInsets
-                                                                          .zero,
-                                                                  content: StatefulBuilder(
-                                                                    builder:
-                                                                        (
-                                                                          context,
-                                                                          setState,
-                                                                        ) {
-                                                                          return Container(
-                                                                            height:
-                                                                                320,
-                                                                            width:
-                                                                                screenWidth,
-                                                                            decoration: BoxDecoration(
-                                                                              borderRadius: BorderRadius.circular(
-                                                                                17,
-                                                                              ),
-                                                                              color: Colors.white,
-                                                                            ),
-                                                                            child: Obx(
-                                                                              () =>
-                                                                                  customRechargeController.isLoading.value ==
-                                                                                          false &&
-                                                                                      customRechargeController.loadsuccess.value ==
-                                                                                          false
-                                                                                  ? Column(
-                                                                                      mainAxisAlignment: MainAxisAlignment.start,
-                                                                                      children: [
-                                                                                        SizedBox(
-                                                                                          height: 100,
-                                                                                          child: Lottie.asset(
-                                                                                            'assets/loties/pin.json',
-                                                                                          ),
-                                                                                        ),
-                                                                                        Container(
-                                                                                          height: 45,
-                                                                                          child: Obx(
-                                                                                            () => Row(
-                                                                                              mainAxisAlignment: MainAxisAlignment.center,
-                                                                                              children: [
-                                                                                                Text(
-                                                                                                  customRechargeController.isLoading.value ==
-                                                                                                              false &&
-                                                                                                          customRechargeController.loadsuccess.value ==
-                                                                                                              false
-                                                                                                      ? languagesController.tr(
-                                                                                                          "CONFIRM_YOUR_PIN",
-                                                                                                        )
-                                                                                                      : languagesController.tr(
-                                                                                                          "PLEASE_WAIT",
-                                                                                                        ),
-                                                                                                  style: TextStyle(
-                                                                                                    fontWeight: FontWeight.w600,
-                                                                                                    fontSize: 15,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                SizedBox(
-                                                                                                  width: 7,
-                                                                                                ),
-                                                                                                customRechargeController.isLoading.value ==
-                                                                                                            true &&
-                                                                                                        customRechargeController.loadsuccess.value ==
-                                                                                                            true
-                                                                                                    ? Center(
-                                                                                                        child: CircularProgressIndicator(
-                                                                                                          color: Colors.black,
-                                                                                                        ),
-                                                                                                      )
-                                                                                                    : SizedBox(),
-                                                                                              ],
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
-                                                                                        // OTPInput(),
-                                                                                        Container(
-                                                                                          height: 40,
-                                                                                          width: 100,
-                                                                                          // color: Colors.red,
-                                                                                          child: TextField(
-                                                                                            focusNode: _focusNode,
-                                                                                            style: TextStyle(
-                                                                                              fontWeight: FontWeight.w600,
-                                                                                            ),
-                                                                                            controller: customRechargeController.pinController,
-                                                                                            maxLength: 4,
-                                                                                            textAlign: TextAlign.center,
-                                                                                            keyboardType: TextInputType.phone,
-                                                                                            decoration: InputDecoration(
-                                                                                              counterText: '',
-                                                                                              focusedBorder: UnderlineInputBorder(
-                                                                                                borderSide: BorderSide(
-                                                                                                  color: Colors.grey,
-                                                                                                  width: 2.0,
-                                                                                                ),
-                                                                                              ),
-                                                                                              enabledBorder: UnderlineInputBorder(
-                                                                                                borderSide: BorderSide(
-                                                                                                  color: Colors.grey,
-                                                                                                  width: 2.0,
-                                                                                                ),
-                                                                                              ),
-                                                                                              errorBorder: UnderlineInputBorder(
-                                                                                                borderSide: BorderSide(
-                                                                                                  color: Colors.grey,
-                                                                                                  width: 2.0,
-                                                                                                ),
-                                                                                              ),
-                                                                                              focusedErrorBorder: UnderlineInputBorder(
-                                                                                                borderSide: BorderSide(
-                                                                                                  color: Colors.grey,
-                                                                                                  width: 2.0,
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ),
-                                                                                        ),
+                                              ),
+                                            ],
+                                          );
+                                        }
 
-                                                                                        SizedBox(
-                                                                                          height: 30,
-                                                                                        ),
+                                        /// ================= ERROR =================
+                                        if (state == RechargeState.error) {
+                                          return Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Image.asset(
+                                                'assets/icons/rejected.png',
+                                                height: 180,
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 16,
+                                                    ),
+                                                child: Text(
+                                                  customRechargeController
+                                                      .errorMessage
+                                                      .value,
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    color: Colors.red,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  customRechargeController
+                                                      .resetState();
+                                                },
+                                                child: Text(
+                                                  languagesController.tr(
+                                                    "TRY_AGAIN",
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                        }
 
-                                                                                        Row(
-                                                                                          mainAxisAlignment: MainAxisAlignment.center,
-                                                                                          children: [
-                                                                                            GestureDetector(
-                                                                                              onTap: () {
-                                                                                                Navigator.pop(
-                                                                                                  context,
-                                                                                                );
-                                                                                                customRechargeController.pinController.clear();
-                                                                                              },
-                                                                                              child: Container(
-                                                                                                height: 50,
-                                                                                                width: 120,
-                                                                                                decoration: BoxDecoration(
-                                                                                                  border: Border.all(
-                                                                                                    width: 1,
-                                                                                                    color: Colors.grey,
-                                                                                                  ),
-                                                                                                  borderRadius: BorderRadius.circular(
-                                                                                                    5,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                child: Center(
-                                                                                                  child: Text(
-                                                                                                    languagesController.tr(
-                                                                                                      "CANCEL",
-                                                                                                    ),
-                                                                                                    style: TextStyle(
-                                                                                                      color: Colors.black,
-                                                                                                      fontWeight: FontWeight.w500,
-                                                                                                      fontSize: 15,
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                            SizedBox(
-                                                                                              width: 10,
-                                                                                            ),
-                                                                                            GestureDetector(
-                                                                                              onTap: () async {
-                                                                                                if (!customRechargeController.isLoading.value) {
-                                                                                                  if (customRechargeController.pinController.text.isEmpty ||
-                                                                                                      customRechargeController.pinController.text.length !=
-                                                                                                          4) {
-                                                                                                    Fluttertoast.showToast(
-                                                                                                      msg: languagesController.tr(
-                                                                                                        "ENTER_YOUR_PIN",
-                                                                                                      ),
-                                                                                                      toastLength: Toast.LENGTH_SHORT,
-                                                                                                      gravity: ToastGravity.BOTTOM,
-                                                                                                      timeInSecForIosWeb: 1,
-                                                                                                      backgroundColor: Colors.black,
-                                                                                                      textColor: Colors.white,
-                                                                                                      fontSize: 16.0,
-                                                                                                    );
-                                                                                                  } else {
-                                                                                                    await customRechargeController.verify(
-                                                                                                      context,
-                                                                                                    );
-                                                                                                    if (customRechargeController.loadsuccess.value ==
-                                                                                                        true) {
-                                                                                                      print(
-                                                                                                        "recharge Done...........",
-                                                                                                      );
-                                                                                                    }
-                                                                                                  }
-                                                                                                }
-                                                                                              },
-                                                                                              child: Container(
-                                                                                                height: 60,
-                                                                                                width: 120,
-                                                                                                decoration: BoxDecoration(
-                                                                                                  color: Colors.green,
-                                                                                                  border: Border.all(
-                                                                                                    width: 1,
-                                                                                                    color: Colors.grey,
-                                                                                                  ),
-                                                                                                  borderRadius: BorderRadius.circular(
-                                                                                                    5,
-                                                                                                  ),
-                                                                                                ),
-                                                                                                child: Center(
-                                                                                                  child: Text(
-                                                                                                    languagesController.tr(
-                                                                                                      "VERIFY",
-                                                                                                    ),
-                                                                                                    style: TextStyle(
-                                                                                                      color: Colors.white,
-                                                                                                      fontWeight: FontWeight.w500,
-                                                                                                      fontSize: 15,
-                                                                                                    ),
-                                                                                                  ),
-                                                                                                ),
-                                                                                              ),
-                                                                                            ),
-                                                                                          ],
-                                                                                        ),
-                                                                                      ],
-                                                                                    )
-                                                                                  : Center(
-                                                                                      child: Container(
-                                                                                        height: 250,
-                                                                                        width: 250,
-                                                                                        child: Lottie.asset(
-                                                                                          'assets/loties/recharge.json',
-                                                                                        ),
-                                                                                      ),
-                                                                                    ),
-                                                                            ),
-                                                                          );
-                                                                        },
-                                                                  ),
-                                                                );
-                                                              },
-                                                            );
-                                                          },
-                                                          child: Container(
-                                                            decoration:
-                                                                BoxDecoration(
-                                                                  color: Colors
-                                                                      .green,
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(
-                                                                        6,
-                                                                      ),
-                                                                ),
-                                                            child: Center(
-                                                              child: Text(
-                                                                languagesController.tr(
-                                                                  "CONFIRMATION",
-                                                                ),
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .white,
-                                                                ),
-                                                              ),
-                                                            ),
+                                        /// ================= IDLE (PIN INPUT) =================
+                                        return Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          children: [
+                                            const SizedBox(height: 20),
+                                            Lottie.asset(
+                                              'assets/loties/pin.json',
+                                              height: 100,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              languagesController.tr(
+                                                "CONFIRM_YOUR_PIN",
+                                              ),
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            SizedBox(
+                                              width: 100,
+                                              child: TextField(
+                                                controller:
+                                                    customRechargeController
+                                                        .pinController,
+                                                maxLength: 4,
+                                                textAlign: TextAlign.center,
+                                                keyboardType:
+                                                    TextInputType.number,
+                                                decoration: const InputDecoration(
+                                                  counterText: '',
+                                                  focusedBorder:
+                                                      UnderlineInputBorder(),
+                                                  enabledBorder:
+                                                      UnderlineInputBorder(),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 30),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                /// CANCEL
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    customRechargeController
+                                                        .pinController
+                                                        .clear();
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 120,
+                                                    decoration: BoxDecoration(
+                                                      border: Border.all(
+                                                        color: Colors.grey,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            5,
                                                           ),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        languagesController.tr(
+                                                          "CANCEL",
+                                                        ),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
                                                         ),
                                                       ),
-                                                      SizedBox(width: 8),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: GestureDetector(
-                                                          onTap: () {
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
-                                                          },
-                                                          child: Container(
-                                                            decoration: BoxDecoration(
-                                                              color:
-                                                                  Colors.white,
-                                                              borderRadius:
-                                                                  BorderRadius.circular(
-                                                                    6,
-                                                                  ),
-                                                              border: Border.all(
-                                                                width: 1,
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade300,
-                                                              ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 10),
+
+                                                /// VERIFY
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    if (customRechargeController
+                                                            .pinController
+                                                            .text
+                                                            .length !=
+                                                        4) {
+                                                      Fluttertoast.showToast(
+                                                        msg: languagesController
+                                                            .tr(
+                                                              "ENTER_YOUR_PIN",
                                                             ),
-                                                            child: Center(
-                                                              child: Text(
-                                                                languagesController
-                                                                    .tr(
-                                                                      "CANCEL",
-                                                                    ),
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .black,
-                                                                ),
-                                                              ),
-                                                            ),
+                                                      );
+                                                      return;
+                                                    }
+                                                    customRechargeController
+                                                        .placeOrder();
+                                                  },
+                                                  child: Container(
+                                                    height: 50,
+                                                    width: 120,
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.green,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            5,
                                                           ),
+                                                    ),
+                                                    child: Center(
+                                                      child: Text(
+                                                        languagesController.tr(
+                                                          "VERIFY",
+                                                        ),
+                                                        style: const TextStyle(
+                                                          color: Colors.white,
+                                                          fontWeight:
+                                                              FontWeight.w500,
                                                         ),
                                                       ),
-                                                    ],
+                                                    ),
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                          ),
+                                          ],
                                         );
-                                      },
+                                      }),
                                     ),
                                   );
                                 },

@@ -129,7 +129,10 @@ class _SocialBundlesState extends State<SocialBundles> {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            mypagecontroller.goBack();
+                            // mypagecontroller.goBack();
+                            bundleController.initialpage = 1;
+                            bundleController.finalList.clear();
+                            bundleController.fetchallbundles();
                           },
                           child: Container(
                             height: 40,
@@ -169,228 +172,13 @@ class _SocialBundlesState extends State<SocialBundles> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.grey.withOpacity(0.2),
-                        spreadRadius: 2,
-                        blurRadius: 2,
-                        offset: Offset(0, 0),
-                      ),
-                    ],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  width: screenWidth,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Obx(
-                              () => KText(
-                                text: languagesController.tr(
-                                  "PACKAGE_SELECTION",
-                                ),
-                                fontSize: screenWidth * 0.040,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              width: 1,
-                              color: Colors.grey.shade300,
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Icon(
-                                  Icons.search_sharp,
-                                  color: Colors.grey,
-                                  size: screenHeight * 0.040,
-                                ),
-                                SizedBox(width: 10),
-                                Expanded(
-                                  child: Obx(
-                                    () => TextField(
-                                      style: TextStyle(
-                                        fontFamily:
-                                            box.read("language").toString() ==
-                                                "Fa"
-                                            ? Get.find<FontController>()
-                                                  .currentFont
-                                            : null,
-                                      ),
-                                      decoration: InputDecoration(
-                                        hintText: languagesController.tr(
-                                          "SEARCH_PACKAGE_NAME",
-                                        ),
-                                        border: InputBorder.none,
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey,
-                                          fontSize: screenWidth * 0.040,
-                                          fontFamily:
-                                              box.read("language").toString() ==
-                                                  "Fa"
-                                              ? Get.find<FontController>()
-                                                    .currentFont
-                                              : null,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 10),
-                        Container(
-                          height: 50,
-                          color: Colors.transparent,
-                          width: screenWidth,
-                          child: Obx(() {
-                            // Check if the allserviceslist is not null and contains data
-                            final services =
-                                serviceController
-                                    .allserviceslist
-                                    .value
-                                    .data
-                                    ?.services ??
-                                [];
 
-                            // Show all services if input is empty, otherwise filter
-                            final filteredServices = inputNumber.isEmpty
-                                ? services
-                                : services.where((service) {
-                                    return service.company?.companycodes?.any((
-                                          code,
-                                        ) {
-                                          final reservedDigit =
-                                              code.reservedDigit ?? '';
-                                          return inputNumber.startsWith(
-                                            reservedDigit,
-                                          );
-                                        }) ??
-                                        false;
-                                  }).toList();
-
-                            return serviceController.isLoading.value == false
-                                ? Center(
-                                    child: ListView.separated(
-                                      shrinkWrap: true,
-                                      separatorBuilder: (context, index) {
-                                        return SizedBox(width: 5);
-                                      },
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: filteredServices.length,
-                                      itemBuilder: (context, index) {
-                                        final data = filteredServices[index];
-
-                                        return GestureDetector(
-                                          onTap: () {
-                                            setState(() {
-                                              bundleController.initialpage = 1;
-                                              bundleController.finalList
-                                                  .clear();
-                                              selectedIndex = index;
-                                              box.write(
-                                                "company_id",
-                                                data.companyId,
-                                              );
-                                              bundleController
-                                                  .fetchallbundles();
-                                            });
-                                          },
-                                          child: Container(
-                                            height: 50,
-                                            width: 65,
-                                            decoration: BoxDecoration(
-                                              color: selectedIndex == index
-                                                  ? Color(0xff34495e)
-                                                  : Colors.grey.shade100,
-                                              borderRadius:
-                                                  BorderRadius.circular(8),
-                                            ),
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 5,
-                                                vertical: 5,
-                                              ),
-                                              child: CachedNetworkImage(
-                                                imageUrl:
-                                                    data.company?.companyLogo ??
-                                                    '',
-                                                placeholder: (context, url) {
-                                                  print('Loading image: $url');
-                                                  return Center(
-                                                    child:
-                                                        CircularProgressIndicator(
-                                                          color: Colors.white,
-                                                        ),
-                                                  );
-                                                },
-                                                errorWidget: (context, url, error) {
-                                                  print(
-                                                    'Error loading image: $url, error: $error',
-                                                  );
-                                                  return Icon(Icons.error);
-                                                },
-                                              ),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  )
-                                : Center(
-                                    child: CircularProgressIndicator(
-                                      color: Colors.grey,
-                                      strokeWidth: 1.0,
-                                    ),
-                                  );
-                          }),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   child: Container(
                     width: screenWidth,
-                    // decoration: BoxDecoration(
-                    //   color: AppColors.secondaryColor,
-                    //   boxShadow: [
-                    //     BoxShadow(
-                    //       color: Colors.grey.withOpacity(0.2),
-                    //       spreadRadius: 2,
-                    //       blurRadius: 2,
-                    //       offset: Offset(0, 0),
-                    //     ),
-                    //   ],
-                    //   borderRadius: BorderRadius.circular(10),
-                    // ),
+
                     child: Padding(
                       padding: EdgeInsets.only(top: 10, left: 10, right: 10),
                       child: Column(

@@ -80,6 +80,8 @@ class _HomepagesState extends State<Homepages> {
 
   final categorisListController = Get.find<CategorisListController>();
 
+  final countryListController = Get.find<CountryListController>();
+
   UserBalanceController userBalanceController = Get.put(
     UserBalanceController(),
   );
@@ -114,7 +116,6 @@ class _HomepagesState extends State<Homepages> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _checkforUpdate();
     SystemChrome.setSystemUIOverlayStyle(
@@ -124,6 +125,7 @@ class _HomepagesState extends State<Homepages> {
         statusBarBrightness: Brightness.light, // For iOS
       ),
     );
+    companyController.fetchCompany();
 
     countrylistController.fetchCountryData();
     dashboardController.fetchDashboardData();
@@ -305,48 +307,53 @@ class _HomepagesState extends State<Homepages> {
                 ),
               ),
               SizedBox(height: 10),
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 15),
-                height: 140,
-                width: screenWidth,
-                child: Obx(() {
-                  var sliderItems =
-                      sliderController
-                          .allsliderlist
-                          .value
-                          .data
-                          ?.advertisements ??
-                      [];
+              GestureDetector(
+                onTap: () {
+                  companyController.fetchCompany();
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 15),
+                  height: 140,
+                  width: screenWidth,
+                  child: Obx(() {
+                    var sliderItems =
+                        sliderController
+                            .allsliderlist
+                            .value
+                            .data
+                            ?.advertisements ??
+                        [];
 
-                  if (sliderItems.isEmpty) {
-                    return Container(
-                      alignment: Alignment.center,
-                      child: const Text(""),
-                    );
-                  }
-
-                  return PageView.builder(
-                    controller: _pageController,
-                    itemCount: sliderItems.length,
-                    onPageChanged: (index) {
-                      currentIndex.value = index;
-                    },
-                    itemBuilder: (context, index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          sliderItems[index].adSliderImageUrl ?? "",
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              Container(
-                                color: Colors.grey[300],
-                                child: const Icon(Icons.image_not_supported),
-                              ),
-                        ),
+                    if (sliderItems.isEmpty) {
+                      return Container(
+                        alignment: Alignment.center,
+                        child: const Text(""),
                       );
-                    },
-                  );
-                }),
+                    }
+
+                    return PageView.builder(
+                      controller: _pageController,
+                      itemCount: sliderItems.length,
+                      onPageChanged: (index) {
+                        currentIndex.value = index;
+                      },
+                      itemBuilder: (context, index) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            sliderItems[index].adSliderImageUrl ?? "",
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
               ),
 
               // Dot indicator below the container
@@ -514,6 +521,28 @@ class _HomepagesState extends State<Homepages> {
                   height: 50,
                   buttonName: languagesController.tr("CREDIT_TRANSFER"),
                   onpressed: () {
+                    if (countryListController.finalCountryList.isNotEmpty) {
+                      // Find the country where the name is "Afghanistan"
+                      var afghanistan = countryListController.finalCountryList
+                          .firstWhere(
+                            (country) =>
+                                country['country_name'] == "Afghanistan",
+                            orElse: () => null, // Return null if not found
+                          );
+
+                      if (afghanistan != null) {
+                        print(
+                          "The ID for Afghanistan is: ${afghanistan['id']}",
+                        );
+                        box.write("country_id", "${afghanistan['id']}");
+                        box.write("maxlength", "10");
+                      } else {
+                        print("Afghanistan not found in the list");
+                      }
+                    } else {
+                      print("Country list is empty.");
+                    }
+
                     mypagecontroller.changePage(
                       CreditTransfer(),
                       isMainPage: false,
@@ -595,11 +624,14 @@ class _HomepagesState extends State<Homepages> {
 
                                             box.write("country_id", "");
                                             box.write("company_id", "");
-                                            bundleController.finalList.clear();
-                                            bundleController.initialpage = 1;
+
+                                            // mypagecontroller.changePage(
+                                            //   SocialBundles(),
+                                            //   isMainPage: false,
+                                            // );
 
                                             mypagecontroller.changePage(
-                                              SocialBundles(),
+                                              ServiceScreen(),
                                               isMainPage: false,
                                             );
                                           }

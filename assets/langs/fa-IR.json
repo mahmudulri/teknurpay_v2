@@ -253,7 +253,11 @@
 "FAILED_TO_CAPTURE_IMAGE": "در گرفتن تصویر خطا رخ داد",
 "COMPANY_NAME": "نام شرکت",
 "VALIDITY": "اعتبار",
-"UPDATE_GROUP": "به‌روزرسانی گروه"
+"UPDATE_GROUP": "به‌روزرسانی گروه",
+"TRY_AGAIN": "دوباره تلاش کنید",
+"ENTER_YOUR_PIN": "پین خود را وارد کنید",
+"VIEW_PACKAGES": "مشاهده بسته‌ها"
+
 
 
 
