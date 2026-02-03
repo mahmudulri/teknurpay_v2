@@ -8,43 +8,29 @@ import 'package:teknurpay/utils/api_endpoints.dart';
 
 import 'custom_history_controller.dart';
 
-enum RechargeState { idle, loading, success, error }
-
-final customhistoryController = Get.find<CustomHistoryController>();
-
 class CustomRechargeController extends GetxController {
-  /// TEXT CONTROLLERS
-  final TextEditingController numberController = TextEditingController();
-  final TextEditingController amountController = TextEditingController();
-  final TextEditingController pinController = TextEditingController();
+  TextEditingController numberController = TextEditingController();
+  TextEditingController amountController = TextEditingController();
 
-  /// CONTROLLERS & STORAGE
-  final LanguagesController languagesController = Get.put(
-    LanguagesController(),
-  );
-  final GetStorage box = GetStorage();
+  LanguagesController languagesController = Get.put(LanguagesController());
+  final box = GetStorage();
 
-  /// STATE
-  final Rx<RechargeState> rechargeState = RechargeState.idle.obs;
-  final RxString errorMessage = ''.obs;
+  final customhistoryController = Get.find<CustomHistoryController>();
 
-  /// ================= PLACE ORDER =================
-  Future<void> placeOrder() async {
-    if (rechargeState.value == RechargeState.loading) return;
+  RxBool isLoading = false.obs;
 
-    rechargeState.value = RechargeState.loading;
-    errorMessage.value = '';
-
+  Future<void> placeOrder(BuildContext context) async {
     try {
-      final Uri url = Uri.parse("${ApiEndPoints.baseUrl}custom-recharge");
-
-      final body = {
-        'rechargeble_account': numberController.text.trim(),
-        'amount': amountController.text.trim(),
-        'pin': pinController.text.trim(),
+      isLoading.value = true;
+      var url = Uri.parse("${ApiEndPoints.baseUrl}custom-recharge");
+      Map body = {
+        'country_id': box.read("afghanistan_id"),
+        'rechargeble_account': numberController.text,
+        'amount': amountController.text,
       };
+      print(body.toString());
 
-      final response = await http.post(
+      http.Response response = await http.post(
         url,
         body: jsonEncode(body),
         headers: {
@@ -54,44 +40,145 @@ class CustomRechargeController extends GetxController {
         },
       );
 
-      final result = jsonDecode(response.body);
-
-      if (response.statusCode == 201 && result["success"] == true) {
-        rechargeState.value = RechargeState.success;
+      final orderResults = jsonDecode(response.body);
+      // print(response.statusCode.toString());
+      // print(response.body.toString());
+      if (response.statusCode == 201 && orderResults["success"] == true) {
         customhistoryController.finalList.clear();
         customhistoryController.initialpage = 1;
         customhistoryController.fetchHistory();
-        clearAll();
+        isLoading.value = false;
+
+        numberController.clear();
         box.remove("bundleID");
+
+        showSuccessDialog(context);
       } else {
-        errorMessage.value = result["message"] ?? "Something went wrong";
-        rechargeState.value = RechargeState.error;
-        pinController.clear();
+        isLoading.value = false;
+        showErrorDialog(context, orderResults["message"]);
       }
     } catch (e) {
-      errorMessage.value = "Network error, please try again";
-      rechargeState.value = RechargeState.error;
-      pinController.clear();
+      isLoading.value = false;
+      showErrorDialog(context, e.toString());
     }
   }
 
-  /// ================= HELPERS =================
-  void resetState() {
-    rechargeState.value = RechargeState.idle;
-    errorMessage.value = '';
+  void handleFailure(String message) {
+    isLoading.value = false;
   }
 
-  void clearAll() {
-    pinController.clear();
+  void showSuccessDialog(BuildContext context) {
+    var screenWidth = MediaQuery.of(context).size.width;
+
     numberController.clear();
     amountController.clear();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17),
+          ),
+          contentPadding: EdgeInsets.zero,
+          content: Container(
+            height: 350,
+            width: screenWidth,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(languagesController.tr("SUCCESS")),
+                SizedBox(height: 15),
+                Text(
+                  languagesController.tr("RECHARGE_SUCCESSFULL"),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.green,
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close success dialog
+                    Navigator.pop(context); // Close main dialog
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  child: Text(
+                    languagesController.tr("CLOSE"),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
-  @override
-  void onClose() {
-    numberController.dispose();
-    amountController.dispose();
-    pinController.dispose();
-    super.onClose();
+  void showErrorDialog(BuildContext context, String errorMessage) {
+    var screenWidth = MediaQuery.of(context).size.width;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17),
+          ),
+          contentPadding: EdgeInsets.zero,
+          content: Container(
+            height: 350,
+            width: screenWidth,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              color: Colors.white,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(languagesController.tr("FAILED")),
+                SizedBox(height: 15),
+                Text(
+                  languagesController.tr("RECHARGE_FAILED"),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red,
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  child: Text(
+                    errorMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.black),
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close error dialog
+                    Navigator.pop(context); // Close main dialog
+                  },
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: Text(
+                    languagesController.tr("CLOSE"),
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 }

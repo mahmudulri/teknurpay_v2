@@ -170,10 +170,6 @@ class _HomepagesState extends State<Homepages> {
 
   @override
   Widget build(BuildContext context) {
-    conversationController.resetConversion();
-    customRechargeController.amountController.clear();
-    confirmPinController.numberController.clear();
-
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
 
@@ -519,7 +515,7 @@ class _HomepagesState extends State<Homepages> {
                 padding: EdgeInsets.symmetric(horizontal: 15),
                 child: DefaultButton1(
                   height: 50,
-                  buttonName: languagesController.tr("CREDIT_TRANSFER"),
+                  buttonName: languagesController.tr("AFGHANISTAN_RECHARGE"),
                   onpressed: () {
                     if (countryListController.finalCountryList.isNotEmpty) {
                       // Find the country where the name is "Afghanistan"

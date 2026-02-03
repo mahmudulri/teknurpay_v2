@@ -7,6 +7,7 @@ import 'package:teknurpay/utils/colors.dart';
 import '../controllers/slider_controller.dart';
 import '../global_controller/languages_controller.dart';
 import '../global_controller/page_controller.dart';
+import 'service_screen.dart';
 
 class BaseScreen extends StatefulWidget {
   @override
@@ -99,14 +100,20 @@ class _BaseScreenState extends State<BaseScreen> {
           floatingActionButton: SizedBox(
             width: 60,
             height: 60,
-            child: FloatingActionButton(
-              onPressed: () {},
-              backgroundColor: AppColors.primarycolor2,
-              elevation: 6,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(100),
+            child: Transform.translate(
+              offset: Offset(0, 13), // y-axis - 20px bellow
+
+              child: FloatingActionButton(
+                onPressed: () {
+                  // Get.to(ServiceScreen());
+                },
+                backgroundColor: AppColors.primarycolor2,
+                elevation: 6,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(100),
+                ),
+                child: Icon(Icons.add, size: 32, color: Colors.white),
               ),
-              child: Icon(Icons.add, size: 32, color: Colors.white),
             ),
           ),
           floatingActionButtonLocation:

@@ -256,7 +256,14 @@
 "UPDATE_GROUP": "ګروپ تازه کړئ",
 "TRY_AGAIN": "بیا هڅه وکړئ",
 "ENTER_YOUR_PIN": "خپل PIN دننه کړئ",
-"VIEW_PACKAGES": "بستې وګورئ"
+"VIEW_PACKAGES": "بستې وګورئ",
+"AFGHANISTAN_RECHARGE": "د افغانستان چارج",
+"AFGHANISTAN_CREDIT": "د افغانستان کریډیټ",
+"ENTER_REQUIRED_DATA": "اړین معلومات دننه کړئ",
+"ENTER_ID": "شناسه دننه کړئ",
+"PIN": "پین"
+
+
 
 
 

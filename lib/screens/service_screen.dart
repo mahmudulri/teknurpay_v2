@@ -150,10 +150,10 @@ class _ServiceScreenState extends State<ServiceScreen> {
                     return GridView.builder(
                       padding: EdgeInsets.symmetric(vertical: 5),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 5,
-                        mainAxisSpacing: 5,
-                        childAspectRatio: 0.85,
+                        crossAxisCount: 4,
+                        crossAxisSpacing: 8,
+                        mainAxisSpacing: 8,
+                        childAspectRatio: 0.62,
                       ),
                       itemCount: services.length,
                       itemBuilder: (context, index) {
@@ -162,129 +162,81 @@ class _ServiceScreenState extends State<ServiceScreen> {
                         return GestureDetector(
                           onTap: () {
                             box.write("company_id", data.companyId);
-
                             print(data.companyId.toString());
                             mypagecontroller.changePage(
                               SocialBundles(),
                               isMainPage: false,
                             );
                           },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 5),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(15),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.withOpacity(0.2),
-                                    spreadRadius: 1,
-                                    blurRadius: 5,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Logo
-                                  Container(
-                                    height: 80,
-                                    width: 80,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(15),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Container(
+                                height: 80,
+                                width: 80,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.grey.withOpacity(0.15),
+                                      spreadRadius: 4,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
                                     ),
-                                    child: CachedNetworkImage(
-                                      imageUrl: data.company?.companyLogo ?? '',
-                                      placeholder: (context, url) {
-                                        print('Loading image: $url');
-                                        return Center(
-                                          child: CircularProgressIndicator(
-                                            color: Colors.grey,
-                                            strokeWidth: 2.0,
-                                          ),
-                                        );
-                                      },
-                                      errorWidget: (context, url, error) {
-                                        print(
-                                          'Error loading image: $url, error: $error',
-                                        );
-                                        return Icon(
-                                          Icons.error,
-                                          size: 40,
-                                          color: Colors.grey.shade400,
-                                        );
-                                      },
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-
-                                  SizedBox(height: 12),
-
-                                  // Company Name
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    child: Text(
-                                      data.company?.companyName ?? 'Unknown',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black87,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-
-                                  SizedBox(height: 12),
-
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Container(
-                                        decoration: BoxDecoration(
-                                          color: AppColors.primaryColor
-                                              .withOpacity(0.050),
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
+                                  ],
+                                ),
+                                padding: EdgeInsets.all(10),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: CachedNetworkImage(
+                                    imageUrl: data.company?.companyLogo ?? '',
+                                    placeholder: (context, url) {
+                                      print('Loading image: $url');
+                                      return Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.grey,
+                                          strokeWidth: 2.0,
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 4,
-                                          ),
-                                          child: Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              KText(
-                                                text: languagesController.tr(
-                                                  "VIEW_PACKAGES",
-                                                ),
-
-                                                fontSize: 12,
-                                                color: Color(0xff3498db),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                              SizedBox(width: 4),
-                                              Icon(
-                                                Icons.arrow_forward_ios,
-                                                size: 12,
-                                                color: Color(0xff3498db),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                                      );
+                                    },
+                                    errorWidget: (context, url, error) {
+                                      print(
+                                        'Error loading image: $url, error: $error',
+                                      );
+                                      return Icon(
+                                        Icons.error,
+                                        size: 35,
+                                        color: Colors.grey.shade400,
+                                      );
+                                    },
+                                    fit: BoxFit.cover,
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
+
+                              SizedBox(height: 8),
+
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                  ),
+                                  child: Text(
+                                    data.company?.companyName ?? 'Unknown',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         );
                       },

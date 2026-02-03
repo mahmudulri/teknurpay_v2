@@ -15,7 +15,7 @@ class ConversationController extends GetxController {
   void resetConversion() {
     inputAmount.value = 0.0;
     resellerRate = 0.0;
-    currencies.clear(); // যদি চাই সবকিছুই ফাঁকা হোক
+    currencies.clear();
   }
 
   List<Map<String, dynamic>> getConvertedValues() {
@@ -25,7 +25,7 @@ class ConversationController extends GetxController {
     final afnCurrency = currencies.firstWhereOrNull((c) => c.code == "AFN");
 
     if (afnCurrency == null || afnCurrency.exchangeRatePerUsd == null) {
-      return []; // যদি AFN না থাকে বা null থাকে, কিছুই রিটার্ন করো না
+      return [];
     }
 
     // Parse the AFN rate

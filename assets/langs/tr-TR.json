@@ -256,7 +256,14 @@
 "UPDATE_GROUP": "Grubu Güncelle",
 "TRY_AGAIN": "Tekrar dene",
 "ENTER_YOUR_PIN": "PIN kodunuzu girin",
-"VIEW_PACKAGES": "Paketleri görüntüle"
+"VIEW_PACKAGES": "Paketleri görüntüle",
+"AFGHANISTAN_RECHARGE": "Afganistan yükleme",
+"AFGHANISTAN_CREDIT": "Afganistan kredisi",
+"ENTER_REQUIRED_DATA": "Gerekli bilgileri girin",
+"ENTER_ID": "Kimlik girin",
+"PIN": "PIN"
+
+
 
 
 

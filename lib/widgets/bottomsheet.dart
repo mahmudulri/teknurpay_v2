@@ -86,7 +86,7 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
               );
             },
             child: Container(
-              height: 100,
+              height: 80,
               width: screenWidth,
               decoration: BoxDecoration(
                 color: Color(0xffE8FCF1),
@@ -96,8 +96,8 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset("assets/icons/drawerwhatsapp.png", height: 45),
-                  SizedBox(height: 10),
+                  Image.asset("assets/icons/drawerwhatsapp.png", height: 35),
+                  SizedBox(height: 5),
                   KText(
                     text: languagesController.tr("CONTACTUS"),
                     fontSize: 16,
@@ -110,7 +110,7 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
           ),
           SizedBox(height: 10),
           Container(
-            height: 120,
+            height: 100,
             width: screenWidth,
             child: Row(
               children: [
@@ -140,9 +140,9 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                         children: [
                           Image.asset(
                             "assets/icons/drawerguide.png",
-                            height: 45,
+                            height: 35,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("GUIDE"),
                             fontSize: 14,
@@ -290,12 +290,12 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                         children: [
                           Image.asset(
                             "assets/icons/drawerlanguage.png",
-                            height: 45,
+                            height: 35,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             textAlign: TextAlign.center,
-                            text: languagesController.tr("CHANGE_LANGUAGE"),
+                            text: languagesController.tr("LANGUAGES"),
                             fontSize: 14,
                             fontWeight: FontWeight.w400,
                             color: Color(0xffA37700),
@@ -332,9 +332,9 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                         children: [
                           Image.asset(
                             "assets/icons/drawerprofile.png",
-                            height: 45,
+                            height: 35,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("PROFILE"),
                             fontSize: 14,
@@ -351,7 +351,7 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
           ),
           SizedBox(height: 10),
           Container(
-            height: 100,
+            height: 80,
             width: screenWidth,
             child: Row(
               children: [
@@ -381,10 +381,10 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                         children: [
                           Image.asset(
                             "assets/icons/key.png",
-                            height: 45,
+                            height: 35,
                             color: Color(0xff6F76FF),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("CHANGE_PIN"),
                             fontSize: 14,
@@ -424,9 +424,9 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                           Image.asset(
                             "assets/icons/padlock.png",
                             color: Color(0xff8e44ad),
-                            height: 45,
+                            height: 35,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("CHANGE_PASSWORD"),
                             fontSize: 14,
@@ -442,8 +442,47 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
             ),
           ),
           SizedBox(height: 10),
+          GestureDetector(
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    contentPadding: EdgeInsets.all(0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    content: LogoutDialogBox(),
+                  );
+                },
+              );
+            },
+            child: Container(
+              height: 80,
+              width: screenWidth,
+              decoration: BoxDecoration(
+                color: Color(0xff2c3e50).withOpacity(0.30),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(width: 1, color: Colors.grey.shade200),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Image.asset("assets/icons/logout.png", height: 35),
+                  SizedBox(width: 10),
+                  KText(
+                    text: languagesController.tr("ACCOUNTING"),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xffFFFFFF),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
           Container(
-            height: 100,
+            height: 90,
             width: screenWidth,
             child: Row(
               children: [
@@ -473,10 +512,10 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                         children: [
                           Image.asset(
                             "assets/icons/faq.png",
-                            height: 45,
+                            height: 35,
                             color: Color(0xffc0392b),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("SET_SALE_PRICE"),
                             fontSize: 14,
@@ -516,9 +555,9 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                           Image.asset(
                             "assets/icons/discount.png",
                             color: AppColors.primaryColor,
-                            height: 40,
+                            height: 35,
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
                           KText(
                             text: languagesController.tr("COMMISSION_GROUP"),
                             textAlign: TextAlign.center,
@@ -551,7 +590,7 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
               );
             },
             child: Container(
-              height: 90,
+              height: 80,
               width: screenWidth,
               decoration: BoxDecoration(
                 color: Color(0xff8E5B42).withOpacity(0.10),
@@ -561,8 +600,8 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset("assets/icons/logout.png", height: 40),
-                  SizedBox(height: 10),
+                  Image.asset("assets/icons/logout.png", height: 35),
+                  SizedBox(height: 5),
                   KText(
                     text: languagesController.tr("LOGOUT"),
                     fontSize: 14,
