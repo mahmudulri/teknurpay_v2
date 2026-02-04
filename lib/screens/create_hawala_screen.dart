@@ -204,15 +204,32 @@ class _HawalaScreenState extends State<HawalaScreen> {
                         controller: addHawalaController.receiverNameController,
                       ),
                       SizedBox(height: 10),
-                      Text(
-                        languagesController.tr("RECEIVER_FATHERS_NAME"),
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: screenHeight * 0.020,
-                          fontFamily: box.read("language").toString() == "Fa"
-                              ? Get.find<FontController>().currentFont
-                              : null,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            languagesController.tr("RECEIVER_FATHERS_NAME"),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: screenHeight * 0.020,
+                              fontFamily:
+                                  box.read("language").toString() == "Fa"
+                                  ? Get.find<FontController>().currentFont
+                                  : null,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "(${languagesController.tr("OPTIONAL")})",
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: screenHeight * 0.018,
+                              fontFamily:
+                                  box.read("language").toString() == "Fa"
+                                  ? Get.find<FontController>().currentFont
+                                  : null,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 5),
                       Authtextfield(
@@ -220,15 +237,32 @@ class _HawalaScreenState extends State<HawalaScreen> {
                         controller: addHawalaController.fatherNameController,
                       ),
                       SizedBox(height: 5),
-                      Text(
-                        languagesController.tr("RECEIVER_ID_CARD_NUMBER"),
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: screenHeight * 0.020,
-                          fontFamily: box.read("language").toString() == "Fa"
-                              ? Get.find<FontController>().currentFont
-                              : null,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            languagesController.tr("RECEIVER_ID_CARD_NUMBER"),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: screenHeight * 0.020,
+                              fontFamily:
+                                  box.read("language").toString() == "Fa"
+                                  ? Get.find<FontController>().currentFont
+                                  : null,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Text(
+                            "(${languagesController.tr("OPTIONAL")})",
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: screenHeight * 0.018,
+                              fontFamily:
+                                  box.read("language").toString() == "Fa"
+                                  ? Get.find<FontController>().currentFont
+                                  : null,
+                            ),
+                          ),
+                        ],
                       ),
                       SizedBox(height: 5),
                       Authtextfield(
@@ -578,141 +612,143 @@ class _HawalaScreenState extends State<HawalaScreen> {
                         ),
                       ),
                       SizedBox(height: 10),
+
                       // Text(
-                      //   languagesController.tr("YOUR_ACCOUNT_BALANCE_IS"),
+                      //   languagesController.tr("COMMISSION_PAID_BY"),
                       //   style: TextStyle(
-                      //     color: AppColors.primaryColor,
-                      //     fontWeight: FontWeight.w500,
-                      //     fontSize: screenHeight * 0.017,
+                      //     color: Colors.grey.shade600,
+                      //     fontSize: screenHeight * 0.020,
                       //     fontFamily: box.read("language").toString() == "Fa"
                       //         ? Get.find<FontController>().currentFont
                       //         : null,
                       //   ),
                       // ),
-                      SizedBox(height: 10),
-                      Text(
-                        languagesController.tr("COMMISSION_PAID_BY"),
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: screenHeight * 0.020,
-                          fontFamily: box.read("language").toString() == "Fa"
-                              ? Get.find<FontController>().currentFont
-                              : null,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        width: screenWidth,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 8, right: 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Obx(
-                                  () => Text(
-                                    person.value.toString(),
-                                    style: TextStyle(
-                                      fontSize: screenHeight * 0.020,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return AlertDialog(
-                                        content: Container(
-                                          height: 150,
-                                          width: screenWidth,
-                                          color: Colors.white,
-                                          child: ListView.builder(
-                                            itemCount: commissionpaidby.length,
-                                            itemBuilder: (context, index) {
-                                              return GestureDetector(
-                                                onTap: () {
-                                                  person.value =
-                                                      commissionpaidby[index];
-                                                  if (commissionpaidby[index] ==
-                                                      "sender") {
-                                                    addHawalaController
-                                                            .paidbysender
-                                                            .value =
-                                                        "1";
-                                                    addHawalaController
-                                                            .paidbyreceiver
-                                                            .value =
-                                                        "0";
-                                                  } else {
-                                                    addHawalaController
-                                                            .paidbysender
-                                                            .value =
-                                                        "0";
-                                                    addHawalaController
-                                                            .paidbyreceiver
-                                                            .value =
-                                                        "1";
-                                                  }
-                                                  Navigator.pop(context);
-                                                },
-                                                child: Container(
-                                                  margin: EdgeInsets.only(
-                                                    bottom: 8,
-                                                  ),
-                                                  height: 40,
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                  ),
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                      width: 1,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    commissionpaidby[index],
-                                                    style: TextStyle(
-                                                      fontSize: 16,
-                                                    ),
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                                child: CircleAvatar(
-                                  backgroundColor: AppColors.primaryColor
-                                      .withOpacity(0.7),
-                                  radius: 15,
-                                  child: Icon(
-                                    FontAwesomeIcons.chevronDown,
-                                    color: Colors.white,
-                                    size: 17,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
+                      // SizedBox(height: 10),
+                      // Container(
+                      //   height: 50,
+                      //   width: screenWidth,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(10),
+                      //     border: Border.all(
+                      //       width: 1,
+                      //       color: Colors.grey.shade300,
+                      //     ),
+                      //   ),
+                      //   child: Padding(
+                      //     padding: EdgeInsets.only(left: 8, right: 8),
+                      //     child: Row(
+                      //       children: [
+                      //         Expanded(
+                      //           child: Obx(
+                      //             () => Text(
+                      //               person.value.toString(),
+                      //               style: TextStyle(
+                      //                 fontSize: screenHeight * 0.020,
+                      //                 color: Colors.grey.shade600,
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //         GestureDetector(
+                      //           onTap: () {
+                      //             showDialog(
+                      //               context: context,
+                      //               builder: (context) {
+                      //                 return AlertDialog(
+                      //                   backgroundColor: Colors.white,
+                      //                   content: Container(
+                      //                     height: 150,
+                      //                     width: screenWidth,
+                      //                     color: Colors.white,
+                      //                     child: ListView.builder(
+                      //                       itemCount: commissionpaidby.length,
+                      //                       itemBuilder: (context, index) {
+                      //                         return GestureDetector(
+                      //                           onTap: () {
+                      //                             person.value =
+                      //                                 commissionpaidby[index];
+                      //                             if (commissionpaidby[index] ==
+                      //                                 "sender") {
+                      //                               addHawalaController
+                      //                                       .paidbysender
+                      //                                       .value =
+                      //                                   "1";
+                      //                               addHawalaController
+                      //                                       .paidbyreceiver
+                      //                                       .value =
+                      //                                   "0";
+                      //                             } else {
+                      //                               addHawalaController
+                      //                                       .paidbysender
+                      //                                       .value =
+                      //                                   "0";
+                      //                               addHawalaController
+                      //                                       .paidbyreceiver
+                      //                                       .value =
+                      //                                   "1";
+                      //                             }
+                      //                             Navigator.pop(context);
+                      //                           },
+                      //                           child: Container(
+                      //                             margin: EdgeInsets.only(
+                      //                               bottom: 8,
+                      //                             ),
+
+                      //                             height: 40,
+                      //                             padding: EdgeInsets.symmetric(
+                      //                               horizontal: 10,
+                      //                             ),
+                      //                             alignment:
+                      //                                 Alignment.centerLeft,
+                      //                             decoration: BoxDecoration(
+                      //                               border: Border.all(
+                      //                                 width: 1,
+                      //                                 color: Colors.grey,
+                      //                               ),
+                      //                               borderRadius:
+                      //                                   BorderRadius.circular(
+                      //                                     8,
+                      //                                   ),
+                      //                             ),
+                      //                             child: Padding(
+                      //                               padding:
+                      //                                   EdgeInsets.symmetric(
+                      //                                     horizontal: 5,
+                      //                                     vertical: 8,
+                      //                                   ),
+                      //                               child: Text(
+                      //                                 commissionpaidby[index],
+                      //                                 style: TextStyle(
+                      //                                   fontSize: 16,
+                      //                                 ),
+                      //                               ),
+                      //                             ),
+                      //                           ),
+                      //                         );
+                      //                       },
+                      //                     ),
+                      //                   ),
+                      //                 );
+                      //               },
+                      //             );
+                      //           },
+                      //           child: CircleAvatar(
+                      //             backgroundColor: AppColors.primaryColor
+                      //                 .withOpacity(0.7),
+                      //             radius: 15,
+                      //             child: Icon(
+                      //               FontAwesomeIcons.chevronDown,
+                      //               color: Colors.white,
+                      //               size: 17,
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 10),
                       Container(
                         height: 50,
                         width: screenWidth,
@@ -816,6 +852,7 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                     context: context,
                                     builder: (context) {
                                       return AlertDialog(
+                                        backgroundColor: Colors.white,
                                         content: Container(
                                           height: 150,
                                           width: screenWidth,
@@ -859,22 +896,37 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                                               EdgeInsets.only(
                                                                 bottom: 8,
                                                               ),
-                                                          height: 40,
-                                                          decoration:
-                                                              BoxDecoration(
-                                                                border: Border.all(
-                                                                  width: 1,
-                                                                  color: Colors
-                                                                      .grey,
+
+                                                          decoration: BoxDecoration(
+                                                            border: Border.all(
+                                                              width: 1,
+                                                              color:
+                                                                  Colors.grey,
+                                                            ),
+                                                            borderRadius:
+                                                                BorderRadius.circular(
+                                                                  8,
                                                                 ),
-                                                              ),
-                                                          child: Row(
-                                                            children: [
-                                                              Text(
-                                                                data.name
-                                                                    .toString(),
-                                                              ),
-                                                            ],
+                                                          ),
+                                                          child: Padding(
+                                                            padding:
+                                                                EdgeInsets.symmetric(
+                                                                  horizontal: 5,
+                                                                  vertical: 8,
+                                                                ),
+                                                            child: Row(
+                                                              children: [
+                                                                Expanded(
+                                                                  child: Text(
+                                                                    data.name
+                                                                        .toString(),
+                                                                    maxLines: 2,
+                                                                    softWrap:
+                                                                        true,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
                                                           ),
                                                         ),
                                                       );
@@ -927,17 +979,6 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                     .amountController
                                     .text
                                     .isNotEmpty &&
-                                addHawalaController
-                                    .fatherNameController
-                                    .text
-                                    .isNotEmpty &&
-                                addHawalaController
-                                    .idcardController
-                                    .text
-                                    .isNotEmpty &&
-                                addHawalaController.currencyID.value != "" &&
-                                addHawalaController.paidbyreceiver.value !=
-                                    "" &&
                                 addHawalaController.branchId.value != "") {
                               print("All is ok............");
 

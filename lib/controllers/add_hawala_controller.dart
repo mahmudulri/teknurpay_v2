@@ -45,7 +45,8 @@ class AddHawalaController extends GetxController {
       };
 
       var url = Uri.parse(
-          ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.hawalalist);
+        ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.hawalalist,
+      );
 
       Map body = {
         'sender_name': senderNameController.text,
@@ -54,8 +55,8 @@ class AddHawalaController extends GetxController {
         'receiver_father_name': fatherNameController.text,
         'receiver_id_card_number': idcardController.text,
         'hawala_amount_currency_id': currencyID.toString(),
-        'commission_paid_by_sender': paidbysender.toString(),
-        'commission_paid_by_receiver': paidbyreceiver.toString(),
+        'commission_paid_by_sender': "1",
+        'commission_paid_by_receiver': "0",
         'hawala_branch_id': branchId.toString(),
       };
 

@@ -125,16 +125,19 @@ class FinancialScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Text(
+                                  languagesController.tr("DATE"),
+                                  style: TextStyle(
+                                    color: AppColors.fontColor,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
                                   formattedDate,
                                   style: TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 14,
                                   ),
-                                ),
-                                Icon(
-                                  Icons.calendar_month,
-                                  color: Colors.grey.shade300,
                                 ),
                               ],
                             ),
@@ -182,7 +185,7 @@ class FinancialScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             BalanceBox(
               imagelink: "assets/icons/wallet.png",
               boxname: languagesController.tr("BALANCE"),
@@ -224,6 +227,17 @@ class FinancialScreen extends StatelessWidget {
             ),
             SizedBox(height: 8),
             BalanceBox(
+              imagelink: "assets/icons/loan.png",
+              boxname: languagesController.tr("LOAN_BALANCE"),
+              balance: dashboardController
+                  .alldashboardData
+                  .value
+                  .data!
+                  .loanBalance
+                  .toString(),
+            ),
+            SizedBox(height: 8),
+            BalanceBox(
               imagelink: "assets/icons/comission.png",
               boxname: languagesController.tr("COMISSION"),
               balance: dashboardController
@@ -255,7 +269,7 @@ class BalanceBox extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Container(
-        height: 65,
+        height: 60,
         width: double.maxFinite,
         decoration: BoxDecoration(
           border: Border.all(width: 1, color: Colors.grey.shade300),
@@ -274,7 +288,10 @@ class BalanceBox extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: EdgeInsets.all(10.0),
-                  child: Image.asset(imagelink.toString()),
+                  child: Image.asset(
+                    imagelink.toString(),
+                    color: AppColors.primaryColor,
+                  ),
                 ),
               ),
               SizedBox(width: 6),

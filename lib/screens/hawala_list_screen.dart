@@ -1,3 +1,4 @@
+import 'package:teknurpay/controllers/branch_controller.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:teknurpay/widgets/button.dart';
 import 'package:flutter/material.dart';
@@ -35,10 +36,13 @@ class _HawalaListScreenState extends State<HawalaListScreen> {
 
   LanguagesController languagesController = Get.put(LanguagesController());
 
+  BranchController branchController = Get.put(BranchController());
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -48,6 +52,7 @@ class _HawalaListScreenState extends State<HawalaListScreen> {
     );
 
     hawalalistController.fetchhawala();
+    branchController.fetchallbranch();
   }
 
   @override
@@ -118,35 +123,35 @@ class _HawalaListScreenState extends State<HawalaListScreen> {
                 width: screenWidth,
                 child: Row(
                   children: [
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey.shade400,
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: languagesController.tr("SEARCH"),
-                              hintStyle: TextStyle(
-                                color: Colors.grey,
-                                fontSize: screenHeight * 0.020,
-                                fontFamily:
-                                    Get.find<FontController>().currentFont,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 10),
+                    // Expanded(
+                    //   flex: 5,
+                    //   child: Container(
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.white,
+                    //       border: Border.all(
+                    //         width: 1,
+                    //         color: Colors.grey.shade400,
+                    //       ),
+                    //       borderRadius: BorderRadius.circular(10),
+                    //     ),
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.symmetric(horizontal: 10),
+                    //       child: TextField(
+                    //         decoration: InputDecoration(
+                    //           border: InputBorder.none,
+                    //           hintText: languagesController.tr("SEARCH"),
+                    //           hintStyle: TextStyle(
+                    //             color: Colors.grey,
+                    //             fontSize: screenHeight * 0.020,
+                    //             fontFamily:
+                    //                 Get.find<FontController>().currentFont,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
+                    // SizedBox(width: 10),
                     Expanded(
                       flex: 4,
                       child: GestureDetector(
@@ -270,18 +275,35 @@ class _HawalaListScreenState extends State<HawalaListScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              languagesController.tr(
-                                                    "HAWALA_NUMBER",
-                                                  ) +
-                                                  " - " +
-                                                  data.hawalaNumber.toString(),
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
+                                            data.hawalaCustomNumber == null
+                                                ? Text(
+                                                    languagesController.tr(
+                                                          "HAWALA_NUMBER",
+                                                        ) +
+                                                        " - " +
+                                                        data.hawalaNumber
+                                                            .toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    languagesController.tr(
+                                                          "HAWALA_NUMBER",
+                                                        ) +
+                                                        " - " +
+                                                        data.hawalaCustomNumber
+                                                            .toString(),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
                                             Text(
                                               data.status.toString(),
                                               style: TextStyle(
@@ -492,6 +514,7 @@ class HawalaDetailsDialog extends StatelessWidget {
     super.key,
     this.id,
     this.hawalaNumber,
+    this.hawalaCustomNumber,
     this.status,
     this.branchID,
     this.senderName,
@@ -508,6 +531,7 @@ class HawalaDetailsDialog extends StatelessWidget {
   });
   String? id;
   String? hawalaNumber;
+  String? hawalaCustomNumber;
   String? status;
   String? branchID;
   String? senderName;
@@ -525,6 +549,7 @@ class HawalaDetailsDialog extends StatelessWidget {
   LanguagesController languagesController = Get.put(LanguagesController());
 
   final box = GetStorage();
+  BranchController branchController = Get.put(BranchController());
 
   CancelHawalaController cancelHawalaController = Get.put(
     CancelHawalaController(),
@@ -535,433 +560,330 @@ class HawalaDetailsDialog extends StatelessWidget {
   final GlobalKey catpureKey = GlobalKey();
   final GlobalKey _shareKey = GlobalKey();
 
+  Color _getStatusColor() {
+    switch (status.toString()) {
+      case "pending":
+        return Color(0xffFFC107);
+      case "confirmed":
+        return Colors.green;
+      default:
+        return Colors.red;
+    }
+  }
+
+  String _getStatusIcon() {
+    switch (status.toString()) {
+      case "pending":
+        return "assets/icons/pending.png";
+      case "confirmed":
+        return "assets/icons/successful.png";
+      default:
+        return "assets/icons/rejected.png";
+    }
+  }
+
+  String _getStatusText() {
+    switch (status.toString()) {
+      case "pending":
+        return languagesController.tr("PENDING");
+      case "confirmed":
+        return languagesController.tr("CONFIRMED");
+      default:
+        return languagesController.tr("REJECTED");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
+    bool isFarsi = box.read("language").toString() == "Fa";
+    String? fontFamily = isFarsi
+        ? Get.find<FontController>().currentFont
+        : null;
+
     return Container(
-      height: 650,
+      height: 570,
       width: screenWidth,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Padding(
-        padding: EdgeInsets.all(10.0),
-        child: SizedBox(
-          child: Column(
-            children: [
-              RepaintBoundary(
-                key: catpureKey,
-                child: RepaintBoundary(
-                  key: shareKey,
-                  child: Container(
-                    width: screenWidth,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        width: 1,
-                        color: status.toString() == "pending"
-                            ? Color(0xffFFC107)
-                            : status.toString() == "confirmed"
-                            ? Colors.green
-                            : Colors.red,
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Main Receipt Card
+            RepaintBoundary(
+              key: catpureKey,
+              child: RepaintBoundary(
+                key: _shareKey,
+                child: Container(
+                  width: screenWidth,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(width: 2, color: _getStatusColor()),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _getStatusColor().withOpacity(0.1),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
                       ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          Image.asset("assets/icons/logo.png", height: 60),
-                          Container(
-                            height: 30,
-                            width: 30,
-                            padding: const EdgeInsets.all(5.0),
-                            child: Image.asset(
-                              status.toString() == "pending"
-                                  ? "assets/icons/pending.png"
-                                  : status.toString() == "confirmed"
-                                  ? "assets/icons/successful.png"
-                                  : "assets/icons/rejected.png",
-                              height: 30,
-                            ),
+                    ],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        // Logo
+                        Image.asset("assets/icons/logo.png", height: 50),
+                        SizedBox(height: 8),
+
+                        // Status Badge
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
                           ),
-                          Text(
-                            status.toString() == "pending"
-                                ? languagesController.tr("PENDING")
-                                : status.toString() == "confirmed"
-                                ? languagesController.tr("CONFIRMED")
-                                : languagesController.tr("REJECTED"),
-                            style: TextStyle(
-                              color: status.toString() == "pending"
-                                  ? Color(0xffFFC107)
-                                  : status.toString() == "confirmed"
-                                  ? Colors.green
-                                  : Colors.red,
-                              fontWeight: FontWeight.w500,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
-                            ),
+                          decoration: BoxDecoration(
+                            color: _getStatusColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                          SizedBox(height: 25),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              KText(
-                                text: languagesController.tr("HAWALA_NUMBER"),
-                                fontSize: 14,
+                              Image.asset(
+                                _getStatusIcon(),
+                                height: 20,
+                                width: 20,
                               ),
+                              SizedBox(width: 8),
                               Text(
-                                hawalaNumber.toString(),
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("HAWALA_AMOUNT"),
+                                _getStatusText(),
                                 style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                amount.toString(),
-                                style: TextStyle(
+                                  color: _getStatusColor(),
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
+                                  fontFamily: fontFamily,
                                 ),
                               ),
                             ],
                           ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("SENDER_NAME"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                senderName.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
+                        ),
+
+                        SizedBox(height: 10),
+
+                        // Hawala Number
+                        _buildInfoRow(
+                          label: languagesController.tr("HAWALA_NUMBER"),
+                          value: hawalaCustomNumber ?? hawalaNumber.toString(),
+                          fontFamily: fontFamily,
+                          isHighlight: true,
+                        ),
+
+                        Divider(height: 10, color: Colors.grey.shade300),
+
+                        // Amount
+                        _buildInfoRow(
+                          label: languagesController.tr("HAWALA_AMOUNT"),
+                          value: amount.toString(),
+                          fontFamily: fontFamily,
+                          valueStyle: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: AppColors.primaryColor,
                           ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("RECEIVER_NAME"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                receiverName.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
+                        ),
+
+                        // Sender
+                        _buildInfoRow(
+                          label: languagesController.tr("SENDER_NAME"),
+                          value: senderName.toString(),
+                          fontFamily: fontFamily,
+                        ),
+
+                        // Receiver
+                        _buildInfoRow(
+                          label: languagesController.tr("RECEIVER_NAME"),
+                          value: receiverName.toString(),
+                          fontFamily: fontFamily,
+                        ),
+
+                        SizedBox(height: 10),
+
+                        // Branch Information Card
+                        Container(
+                          width: screenWidth,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                AppColors.primaryColor.withOpacity(0.08),
+                                AppColors.primaryColor.withOpacity(0.12),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  languagesController.tr(
-                                    "RECEIVER_ID_CARD_NUMBER",
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontFamily:
-                                        box.read("language").toString() == "Fa"
-                                        ? Get.find<FontController>().currentFont
-                                        : null,
-                                  ),
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Branch Name
+                                _buildInfoRow(
+                                  label: languagesController.tr("BRANCH"),
+                                  value: branchController
+                                      .allbranch
+                                      .value
+                                      .data!
+                                      .hawalabranches!
+                                      .firstWhere(
+                                        (item) =>
+                                            item.id.toString() ==
+                                            branchID.toString(),
+                                      )
+                                      .name
+                                      .toString(),
+                                  fontFamily: fontFamily,
+                                  compact: true,
                                 ),
-                              ),
-                              Text(
-                                idcardnumber.toString(),
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+
+                                SizedBox(height: 5),
+
+                                // Address
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        languagesController.tr("ADDRESS"),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.grey.shade700,
+                                          fontFamily: fontFamily,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        branchController
+                                            .allbranch
+                                            .value
+                                            .data!
+                                            .hawalabranches!
+                                            .firstWhere(
+                                              (item) =>
+                                                  item.id.toString() ==
+                                                  branchID.toString(),
+                                            )
+                                            .address
+                                            .toString(),
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: Colors.black87,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        textAlign: TextAlign.end,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ),
-                            ],
+
+                                SizedBox(height: 5),
+
+                                // Phone Number
+                                _buildInfoRow(
+                                  label: languagesController.tr("PHONE_NUMBER"),
+                                  value: branchController
+                                      .allbranch
+                                      .value
+                                      .data!
+                                      .hawalabranches!
+                                      .firstWhere(
+                                        (item) =>
+                                            item.id.toString() ==
+                                            branchID.toString(),
+                                      )
+                                      .phoneNumber
+                                      .toString(),
+                                  fontFamily: fontFamily,
+                                  compact: true,
+                                ),
+                              ],
+                            ),
                           ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("RECEIVER_FATHERS_NAME"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                fatherName.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("HAWALA_CURRENCY_RATE"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                hawalacurrencyRate.toString(),
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("HAWALA_CURRENCY_CODE"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                hawalacurrencyCode.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr(
-                                  "RESELLER_CURRENCY_RATE",
-                                ),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                resellCurrencyRate.toString(),
-                                style: TextStyle(fontSize: 14),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr(
-                                  "RESELLER_CURRENCY_CODE",
-                                ),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                resellercurrencyCode.toString(),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                languagesController.tr("COMMISSION_PAID_BY"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                              Text(
-                                paidbysender.toString() == "true"
-                                    ? languagesController.tr("SENDER")
-                                    : languagesController.tr("RECEIVER"),
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 8),
-              Container(
-                height: 40,
-                width: screenWidth,
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: GestureDetector(
-                        onTap: () async {
-                          capturePng(catpureKey);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              width: 1,
-                              color: AppColors.primaryColor,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Text(
-                              languagesController.tr("SAVE_TO_GALLERY"),
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: AppColors.primaryColor,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                fontFamily:
-                                    box.read("language").toString() == "Fa"
-                                    ? Get.find<FontController>().currentFont
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+            ),
+
+            SizedBox(height: 8),
+
+            // Action Buttons Row
+            Container(
+              height: 45,
+              width: screenWidth,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildOutlinedButton(
+                      onTap: () async {
+                        capturePng(catpureKey);
+                      },
+                      label: languagesController.tr("SAVE_TO_GALLERY"),
+                      fontFamily: fontFamily,
+
+                      icon: Icons.download_rounded,
                     ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      flex: 1,
-                      child: GestureDetector(
-                        onTap: () async {
-                          captureImageFromWidgetAsFile(shareKey);
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.primaryColor,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Center(
-                            child: Text(
-                              languagesController.tr("SHARE"),
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                fontFamily:
-                                    box.read("language").toString() == "Fa"
-                                    ? Get.find<FontController>().currentFont
-                                    : null,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
+                  ),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: _buildFilledButton(
+                      onTap: () async {
+                        captureImageFromWidgetAsFile(_shareKey);
+                      },
+                      label: languagesController.tr("SHARE"),
+                      fontFamily: fontFamily,
+                      icon: Icons.share_rounded,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              SizedBox(height: 8),
-              Obx(
-                () => isopen.value
+            ),
+
+            SizedBox(height: 5),
+
+            // Cancel Order Button with Animation
+            Obx(
+              () => AnimatedSwitcher(
+                duration: Duration(milliseconds: 300),
+                transitionBuilder: (Widget child, Animation<double> animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(scale: animation, child: child),
+                  );
+                },
+                child: isopen.value
                     ? Visibility(
                         visible: status.toString() == "pending",
                         child: GestureDetector(
                           onTap: () {
-                            isopen.value = false; // This will trigger rebuild
+                            isopen.value = false;
                           },
                           child: Container(
+                            key: ValueKey('cancel'),
                             height: 45,
                             width: screenWidth,
                             decoration: BoxDecoration(
-                              color: Colors.grey,
-                              borderRadius: BorderRadius.circular(8),
+                              color: Colors.grey.shade600,
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: Center(
                               child: Text(
@@ -970,10 +892,7 @@ class HawalaDetailsDialog extends StatelessWidget {
                                   fontSize: 14,
                                   color: Colors.white,
                                   fontWeight: FontWeight.w600,
-                                  fontFamily:
-                                      box.read("language").toString() == "Fa"
-                                      ? Get.find<FontController>().currentFont
-                                      : null,
+                                  fontFamily: fontFamily,
                                 ),
                               ),
                             ),
@@ -981,43 +900,37 @@ class HawalaDetailsDialog extends StatelessWidget {
                         ),
                       )
                     : Container(
+                        key: ValueKey('confirm'),
                         height: 45,
                         width: screenWidth,
                         child: Row(
                           children: [
                             Expanded(
-                              flex: 1,
                               child: GestureDetector(
                                 onTap: () {
-                                  isopen.value =
-                                      true; // Go back to cancel button
-                                  // Navigator.pop(context);
+                                  isopen.value = true;
                                 },
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    color: Colors.grey,
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.grey.shade600,
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
                                     child: Text(
                                       languagesController.tr("NO"),
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontFamily:
-                                            box.read("language").toString() ==
-                                                "Fa"
-                                            ? Get.find<FontController>()
-                                                  .currentFont
-                                            : null,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        fontFamily: fontFamily,
                                       ),
                                     ),
                                   ),
                                 ),
                               ),
                             ),
-                            SizedBox(width: 10),
+                            SizedBox(width: 12),
                             Expanded(
-                              flex: 1,
                               child: GestureDetector(
                                 onTap: () {
                                   cancelHawalaController.cancelnow(id);
@@ -1027,19 +940,16 @@ class HawalaDetailsDialog extends StatelessWidget {
                                 child: Container(
                                   decoration: BoxDecoration(
                                     color: Colors.green,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
                                     child: Text(
                                       languagesController.tr("YES"),
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontFamily:
-                                            box.read("language").toString() ==
-                                                "Fa"
-                                            ? Get.find<FontController>()
-                                                  .currentFont
-                                            : null,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        fontFamily: fontFamily,
                                       ),
                                     ),
                                   ),
@@ -1050,34 +960,156 @@ class HawalaDetailsDialog extends StatelessWidget {
                         ),
                       ),
               ),
-              SizedBox(height: 8),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  height: 40,
-                  width: screenWidth,
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1, color: Colors.grey.shade600),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      languagesController.tr("CLOSE"),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: box.read("language").toString() == "Fa"
-                            ? Get.find<FontController>().currentFont
-                            : null,
-                      ),
+            ),
+
+            SizedBox(height: 5),
+
+            // Close Button
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Container(
+                height: 45,
+                width: screenWidth,
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1.5, color: Colors.grey.shade400),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.grey.shade50,
+                ),
+                child: Center(
+                  child: Text(
+                    languagesController.tr("CLOSE"),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade800,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: fontFamily,
                     ),
                   ),
                 ),
               ),
-              SizedBox(height: 5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow({
+    required String label,
+    required String value,
+    String? fontFamily,
+    bool isHighlight = false,
+    bool compact = false,
+    TextStyle? valueStyle,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: compact ? 13 : 14,
+            color: Colors.grey.shade700,
+            fontFamily: fontFamily,
+          ),
+        ),
+        SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            value,
+            style:
+                valueStyle ??
+                TextStyle(
+                  fontSize: compact ? 13 : 14,
+                  fontWeight: isHighlight ? FontWeight.w600 : FontWeight.w500,
+                  color: isHighlight ? AppColors.primaryColor : Colors.black87,
+                  fontFamily: fontFamily,
+                ),
+            textAlign: TextAlign.end,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildOutlinedButton({
+    required VoidCallback onTap,
+    required String label,
+    String? fontFamily,
+    IconData? icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(width: 1.5, color: AppColors.primaryColor),
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 18, color: AppColors.primaryColor),
+                SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.primaryColor,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontFamily: fontFamily,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilledButton({
+    required VoidCallback onTap,
+    required String label,
+    String? fontFamily,
+    IconData? icon,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: AppColors.primaryColor,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primaryColor.withOpacity(0.3),
+              blurRadius: 8,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: 18, color: Colors.white),
+                SizedBox(width: 6),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                  fontFamily: fontFamily,
+                ),
+              ),
             ],
           ),
         ),

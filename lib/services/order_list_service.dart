@@ -11,8 +11,12 @@ class OrderListApi {
   // OrderlistController orderlistController = Get.put(OrderlistController());
   final box = GetStorage();
   Future<OrderListModel> fetchorderList(int pageNo) async {
+    // final url = Uri.parse(
+    //   "${ApiEndPoints.baseUrl}orders?page=$pageNo&${box.read("orderstatus").toString()}&selected_Date=&&",
+    // );
+
     final url = Uri.parse(
-      "${ApiEndPoints.baseUrl}orders?page=$pageNo&${box.read("orderstatus").toString()}&selected_Date=&&",
+      "${ApiEndPoints.baseUrl}orders?page=${pageNo}&${box.read("orderstatus").toString()}&search_target=${box.read("search_target")}&${box.read("date")}",
     );
     print(url);
 

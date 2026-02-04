@@ -22,10 +22,6 @@ class OrderlistController extends GetxController {
         if (allorderlist.value.data != null) {
           finalList.addAll(allorderlist.value.data!.orders);
         }
-        // print(finalList.length.toString());
-        // finalList.forEach((order) {
-        //   print(order.id.toString());
-        // });
 
         isLoading(false);
       });

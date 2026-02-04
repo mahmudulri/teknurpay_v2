@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,37 +41,55 @@ class _OrdersState extends State<Orders> {
 
   String search = "";
 
+  final RxString selectedDate = ''.obs;
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(), // default date
+      firstDate: DateTime(2000), // earliest date
+      lastDate: DateTime(2100), // latest date
+    );
+
+    if (picked != null) {
+      // Format the selected date as yyyy-MM-dd
+      String formattedDate = DateFormat('yyyy-MM-dd').format(picked);
+      selectedDate.value = formattedDate;
+      print(formattedDate); // Print to console
+      box.write("date", "selected_date=" + formattedDate.toString());
+      orderlistController.finalList.clear();
+      orderlistController.initialpage = 1;
+      orderlistController.fetchOrderlistdata();
+    }
+  }
+
   final box = GetStorage();
+
+  Timer? _debounce;
 
   final ScrollController scrollController = ScrollController();
 
   Future<void> refresh() async {
-    final int totalPages =
-        orderlistController.allorderlist.value.payload?.pagination.totalPages ??
-        0;
-    final int currentPage = orderlistController.initialpage;
-
-    // Prevent loading more pages if we've reached the last page
-    if (currentPage >= totalPages) {
+    if (orderlistController.finalList.length >=
+        (orderlistController
+                .allorderlist
+                .value
+                .payload
+                ?.pagination
+                .totalItems ??
+            0)) {
       print(
         "End..........................................End.....................",
       );
-      return;
-    }
-
-    // Check if the scroll position is at the bottom
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      orderlistController.initialpage++;
-
-      // Prevent fetching if the next page exceeds total pages
-      if (orderlistController.initialpage <= totalPages) {
+    } else {
+      if (scrollController.position.pixels ==
+          scrollController.position.maxScrollExtent) {
+        orderlistController.initialpage++;
+        // print(orderlistController.initialpage);
         print("Load More...................");
         orderlistController.fetchOrderlistdata();
       } else {
-        orderlistController.initialpage =
-            totalPages; // Reset to the last valid page
-        print("Already on the last page");
+        // print("nothing");
       }
     }
   }
@@ -96,10 +116,13 @@ class _OrdersState extends State<Orders> {
       {"title": languagesController.tr("CONFIRMED"), "value": "order_status=1"},
       {"title": languagesController.tr("REJECTED"), "value": "order_status=2"},
     ];
+    box.write("date", "");
     box.write("orderstatus", "");
+    box.write("search_target", "");
     orderlistController.finalList.clear();
     orderlistController.initialpage = 1;
     orderlistController.fetchOrderlistdata();
+    scrollController.addListener(refresh);
   }
 
   @override
@@ -251,7 +274,7 @@ class _OrdersState extends State<Orders> {
                                 orderlistController.finalList.clear();
                                 orderlistController.initialpage = 1;
                                 orderlistController.fetchOrderlistdata();
-                                print("selected Value $value");
+
                                 setState(() {
                                   defaultValue = value!;
                                 });
@@ -278,11 +301,19 @@ class _OrdersState extends State<Orders> {
                             children: [
                               Obx(
                                 () => KText(
-                                  text: languagesController.tr("DATE"),
+                                  text: selectedDate.value == ""
+                                      ? languagesController.tr("DATE")
+                                      : selectedDate.value.toString(),
                                   fontSize: screenWidth * 0.040,
                                 ),
                               ),
-                              Icon(Icons.calendar_month, color: Colors.grey),
+                              GestureDetector(
+                                onTap: () => _selectDate(context),
+                                child: Icon(
+                                  Icons.calendar_month,
+                                  color: Colors.grey,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -312,6 +343,26 @@ class _OrdersState extends State<Orders> {
                               Expanded(
                                 child: Obx(
                                   () => TextField(
+                                    keyboardType: TextInputType.phone,
+                                    onChanged: (value) {
+                                      // আগের timer থাকলে cancel
+                                      if (_debounce?.isActive ?? false)
+                                        _debounce!.cancel();
+
+                                      _debounce = Timer(
+                                        const Duration(seconds: 1),
+                                        () {
+                                          orderlistController.finalList.clear();
+                                          orderlistController.initialpage = 1;
+
+                                          box.write("search_target", value);
+
+                                          orderlistController
+                                              .fetchOrderlistdata();
+                                          print(value);
+                                        },
+                                      );
+                                    },
                                     decoration: InputDecoration(
                                       hintText: languagesController.tr(
                                         "SEARCH_BY_PHOENUMBER",
@@ -456,12 +507,13 @@ class _OrdersState extends State<Orders> {
                               child: RefreshIndicator(
                                 onRefresh: refresh,
                                 child: ListView.separated(
+                                  controller: scrollController,
                                   padding: EdgeInsets.all(0),
                                   separatorBuilder: (context, index) {
                                     return SizedBox(height: 10);
                                   },
-                                  physics: BouncingScrollPhysics(),
-                                  shrinkWrap: true,
+                                  physics: AlwaysScrollableScrollPhysics(),
+                                  shrinkWrap: false,
                                   itemCount:
                                       orderlistController.finalList.length,
                                   itemBuilder: (context, index) {
@@ -941,488 +993,6 @@ class _OrdersState extends State<Orders> {
                           : Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 15,
-                              ),
-                              child: RefreshIndicator(
-                                onRefresh: refresh,
-                                child: ListView.separated(
-                                  padding: EdgeInsets.all(0),
-                                  separatorBuilder: (context, index) {
-                                    return SizedBox(height: 10);
-                                  },
-                                  physics: BouncingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount:
-                                      orderlistController.finalList.length,
-                                  itemBuilder: (context, index) {
-                                    final data =
-                                        orderlistController.finalList[index];
-                                    return GestureDetector(
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                OrderDetailsScreen(
-                                                  createDate: data.createdAt
-                                                      .toString(),
-                                                  status: data.status
-                                                      .toString(),
-                                                  rejectReason: data
-                                                      .rejectReason
-                                                      .toString(),
-                                                  companyName: data
-                                                      .bundle!
-                                                      .service!
-                                                      .company!
-                                                      .companyName
-                                                      .toString(),
-                                                  bundleTitle: data
-                                                      .bundle!
-                                                      .bundleTitle!
-                                                      .toString(),
-                                                  rechargebleAccount: data
-                                                      .rechargebleAccount!
-                                                      .toString(),
-                                                  validityType: data
-                                                      .bundle!
-                                                      .validityType!
-                                                      .toString(),
-                                                  sellingPrice: data
-                                                      .bundle!
-                                                      .sellingPrice
-                                                      .toString(),
-                                                  buyingPrice: data
-                                                      .bundle!
-                                                      .buyingPrice
-                                                      .toString(),
-                                                  orderID: data.id!.toString(),
-                                                  resellerName:
-                                                      dashboardController
-                                                          .alldashboardData
-                                                          .value
-                                                          .data!
-                                                          .userInfo!
-                                                          .contactName
-                                                          .toString(),
-                                                  resellerPhone:
-                                                      dashboardController
-                                                          .alldashboardData
-                                                          .value
-                                                          .data!
-                                                          .userInfo!
-                                                          .phone
-                                                          .toString(),
-                                                  companyLogo: data
-                                                      .bundle!
-                                                      .service!
-                                                      .company!
-                                                      .companyLogo
-                                                      .toString(),
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      child: Container(
-                                        height: 125,
-                                        width: screenWidth,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          border: Border.all(
-                                            width: 1,
-                                            color: data.status.toString() == "0"
-                                                ? Color(0xffFFC107)
-                                                : data.status.toString() == "1"
-                                                ? Colors.green
-                                                : Color(0xffFF4842),
-                                          ),
-                                        ),
-                                        child: Column(
-                                          children: [
-                                            Expanded(
-                                              flex: 1,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color:
-                                                      data.status.toString() ==
-                                                          "0"
-                                                      ? Color(
-                                                          0xffFFC107,
-                                                        ).withOpacity(0.12)
-                                                      : data.status
-                                                                .toString() ==
-                                                            "1"
-                                                      ? Colors.green
-                                                            .withOpacity(0.12)
-                                                      : Color(
-                                                          0xffFF4842,
-                                                        ).withOpacity(0.4),
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                        topRight:
-                                                            Radius.circular(10),
-                                                        topLeft:
-                                                            Radius.circular(10),
-                                                      ),
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                      ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        "${languagesController.tr("ORDER_ID")} (# ${data.id})",
-                                                        style: TextStyle(
-                                                          color: Color(
-                                                            0xff637381,
-                                                          ),
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize:
-                                                              screenHeight *
-                                                              0.018,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        DateFormat(
-                                                          'dd MMM yyyy',
-                                                        ).format(
-                                                          DateTime.parse(
-                                                            data.createdAt
-                                                                .toString(),
-                                                          ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          color: Color(
-                                                            0xff637381,
-                                                          ),
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize:
-                                                              screenHeight *
-                                                              0.018,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expanded(
-                                              flex: 3,
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  borderRadius:
-                                                      BorderRadius.only(
-                                                        bottomLeft:
-                                                            Radius.circular(10),
-                                                        bottomRight:
-                                                            Radius.circular(10),
-                                                      ),
-                                                ),
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                          ),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Obx(
-                                                            () => KText(
-                                                              text: languagesController.tr(
-                                                                "RECHARGEABLE_ACCOUNT",
-                                                              ),
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade700,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.018,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            data.rechargebleAccount
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.016,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 2),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                          ),
-                                                      child: Obx(
-                                                        () => Row(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
-                                                          children: [
-                                                            KText(
-                                                              text: languagesController.tr(
-                                                                "TRANSACTION_STATUS",
-                                                              ),
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade700,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w400,
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.018,
-                                                            ),
-                                                            Container(
-                                                              decoration: BoxDecoration(
-                                                                color:
-                                                                    data.status
-                                                                            .toString() ==
-                                                                        "0"
-                                                                    ? Colors
-                                                                          .grey
-                                                                          .withOpacity(
-                                                                            0.12,
-                                                                          )
-                                                                    : data.status
-                                                                              .toString() ==
-                                                                          "1"
-                                                                    ? Colors
-                                                                          .green
-                                                                          .withOpacity(
-                                                                            0.12,
-                                                                          )
-                                                                    : Colors.red
-                                                                          .withOpacity(
-                                                                            0.12,
-                                                                          ),
-                                                                borderRadius:
-                                                                    BorderRadius.circular(
-                                                                      6,
-                                                                    ),
-                                                              ),
-                                                              child: Padding(
-                                                                padding:
-                                                                    const EdgeInsets.symmetric(
-                                                                      horizontal:
-                                                                          10,
-                                                                      vertical:
-                                                                          2,
-                                                                    ),
-                                                                child: KText(
-                                                                  text:
-                                                                      data.status
-                                                                              .toString() ==
-                                                                          "0"
-                                                                      ? languagesController.tr(
-                                                                          "PENDING",
-                                                                        )
-                                                                      : data.status.toString() ==
-                                                                            "1"
-                                                                      ? languagesController.tr(
-                                                                          "CONFIRMED",
-                                                                        )
-                                                                      : languagesController.tr(
-                                                                          "REJECTED",
-                                                                        ),
-                                                                  color:
-                                                                      data.status
-                                                                              .toString() ==
-                                                                          "0"
-                                                                      ? Colors
-                                                                            .grey
-                                                                      : data.status.toString() ==
-                                                                            "1"
-                                                                      ? Colors
-                                                                            .green
-                                                                      : Colors
-                                                                            .red,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      screenHeight *
-                                                                      0.015,
-                                                                ),
-                                                              ),
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    SizedBox(height: 3),
-                                                    Padding(
-                                                      padding:
-                                                          const EdgeInsets.symmetric(
-                                                            horizontal: 10,
-                                                          ),
-                                                      child: Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              KText(
-                                                                text:
-                                                                    languagesController
-                                                                        .tr(
-                                                                          "BUY",
-                                                                        ),
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade700,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                                fontSize:
-                                                                    screenHeight *
-                                                                    0.018,
-                                                              ),
-                                                              Text(" : "),
-                                                              Text(
-                                                                NumberFormat.currency(
-                                                                  locale:
-                                                                      'en_US',
-                                                                  symbol: '',
-                                                                  decimalDigits:
-                                                                      2,
-                                                                ).format(
-                                                                  double.parse(
-                                                                    data
-                                                                        .bundle!
-                                                                        .buyingPrice
-                                                                        .toString(),
-                                                                  ),
-                                                                ),
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .shade700,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontSize:
-                                                                      screenHeight *
-                                                                      0.018,
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                width: 5,
-                                                              ),
-                                                              KText(
-                                                                text: box.read(
-                                                                  "currency_code",
-                                                                ),
-                                                                fontSize: 10,
-                                                                color:
-                                                                    Colors.grey,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              KText(
-                                                                text:
-                                                                    languagesController
-                                                                        .tr(
-                                                                          "SELL",
-                                                                        ),
-                                                                color: Colors
-                                                                    .grey
-                                                                    .shade700,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w400,
-                                                                fontSize:
-                                                                    screenHeight *
-                                                                    0.018,
-                                                              ),
-                                                              Text(" : "),
-                                                              Text(
-                                                                NumberFormat.currency(
-                                                                  locale:
-                                                                      'en_US',
-                                                                  symbol: '',
-                                                                  decimalDigits:
-                                                                      2,
-                                                                ).format(
-                                                                  double.parse(
-                                                                    data
-                                                                        .bundle!
-                                                                        .sellingPrice
-                                                                        .toString(),
-                                                                  ),
-                                                                ),
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .grey
-                                                                      .shade700,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontSize:
-                                                                      screenHeight *
-                                                                      0.018,
-                                                                ),
-                                                              ),
-                                                              SizedBox(
-                                                                width: 5,
-                                                              ),
-                                                              KText(
-                                                                text: box.read(
-                                                                  "currency_code",
-                                                                ),
-                                                                fontSize: 10,
-                                                                color:
-                                                                    Colors.grey,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
                               ),
                             ),
                     ),
