@@ -481,16 +481,24 @@ class _HomepagesState extends State<Homepages> {
                                   Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      Text(
-                                        dashboardController
-                                            .userBalanceController
-                                            .balance
-                                            .toString(),
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                        ),
+                                      Obx(
+                                        () =>
+                                            dashboardController
+                                                    .isLoading
+                                                    .value ==
+                                                false
+                                            ? Text(
+                                                dashboardController
+                                                    .userBalanceController
+                                                    .balance
+                                                    .toString(),
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 14,
+                                                ),
+                                              )
+                                            : SizedBox(),
                                       ),
                                       KText(
                                         text: box.read("currency_code"),

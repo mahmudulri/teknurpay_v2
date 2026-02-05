@@ -48,6 +48,23 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
     PaymentTypeController(),
   );
 
+  late Rx<DateTime?> mydate;
+  Future<void> pickStartDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: mydate.value ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (picked != null) {
+      mydate.value = picked;
+      addPaymentController.selectedDate.value = DateFormat(
+        'yyyy-MM-dd',
+      ).format(picked);
+    }
+  }
+
   final box = GetStorage();
 
   List commissionpaidby = [];
@@ -62,9 +79,17 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    final now = DateTime.now();
+    mydate = Rx<DateTime?>(now);
+
+    addPaymentController.selectedDate.value = DateFormat(
+      'yyyy-MM-dd',
+    ).format(now);
     paymentMethodController.fetchmethods();
     currencyController.fetchCurrency();
     paymentTypeController.fetchtypes();
+    selectedcurrency.value = box.read("currency_code");
+    addPaymentController.currencyID.value = box.read("countryID");
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -122,11 +147,18 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                       ),
                       Spacer(),
                       Obx(
-                        () => KText(
-                          text: languagesController.tr("ADD_NEW_RECEIPT"),
-                          fontWeight: FontWeight.bold,
-                          fontSize: screenWidth * 0.045,
-                          color: Colors.black,
+                        () => GestureDetector(
+                          onTap: () {
+                            print(
+                              addPaymentController.currencyID.value.toString(),
+                            );
+                          },
+                          child: KText(
+                            text: languagesController.tr("ADD_NEW_RECEIPT"),
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.045,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                       Spacer(),
@@ -182,7 +214,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                 return AlertDialog(
                                   backgroundColor: Colors.white,
                                   content: Container(
-                                    height: 150,
+                                    height: 200,
                                     width: screenWidth,
                                     color: Colors.white,
                                     child: Obx(
@@ -218,10 +250,11 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                                     Navigator.pop(context);
                                                   },
                                                   child: Container(
+                                                    height: 50,
                                                     margin: EdgeInsets.only(
                                                       bottom: 8,
                                                     ),
-                                                    height: 40,
+
                                                     decoration: BoxDecoration(
                                                       border: Border.all(
                                                         width: 1,
@@ -229,18 +262,24 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                                             .grey
                                                             .shade300,
                                                       ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
                                                     ),
                                                     child: Padding(
                                                       padding:
-                                                          const EdgeInsets.symmetric(
+                                                          EdgeInsets.symmetric(
                                                             horizontal: 8,
                                                           ),
                                                       child: Row(
                                                         children: [
-                                                          KText(
-                                                            text: data
-                                                                .methodName
-                                                                .toString(),
+                                                          Flexible(
+                                                            child: KText(
+                                                              text: data
+                                                                  .methodName
+                                                                  .toString(),
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
@@ -529,19 +568,8 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: () async {
-                                DateTime? pickedDate = await showDatePicker(
-                                  context: context,
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(2000),
-                                  lastDate: DateTime(2100),
-                                );
-                                if (pickedDate != null) {
-                                  String formattedDate =
-                                      "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                                  addPaymentController.selectedDate.value =
-                                      formattedDate;
-                                }
+                              onTap: () {
+                                pickStartDate(context);
                               },
                               child: Icon(
                                 Icons.calendar_month,
@@ -566,10 +594,20 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                       controller: addPaymentController.trackingCodeController,
                     ),
                     SizedBox(height: 10),
-                    KText(
-                      text: languagesController.tr("NOTES"),
-                      color: Colors.grey.shade600,
-                      fontSize: screenHeight * 0.020,
+                    Row(
+                      children: [
+                        KText(
+                          text: languagesController.tr("NOTES"),
+                          color: Colors.grey.shade600,
+                          fontSize: screenHeight * 0.020,
+                        ),
+                        SizedBox(width: 10),
+                        KText(
+                          text: "(${languagesController.tr("OPTIONAL")})",
+                          color: Colors.grey.shade600,
+                          fontSize: screenHeight * 0.018,
+                        ),
+                      ],
                     ),
                     SizedBox(height: 5),
                     Authtextfield(
@@ -604,7 +642,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                 return AlertDialog(
                                   backgroundColor: Colors.white,
                                   content: Container(
-                                    height: 150,
+                                    height: 170,
                                     width: screenWidth,
                                     color: Colors.white,
                                     child: Obx(
@@ -651,17 +689,23 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                                             .grey
                                                             .shade300,
                                                       ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            10,
+                                                          ),
                                                     ),
                                                     child: Padding(
                                                       padding:
-                                                          const EdgeInsets.symmetric(
+                                                          EdgeInsets.symmetric(
                                                             horizontal: 8,
                                                           ),
                                                       child: Row(
                                                         children: [
-                                                          KText(
-                                                            text: data.name
-                                                                .toString(),
+                                                          Flexible(
+                                                            child: KText(
+                                                              text: data.name
+                                                                  .toString(),
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
@@ -761,10 +805,6 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                   '' || // <-- FIXED
                               addPaymentController
                                   .trackingCodeController
-                                  .text
-                                  .isEmpty ||
-                              addPaymentController
-                                  .noteController
                                   .text
                                   .isEmpty) {
                             Fluttertoast.showToast(

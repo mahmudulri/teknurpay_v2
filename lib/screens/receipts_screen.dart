@@ -199,97 +199,98 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                         ),
                       ),
                       SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: DropdownButtonHideUnderline(
-                            child: DropdownButton<String>(
-                              icon: Icon(
-                                FontAwesomeIcons.chevronDown,
-                                color: Colors.grey,
-                              ),
-                              isDense: true,
-                              value: defaultValue,
-                              isExpanded: true,
-                              items: [
-                                DropdownMenuItem(
-                                  value: "",
-                                  child: KText(
-                                    text: languagesController.tr("ALL"),
-                                    fontSize: screenWidth * 0.040,
-                                  ),
-                                ),
-                                ...orderStatus.map<DropdownMenuItem<String>>((
-                                  data,
-                                ) {
-                                  return DropdownMenuItem(
-                                    value: data['value'],
-                                    child: KText(text: data['title']),
-                                  );
-                                }).toList(),
-                              ],
-                              onChanged: (value) {},
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            width: 1,
-                            color: Colors.grey.shade300,
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Icon(
-                                Icons.search_sharp,
-                                color: Colors.grey,
-                                size: screenHeight * 0.040,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: Obx(
-                                  () => TextField(
-                                    decoration: InputDecoration(
-                                      hintText: languagesController.tr(
-                                        "SEARCH",
-                                      ),
-                                      border: InputBorder.none,
-                                      hintStyle: TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: screenWidth * 0.040,
-                                        fontFamily:
-                                            box.read("language").toString() ==
-                                                "Fa"
-                                            ? Get.find<FontController>()
-                                                  .currentFont
-                                            : null,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+
+                      // Container(
+                      //   height: 50,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(8),
+                      //     border: Border.all(
+                      //       width: 1,
+                      //       color: Colors.grey.shade300,
+                      //     ),
+                      //   ),
+                      //   child: Padding(
+                      //     padding: EdgeInsets.symmetric(horizontal: 8),
+                      //     child: DropdownButtonHideUnderline(
+                      //       child: DropdownButton<String>(
+                      //         icon: Icon(
+                      //           FontAwesomeIcons.chevronDown,
+                      //           color: Colors.grey,
+                      //         ),
+                      //         isDense: true,
+                      //         value: defaultValue,
+                      //         isExpanded: true,
+                      //         items: [
+                      //           DropdownMenuItem(
+                      //             value: "",
+                      //             child: KText(
+                      //               text: languagesController.tr("ALL"),
+                      //               fontSize: screenWidth * 0.040,
+                      //             ),
+                      //           ),
+                      //           ...orderStatus.map<DropdownMenuItem<String>>((
+                      //             data,
+                      //           ) {
+                      //             return DropdownMenuItem(
+                      //               value: data['value'],
+                      //               child: KText(text: data['title']),
+                      //             );
+                      //           }).toList(),
+                      //         ],
+                      //         onChanged: (value) {},
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      // SizedBox(height: 10),
+                      // Container(
+                      //   height: 50,
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.white,
+                      //     borderRadius: BorderRadius.circular(8),
+                      //     border: Border.all(
+                      //       width: 1,
+                      //       color: Colors.grey.shade300,
+                      //     ),
+                      //   ),
+                      //   child: Padding(
+                      //     padding: const EdgeInsets.symmetric(horizontal: 10),
+                      //     child: Row(
+                      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      //       children: [
+                      //         Icon(
+                      //           Icons.search_sharp,
+                      //           color: Colors.grey,
+                      //           size: screenHeight * 0.040,
+                      //         ),
+                      //         SizedBox(width: 10),
+                      //         Expanded(
+                      //           child: Obx(
+                      //             () => TextField(
+                      //               decoration: InputDecoration(
+                      //                 hintText: languagesController.tr(
+                      //                   "SEARCH",
+                      //                 ),
+                      //                 border: InputBorder.none,
+                      //                 hintStyle: TextStyle(
+                      //                   color: Colors.grey,
+                      //                   fontSize: screenWidth * 0.040,
+                      //                   fontFamily:
+                      //                       box.read("language").toString() ==
+                      //                           "Fa"
+                      //                       ? Get.find<FontController>()
+                      //                             .currentFont
+                      //                       : null,
+                      //                 ),
+                      //               ),
+                      //             ),
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
                     ],
                   ),
                 ),
@@ -464,27 +465,30 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                                   ),
                                                 ],
                                               ),
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  KText(
-                                                    text: languagesController
-                                                        .tr("NOTES"),
-                                                  ),
-                                                  SizedBox(width: 100),
-                                                  Expanded(
-                                                    child: Text(
-                                                      data.notes.toString(),
-                                                      maxLines: 1,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                      textAlign:
-                                                          TextAlign.right,
+                                              Visibility(
+                                                visible: data.notes != null,
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    KText(
+                                                      text: languagesController
+                                                          .tr("NOTES"),
                                                     ),
-                                                  ),
-                                                ],
+                                                    SizedBox(width: 100),
+                                                    Expanded(
+                                                      child: Text(
+                                                        data.notes.toString(),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                        textAlign:
+                                                            TextAlign.right,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
                                               ),
                                               Row(
                                                 mainAxisAlignment:
@@ -984,31 +988,34 @@ class PaymentDialog extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          KText(
-                            text: languagesController.tr("NOTES"),
-                            color: Color(0xff637381),
-                            fontSize: 15,
-                          ),
-                          Expanded(
-                            child: Text(
-                              notes.toString(),
-                              style: TextStyle(
-                                color: Color(0xff637381),
-                                fontSize: 15,
-                                fontFamily:
-                                    box.read("language").toString() == "Fa"
-                                    ? Get.find<FontController>().currentFont
-                                    : null,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.right,
+                      Visibility(
+                        visible: notes != null,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            KText(
+                              text: languagesController.tr("NOTES"),
+                              color: Color(0xff637381),
+                              fontSize: 15,
                             ),
-                          ),
-                        ],
+                            Expanded(
+                              child: Text(
+                                notes.toString(),
+                                style: TextStyle(
+                                  color: Color(0xff637381),
+                                  fontSize: 15,
+                                  fontFamily:
+                                      box.read("language").toString() == "Fa"
+                                      ? Get.find<FontController>().currentFont
+                                      : null,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       SizedBox(height: 10),
                       Container(

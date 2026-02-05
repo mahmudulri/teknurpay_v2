@@ -35,8 +35,9 @@ class AddPaymentController extends GetxController {
   RxBool isLoading = false.obs;
 
   Future<void> pickImage(String type) async {
-    final pickedImageFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+    final pickedImageFile = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedImageFile != null) {
       final file = File(pickedImageFile.path);
       if (type == 'payment') {
@@ -85,27 +86,33 @@ class AddPaymentController extends GetxController {
 
       // ✅ Add images only if selected
       if (paymentImagePath.value.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'payment_image',
-          paymentImagePath.value,
-          filename: "payment_image.jpg",
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'payment_image',
+            paymentImagePath.value,
+            filename: "payment_image.jpg",
+          ),
+        );
       }
 
       if (extraImage1Path.value.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'extra_image_1',
-          extraImage1Path.value,
-          filename: "extra_image_1.jpg",
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'extra_image_1',
+            extraImage1Path.value,
+            filename: "extra_image_1.jpg",
+          ),
+        );
       }
 
       if (extraImage2Path.value.isNotEmpty) {
-        request.files.add(await http.MultipartFile.fromPath(
-          'extra_image_2',
-          extraImage2Path.value,
-          filename: "extra_image_2.jpg",
-        ));
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'extra_image_2',
+            extraImage2Path.value,
+            filename: "extra_image_2.jpg",
+          ),
+        );
       }
 
       var responseStream = await request.send();
@@ -115,6 +122,10 @@ class AddPaymentController extends GetxController {
       print("Response: ${responseBody.body}");
 
       if (responseStream.statusCode == 201) {
+        amountController.clear();
+        trackingCodeController.clear();
+        noteController.clear();
+
         Fluttertoast.showToast(
           msg: "Successfully Created",
           toastLength: Toast.LENGTH_SHORT,
