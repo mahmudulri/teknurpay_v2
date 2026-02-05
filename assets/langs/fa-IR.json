@@ -262,7 +262,24 @@
 "ENTER_REQUIRED_DATA": "اطلاعات مورد نیاز را وارد کنید",
 "ENTER_ID": "شناسه را وارد کنید",
 "PIN": "پین",
-"ADDRESS": "آدرس"
+"ADDRESS": "آدرس",
+"END_DATE": "تاریخ پایان",
+"START_DATE": "تاریخ شروع",
+"FILTER_TRANSACTION": "فیلتر تراکنش",
+"SELECT_CATEGORY": "انتخاب دسته‌بندی",
+"TYPE": "نوع",
+"CATEGORY": "دسته‌بندی",
+"WARNING": "هشدار",
+"SELECT_START_DATE_FIRST": "لطفاً ابتدا تاریخ شروع را انتخاب کنید",
+"ADMIN_TO_RESELLER": "از مدیر به نماینده",
+"RESELLER_TO_ADMIN": "از نماینده به مدیر",
+"MONEY_TRANSFER": "انتقال پول",
+"ORDER": "سفارش",
+"PURPOSE": "هدف",
+"SELECT_PURPOSE": "انتخاب هدف"
+
+
+
 
 
 

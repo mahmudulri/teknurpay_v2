@@ -262,7 +262,24 @@
 "ENTER_REQUIRED_DATA": "Enter required data",
 "ENTER_ID": "Enter ID",
 "PIN": "PIN",
-"ADDRESS": "Address"
+"ADDRESS": "Address",
+"END_DATE": "End date",
+"START_DATE": "Start date",
+"FILTER_TRANSACTION": "Filter transaction",
+"SELECT_CATEGORY": "Select category",
+"TYPE": "Type",
+"CATEGORY": "Category",
+"WARNING": "Warning",
+"SELECT_START_DATE_FIRST": "Select start date first",
+"ADMIN_TO_RESELLER": "Admin to reseller",
+"RESELLER_TO_ADMIN": "Reseller to admin",
+"MONEY_TRANSFER": "Money transfer",
+"ORDER": "Order",
+"PURPOSE": "Purpose",
+"SELECT_PURPOSE": "Select purpose"
+
+
+
 
 
 

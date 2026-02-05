@@ -262,7 +262,24 @@
 "ENTER_REQUIRED_DATA": "اړین معلومات دننه کړئ",
 "ENTER_ID": "شناسه دننه کړئ",
 "PIN": "پین",
-"ADDRESS": "پته"
+"ADDRESS": "پته",
+"END_DATE": "د پای نېټه",
+"START_DATE": "د پیل نېټه",
+"FILTER_TRANSACTION": "راکړه ورکړه فلټر کړئ",
+"SELECT_CATEGORY": "کټګوري وټاکئ",
+"TYPE": "ډول",
+"CATEGORY": "کټګوري",
+"WARNING": "خبرداری",
+"SELECT_START_DATE_FIRST": "مهرباني وکړئ لومړی د پیل نېټه وټاکئ",
+"ADMIN_TO_RESELLER": "له اډمین څخه پلورونکي ته",
+"RESELLER_TO_ADMIN": "له پلورونکي څخه اډمین ته",
+"MONEY_TRANSFER": "د پیسو لېږد",
+"ORDER": "فرمایش",
+"PURPOSE": "موخه",
+"SELECT_PURPOSE": "موخه وټاکئ"
+
+
+
 
 
 

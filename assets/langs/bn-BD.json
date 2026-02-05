@@ -262,7 +262,23 @@
 "ENTER_REQUIRED_DATA": "প্রয়োজনীয় তথ্য লিখুন",
 "ENTER_ID": "আইডি লিখুন",
 "PIN": "পিন",
-"ADDRESS": "ঠিকানা"
+"ADDRESS": "ঠিকানা",
+"END_DATE": "শেষ তারিখ",
+"START_DATE": "শুরুর তারিখ",
+"FILTER_TRANSACTION": "লেনদেন ফিল্টার করুন",
+"SELECT_CATEGORY": "ক্যাটাগরি নির্বাচন করুন",
+"TYPE": "ধরন",
+"CATEGORY": "ক্যাটাগরি",
+"WARNING": "সতর্কতা",
+"SELECT_START_DATE_FIRST": "অনুগ্রহ করে প্রথমে শুরুর তারিখ নির্বাচন করুন",
+"ADMIN_TO_RESELLER": "অ্যাডমিন থেকে রিসেলার",
+"RESELLER_TO_ADMIN": "রিসেলার থেকে অ্যাডমিন",
+"MONEY_TRANSFER": "মানি ট্রান্সফার",
+"ORDER": "অর্ডার",
+"PURPOSE": "উদ্দেশ্য",
+"SELECT_PURPOSE": "উদ্দেশ্য নির্বাচন করুন"
+
+
 
 
 

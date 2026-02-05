@@ -262,7 +262,24 @@
 "ENTER_REQUIRED_DATA": "Gerekli bilgileri girin",
 "ENTER_ID": "Kimlik girin",
 "PIN": "PIN",
-"ADDRESS": "Adres"
+"ADDRESS": "Adres",
+"END_DATE": "Bitiş tarihi",
+"START_DATE": "Başlangıç tarihi",
+"FILTER_TRANSACTION": "İşlemleri filtrele",
+"SELECT_CATEGORY": "Kategori seç",
+"TYPE": "Tür",
+"CATEGORY": "Kategori",
+"WARNING": "Uyarı",
+"SELECT_START_DATE_FIRST": "Önce başlangıç tarihini seçin",
+"ADMIN_TO_RESELLER": "Yöneticiden bayiye",
+"RESELLER_TO_ADMIN": "Bayiden yöneticiye",
+"MONEY_TRANSFER": "Para transferi",
+"ORDER": "Sipariş",
+"PURPOSE": "Amaç",
+"SELECT_PURPOSE": "Amaç seç"
+
+
+
 
 
 

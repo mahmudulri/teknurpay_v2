@@ -262,7 +262,24 @@
 "ENTER_REQUIRED_DATA": "أدخل البيانات المطلوبة",
 "ENTER_ID": "أدخل المعرف",
 "PIN": "الرقم السري",
-"ADDRESS": "العنوان"
+"ADDRESS": "العنوان",
+"END_DATE": "تاريخ الانتهاء",
+"START_DATE": "تاريخ البدء",
+"FILTER_TRANSACTION": "تصفية المعاملات",
+"SELECT_CATEGORY": "اختر الفئة",
+"TYPE": "النوع",
+"CATEGORY": "الفئة",
+"WARNING": "تحذير",
+"SELECT_START_DATE_FIRST": "يرجى اختيار تاريخ البدء أولاً",
+"ADMIN_TO_RESELLER": "من المشرف إلى الموزع",
+"RESELLER_TO_ADMIN": "من الموزع إلى المشرف",
+"MONEY_TRANSFER": "تحويل الأموال",
+"ORDER": "طلب",
+"PURPOSE": "الغرض",
+"SELECT_PURPOSE": "اختر الغرض"
+
+
+
 
 
 

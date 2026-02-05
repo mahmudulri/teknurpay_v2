@@ -203,72 +203,72 @@ class _HawalaScreenState extends State<HawalaScreen> {
                         hinttext: "",
                         controller: addHawalaController.receiverNameController,
                       ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Text(
-                            languagesController.tr("RECEIVER_FATHERS_NAME"),
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: screenHeight * 0.020,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            "(${languagesController.tr("OPTIONAL")})",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: screenHeight * 0.018,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Authtextfield(
-                        hinttext: "",
-                        controller: addHawalaController.fatherNameController,
-                      ),
-                      SizedBox(height: 5),
-                      Row(
-                        children: [
-                          Text(
-                            languagesController.tr("RECEIVER_ID_CARD_NUMBER"),
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: screenHeight * 0.020,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            "(${languagesController.tr("OPTIONAL")})",
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: screenHeight * 0.018,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 5),
-                      Authtextfield(
-                        hinttext: "",
-                        controller: addHawalaController.idcardController,
-                      ),
+                      // SizedBox(height: 10),
+                      // Row(
+                      //   children: [
+                      //     Text(
+                      //       languagesController.tr("RECEIVER_FATHERS_NAME"),
+                      //       style: TextStyle(
+                      //         color: Colors.grey.shade600,
+                      //         fontSize: screenHeight * 0.020,
+                      //         fontFamily:
+                      //             box.read("language").toString() == "Fa"
+                      //             ? Get.find<FontController>().currentFont
+                      //             : null,
+                      //       ),
+                      //     ),
+                      //     SizedBox(width: 8),
+                      //     Text(
+                      //       "(${languagesController.tr("OPTIONAL")})",
+                      //       style: TextStyle(
+                      //         color: Colors.grey.shade600,
+                      //         fontSize: screenHeight * 0.018,
+                      //         fontFamily:
+                      //             box.read("language").toString() == "Fa"
+                      //             ? Get.find<FontController>().currentFont
+                      //             : null,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // SizedBox(height: 5),
+                      // Authtextfield(
+                      //   hinttext: "",
+                      //   controller: addHawalaController.fatherNameController,
+                      // ),
+                      // SizedBox(height: 5),
+                      // Row(
+                      //   children: [
+                      //     Text(
+                      //       languagesController.tr("RECEIVER_ID_CARD_NUMBER"),
+                      //       style: TextStyle(
+                      //         color: Colors.grey.shade600,
+                      //         fontSize: screenHeight * 0.020,
+                      //         fontFamily:
+                      //             box.read("language").toString() == "Fa"
+                      //             ? Get.find<FontController>().currentFont
+                      //             : null,
+                      //       ),
+                      //     ),
+                      //     SizedBox(width: 8),
+                      //     Text(
+                      //       "(${languagesController.tr("OPTIONAL")})",
+                      //       style: TextStyle(
+                      //         color: Colors.grey.shade600,
+                      //         fontSize: screenHeight * 0.018,
+                      //         fontFamily:
+                      //             box.read("language").toString() == "Fa"
+                      //             ? Get.find<FontController>().currentFont
+                      //             : null,
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // SizedBox(height: 5),
+                      // Authtextfield(
+                      //   hinttext: "",
+                      //   controller: addHawalaController.idcardController,
+                      // ),
                       SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
