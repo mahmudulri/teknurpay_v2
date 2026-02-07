@@ -26,6 +26,7 @@ import '../screens/country_selection.dart';
 import '../screens/service_screen.dart';
 import '../utils/colors.dart';
 import '../widgets/bottomsheet.dart';
+import 'package:intl/intl.dart';
 
 class Homepages extends StatefulWidget {
   Homepages({super.key});
@@ -58,6 +59,8 @@ class _HomepagesState extends State<Homepages> {
   final box = GetStorage();
 
   final confirmPinController = Get.find<ConfirmPinController>();
+
+  final NumberFormat _formatter = NumberFormat('#,##0');
 
   LanguagesController languagesController = Get.put(LanguagesController());
   MyDrawerController drawerController = Get.put(MyDrawerController());
@@ -598,6 +601,7 @@ class _HomepagesState extends State<Homepages> {
                                         ],
                                       ),
                                       Spacer(),
+
                                       Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
@@ -609,10 +613,18 @@ class _HomepagesState extends State<Homepages> {
                                                         .value ==
                                                     false
                                                 ? Text(
-                                                    dashboardController
-                                                        .userBalanceController
-                                                        .balance
-                                                        .toString(),
+                                                    NumberFormat.currency(
+                                                      locale: 'en_US',
+                                                      symbol: '',
+                                                      decimalDigits: 2,
+                                                    ).format(
+                                                      double.parse(
+                                                        dashboardController
+                                                            .userBalanceController
+                                                            .balance
+                                                            .toString(),
+                                                      ),
+                                                    ),
                                                     style: TextStyle(
                                                       color: Colors.black,
                                                       fontWeight:

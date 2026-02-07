@@ -1127,7 +1127,7 @@ class PaymentMethodBox extends StatelessWidget {
                                 Expanded(
                                   child: Text(
                                     accountNumber.toString(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,

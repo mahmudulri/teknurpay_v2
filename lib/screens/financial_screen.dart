@@ -302,7 +302,12 @@ class BalanceBox extends StatelessWidget {
               ),
               Spacer(),
               Text(
-                balance.toString(),
+                NumberFormat.currency(
+                  locale: 'en_US',
+                  symbol: '',
+                  decimalDigits: 2,
+                ).format(double.parse(balance.toString())),
+
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
               ),
               SizedBox(width: 6),
