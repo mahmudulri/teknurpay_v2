@@ -392,27 +392,47 @@ class _SignInScreenState extends State<SignInScreen> {
                           ? languagesController.tr("LOGIN")
                           : languagesController.tr("PLEASE_WAIT"),
                       height: 50,
+
                       onpressed: () async {
-                        if (signInController.usernameController.text.isEmpty ||
-                            signInController.passwordController.text.isEmpty) {
+                        if (signInController.usernameController.text
+                                .trim()
+                                .isEmpty ||
+                            signInController.passwordController.text
+                                .trim()
+                                .isEmpty) {
                           Get.snackbar("Oops!", "Fill the text fields");
-                        } else {
-                          print("Attempting login...");
-                          await signInController.signIn();
-
-                          if (signInController.loginsuccess.value == false) {
-                            dashboardController.fetchDashboardData();
-
-                            Get.toNamed(basescreen);
-                          } else {
-                            print("Navigation conditions not met.");
-                          }
+                          return;
                         }
+
+                        await signInController.signIn();
                       },
                     ),
                   ),
 
-                  SizedBox(height: 80),
+                  // SizedBox(height: 20),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  //   children: [
+                  //     GestureDetector(
+                  //       onTap: () {
+                  //         signInController.usernameController.text =
+                  //             "01986072587";
+                  //         signInController.passwordController.text = "00000000";
+                  //       },
+                  //       child: Text("01986"),
+                  //     ),
+                  //     SizedBox(width: 10),
+                  //     GestureDetector(
+                  //       onTap: () {
+                  //         signInController.usernameController.text =
+                  //             "0796321768";
+                  //         signInController.passwordController.text = "00000000";
+                  //       },
+                  //       child: Text("0796321"),
+                  //     ),
+                  //   ],
+                  // ),
+                  SizedBox(height: 60),
                   Container(
                     height: 60,
                     width: screenWidth,

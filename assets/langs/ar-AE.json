@@ -276,15 +276,15 @@
 "MONEY_TRANSFER": "تحويل الأموال",
 "ORDER": "طلب",
 "PURPOSE": "الغرض",
-"SELECT_PURPOSE": "اختر الغرض"
-
-
-
-
-
-
-
-
+"SELECT_PURPOSE": "اختر الغرض",
+"EXCHANGE_RATE": "سعر الصرف",
+"BANK_NAME": "اسم البنك",
+"HOLDER_NAME": "اسم صاحب الحساب",
+"ACCOUNT_HOLDER_NAME": "اسم صاحب الحساب",
+"CARD_NUMBER": "رقم البطاقة",
+"ACCOUNT_NUMBER": "رقم الحساب",
+"SEBA_NUMBER": "رقم سيبا",
+"DETAILS": "التفاصيل"
 
 
 

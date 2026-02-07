@@ -276,7 +276,16 @@
 "MONEY_TRANSFER": "انتقال پول",
 "ORDER": "سفارش",
 "PURPOSE": "هدف",
-"SELECT_PURPOSE": "انتخاب هدف"
+"SELECT_PURPOSE": "انتخاب هدف",
+"EXCHANGE_RATE": "نرخ ارز",
+"BANK_NAME": "نام بانک",
+"HOLDER_NAME": "نام دارنده",
+"ACCOUNT_HOLDER_NAME": "نام صاحب حساب",
+"CARD_NUMBER": "شماره کارت",
+"ACCOUNT_NUMBER": "شماره حساب",
+"SEBA_NUMBER": "شماره شبا",
+"DETAILS": "جزئیات"
+
 
 
 

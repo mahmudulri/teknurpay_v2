@@ -13,7 +13,7 @@ import '../global_controller/page_controller.dart';
 import '../widgets/bottomsheet.dart';
 
 class HawalaCurrencyScreen extends StatefulWidget {
-  const HawalaCurrencyScreen({super.key});
+  HawalaCurrencyScreen({super.key});
 
   @override
   State<HawalaCurrencyScreen> createState() => _HawalaCurrencyScreenState();
@@ -22,8 +22,9 @@ class HawalaCurrencyScreen extends StatefulWidget {
 class _HawalaCurrencyScreenState extends State<HawalaCurrencyScreen> {
   final box = GetStorage();
 
-  HawalaCurrencyController hawalacurrencycontroller =
-      Get.put(HawalaCurrencyController());
+  HawalaCurrencyController hawalacurrencycontroller = Get.put(
+    HawalaCurrencyController(),
+  );
 
   LanguagesController languagesController = Get.put(LanguagesController());
 
@@ -31,11 +32,13 @@ class _HawalaCurrencyScreenState extends State<HawalaCurrencyScreen> {
   @override
   void initState() {
     super.initState();
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.white, // Status bar background color
-      statusBarIconBrightness: Brightness.dark, // For Android
-      statusBarBrightness: Brightness.light, // For iOS
-    ));
+    SystemChrome.setSystemUIOverlayStyle(
+      SystemUiOverlayStyle(
+        statusBarColor: Colors.white, // Status bar background color
+        statusBarIconBrightness: Brightness.dark, // For Android
+        statusBarBrightness: Brightness.light, // For iOS
+      ),
+    );
     hawalacurrencycontroller.fetchcurrency();
   }
 
@@ -57,7 +60,7 @@ class _HawalaCurrencyScreenState extends State<HawalaCurrencyScreen> {
               padding: EdgeInsets.only(left: 15, right: 15, top: 40),
               child: Center(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
+                  padding: EdgeInsets.symmetric(horizontal: 0),
                   child: Row(
                     children: [
                       GestureDetector(
@@ -103,85 +106,301 @@ class _HawalaCurrencyScreenState extends State<HawalaCurrencyScreen> {
                 ),
               ),
             ),
-            SizedBox(
-              height: 10,
-            ),
+
             Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(12.0),
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.2),
-                      spreadRadius: 2,
-                      blurRadius: 2,
-                      offset: Offset(0, 0),
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 20,
+                      offset: Offset(0, 4),
                     ),
                   ],
-                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Obx(
                   () => hawalacurrencycontroller.isLoading.value == false
                       ? SizedBox(
-                          height: screenHeight *
-                              0.7, // এখানে আপনি নিজে height fix করে দিন
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: ListView.builder(
-                              padding: EdgeInsets.all(0.0),
-                              itemCount: hawalacurrencycontroller
-                                  .allcurrencylist.value.data!.rates!.length,
-                              itemBuilder: (context, index) {
-                                final data = hawalacurrencycontroller
-                                    .allcurrencylist.value.data!.rates![index];
-                                return Container(
-                                  margin: EdgeInsets.only(bottom: 5),
-                                  width: screenWidth,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffEEF4FF),
-                                    borderRadius: BorderRadius.circular(10),
+                          height: screenHeight * 0.7,
+                          child: Column(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Color(0xff4A90E2),
+                                      Color(0xff357ABD),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Center(
-                                      child: Obx(
-                                        () => Text(
-                                          data.amount.toString() +
-                                              " " +
-                                              data.fromCurrency!.name
-                                                  .toString() +
-                                              " To " +
-                                              data.toCurrency!.name.toString() +
-                                              " " +
-                                              languagesController.tr("BUYING") +
-                                              " " +
-                                              data.buyRate.toString() +
-                                              " " +
-                                              data.toCurrency!.symbol
-                                                  .toString() +
-                                              " " +
-                                              languagesController
-                                                  .tr("SELLING") +
-                                              " " +
-                                              data.sellRate.toString() +
-                                              " " +
-                                              data.toCurrency!.symbol
-                                                  .toString(),
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: screenHeight * 0.020,
-                                          ),
-                                        ),
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(16),
+                                    topRight: Radius.circular(16),
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.currency_exchange,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Text(
+                                      languagesController.tr("EXCHANGE_RATE"),
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenHeight * 0.020,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                            ),
+                                  ],
+                                ),
+                              ),
+                              Expanded(
+                                child: ListView.builder(
+                                  padding: EdgeInsets.all(16),
+                                  itemCount: hawalacurrencycontroller
+                                      .allcurrencylist
+                                      .value
+                                      .data!
+                                      .rates!
+                                      .length,
+                                  itemBuilder: (context, index) {
+                                    final data = hawalacurrencycontroller
+                                        .allcurrencylist
+                                        .value
+                                        .data!
+                                        .rates![index];
+                                    return Container(
+                                      margin: EdgeInsets.only(bottom: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Color(0xffF8FBFF),
+                                            Color(0xffEEF4FF),
+                                          ],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Color(
+                                            0xff4A90E2,
+                                          ).withOpacity(0.2),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16.0),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Color(0xff4A90E2),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    '${data.amount} ${data.fromCurrency!.name}',
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 8),
+                                                Icon(
+                                                  Icons.arrow_forward,
+                                                  color: Color(0xff4A90E2),
+                                                  size: 20,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 12,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white,
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          20,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: Color(0xff4A90E2),
+                                                      width: 1.5,
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    data.toCurrency!.name
+                                                        .toString(),
+                                                    style: TextStyle(
+                                                      color: Color(0xff4A90E2),
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      fontSize: 13,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            SizedBox(height: 12),
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(12),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .arrow_downward,
+                                                              color:
+                                                                  Colors.green,
+                                                              size: 16,
+                                                            ),
+                                                            SizedBox(width: 6),
+                                                            Obx(
+                                                              () => Text(
+                                                                languagesController
+                                                                    .tr(
+                                                                      "BUYING",
+                                                                    ),
+                                                                style: TextStyle(
+                                                                  color: Colors
+                                                                      .grey[600],
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 6),
+                                                        Text(
+                                                          '${data.buyRate} ${data.toCurrency!.symbol}',
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .green[700],
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                                SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Container(
+                                                    padding: EdgeInsets.all(12),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.white,
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            8,
+                                                          ),
+                                                    ),
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          children: [
+                                                            Icon(
+                                                              Icons
+                                                                  .arrow_upward,
+                                                              color:
+                                                                  Colors.orange,
+                                                              size: 16,
+                                                            ),
+                                                            SizedBox(width: 6),
+                                                            Obx(
+                                                              () => Text(
+                                                                languagesController
+                                                                    .tr(
+                                                                      "SELLING",
+                                                                    ),
+                                                                style: TextStyle(
+                                                                  color: Colors
+                                                                      .grey[600],
+                                                                  fontSize: 12,
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w500,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        SizedBox(height: 6),
+                                                        Text(
+                                                          '${data.sellRate} ${data.toCurrency!.symbol}',
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .orange[700],
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         )
-                      : Center(child: CircularProgressIndicator()),
+                      : Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Color(0xff4A90E2),
+                            ),
+                          ),
+                        ),
                 ),
               ),
             ),

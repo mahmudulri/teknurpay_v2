@@ -31,48 +31,86 @@ class PaymentMethodModel {
       );
 
   Map<String, dynamic> toJson() => {
-        "success": success,
-        "code": code,
-        "message": message,
-        "data": data!.toJson(),
-        "payload": List<dynamic>.from(payload!.map((x) => x)),
-      };
+    "success": success,
+    "code": code,
+    "message": message,
+    "data": data!.toJson(),
+    "payload": List<dynamic>.from(payload!.map((x) => x)),
+  };
 }
 
 class Data {
   final List<PaymentMethod>? paymentMethods;
 
-  Data({
-    this.paymentMethods,
-  });
+  Data({this.paymentMethods});
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-        paymentMethods: List<PaymentMethod>.from(
-            json["payment_methods"].map((x) => PaymentMethod.fromJson(x))),
-      );
+    paymentMethods: List<PaymentMethod>.from(
+      json["payment_methods"].map((x) => PaymentMethod.fromJson(x)),
+    ),
+  );
 
   Map<String, dynamic> toJson() => {
-        "payment_methods":
-            List<dynamic>.from(paymentMethods!.map((x) => x.toJson())),
-      };
+    "payment_methods": List<dynamic>.from(
+      paymentMethods!.map((x) => x.toJson()),
+    ),
+  };
 }
 
 class PaymentMethod {
   final int? id;
   final String? methodName;
+  final String? bankName;
+  final String? accountHolderName;
+  final String? cardNumber;
+  final String? accountNumber;
+  final dynamic shebaNumber;
+  final String? notes;
+  final String? accountDetails;
+  final String? accountImage;
 
   PaymentMethod({
     this.id,
     this.methodName,
+    this.bankName,
+    this.accountHolderName,
+    this.cardNumber,
+    this.accountNumber,
+    this.shebaNumber,
+    this.notes,
+    this.accountDetails,
+    this.accountImage,
   });
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) => PaymentMethod(
-        id: json["id"] == null ? null : json["id"],
-        methodName: json["method_name"] == null ? null : json["method_name"],
-      );
+    id: json["id"] == null ? null : json["id"],
+    methodName: json["method_name"] == null ? null : json["method_name"],
+    bankName: json["bank_name"] == null ? null : json["bank_name"],
+    accountHolderName: json["account_holder_name"] == null
+        ? null
+        : json["account_holder_name"],
+    cardNumber: json["card_number"] == null ? null : json["card_number"],
+    accountNumber: json["account_number"] == null
+        ? null
+        : json["account_number"],
+    shebaNumber: json["sheba_number"] == null ? null : json["sheba_number"],
+    notes: json["notes"] == null ? null : json["notes"],
+    accountDetails: json["account_details"] == null
+        ? null
+        : json["account_details"],
+    accountImage: json["account_image"] == null ? null : json["account_image"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "method_name": methodName,
-      };
+    "id": id,
+    "method_name": methodName,
+    "bank_name": bankName,
+    "account_holder_name": accountHolderName,
+    "card_number": cardNumber,
+    "account_number": accountNumber,
+    "sheba_number": shebaNumber,
+    "notes": notes,
+    "account_details": accountDetails,
+    "account_image": accountImage,
+  };
 }

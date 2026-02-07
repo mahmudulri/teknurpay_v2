@@ -12,16 +12,22 @@ class DashboardController extends GetxController {
   }
 
   var isLoading = false.obs;
+  final deactiveStatus = ''.obs;
+  final deactivateMessage = ''.obs;
 
   var alldashboardData = DashboardDataModel().obs;
 
   UserBalanceController userBalanceController = Get.put(
     UserBalanceController(),
   );
+  void setDeactivated(String status, String message) {
+    deactiveStatus.value = status;
+    deactivateMessage.value = message;
+  }
 
-  void fetchDashboardData() async {
+  Future<void> fetchDashboardData() async {
     try {
-      isLoading(true);
+      isLoading.value = true;
       await DashboardApi().fetchDashboard().then((value) {
         alldashboardData.value = value;
         userBalanceController.balance.value = alldashboardData
@@ -29,12 +35,11 @@ class DashboardController extends GetxController {
             .data!
             .balance
             .toString();
-        isLoading(false);
       });
-
-      isLoading(false);
     } catch (e) {
-      print(e.toString());
+      print("Error: $e");
+    } finally {
+      isLoading.value = false;
     }
   }
 }

@@ -276,7 +276,16 @@
 "MONEY_TRANSFER": "د پیسو لېږد",
 "ORDER": "فرمایش",
 "PURPOSE": "موخه",
-"SELECT_PURPOSE": "موخه وټاکئ"
+"SELECT_PURPOSE": "موخه وټاکئ",
+"EXCHANGE_RATE": "د تبادلې نرخ",
+"BANK_NAME": "د بانک نوم",
+"HOLDER_NAME": "د حساب لرونکي نوم",
+"ACCOUNT_HOLDER_NAME": "د حساب لرونکي نوم",
+"CARD_NUMBER": "د کارت شمېره",
+"ACCOUNT_NUMBER": "د حساب شمېره",
+"SEBA_NUMBER": "د سیبا شمېره",
+"DETAILS": "تفصیلات"
+
 
 
 

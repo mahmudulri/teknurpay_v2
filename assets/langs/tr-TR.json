@@ -276,7 +276,16 @@
 "MONEY_TRANSFER": "Para transferi",
 "ORDER": "Sipariş",
 "PURPOSE": "Amaç",
-"SELECT_PURPOSE": "Amaç seç"
+"SELECT_PURPOSE": "Amaç seç",
+"EXCHANGE_RATE": "Döviz kuru",
+"BANK_NAME": "Banka adı",
+"HOLDER_NAME": "Hesap sahibi adı",
+"ACCOUNT_HOLDER_NAME": "Hesap sahibi adı",
+"CARD_NUMBER": "Kart numarası",
+"ACCOUNT_NUMBER": "Hesap numarası",
+"SEBA_NUMBER": "SEBA numarası",
+"DETAILS": "Detaylar"
+
 
 
 

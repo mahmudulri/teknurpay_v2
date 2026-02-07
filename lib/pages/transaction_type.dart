@@ -51,7 +51,6 @@ class _TransactionsTypeState extends State<TransactionsType> {
         statusBarBrightness: Brightness.light, // For iOS
       ),
     );
-    transactionController.fetchTransactionData();
   }
 
   @override
@@ -164,10 +163,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/wallet.png",
                         mycolor: Color(0xff04B75D),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            ReceiptsScreen(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              ReceiptsScreen(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                       SizedBox(height: 10),
@@ -178,10 +196,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/transactionsicon.png",
                         mycolor: Color(0xff3498db),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            RequestLoanScreen(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              RequestLoanScreen(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                       SizedBox(height: 10),
@@ -190,10 +227,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/exchange.png",
                         mycolor: Color(0xffFE8F2D),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            HawalaListScreen(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              HawalaListScreen(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                       SizedBox(height: 10),
@@ -202,10 +258,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/exchange-rate.png",
                         mycolor: Color(0xff4B7AFC),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            HawalaCurrencyScreen(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              HawalaCurrencyScreen(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                       SizedBox(height: 10),
@@ -216,10 +291,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/transactionsicon.png",
                         mycolor: Color(0xffDE4B5E),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            Transactions(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              Transactions(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                       SizedBox(height: 10),
@@ -230,10 +324,29 @@ class _TransactionsTypeState extends State<TransactionsType> {
                         imagelink: "assets/icons/transactionsicon.png",
                         mycolor: Color(0xff9b59b6),
                         onpressed: () {
-                          mypagecontroller.changePage(
-                            CommissionTransferScreen(),
-                            isMainPage: false,
-                          );
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              CommissionTransferScreen(),
+                              isMainPage: false,
+                            );
+                          }
                         },
                       ),
                     ],

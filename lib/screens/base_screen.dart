@@ -2,11 +2,12 @@ import 'dart:io'; // for exit(0)
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:teknurpay/services/dashboard_service.dart';
 import 'package:teknurpay/utils/colors.dart';
 
-import '../controllers/slider_controller.dart';
 import '../global_controller/languages_controller.dart';
 import '../global_controller/page_controller.dart';
+import 'receipts_screen.dart';
 import 'service_screen.dart';
 
 class BaseScreen extends StatefulWidget {
@@ -17,7 +18,6 @@ class BaseScreen extends StatefulWidget {
 class _BaseScreenState extends State<BaseScreen> {
   final Mypagecontroller mypagecontroller = Get.put(Mypagecontroller());
   LanguagesController languagesController = Get.put(LanguagesController());
-  final sliderController = Get.find<SliderController>();
 
   final List<String> namesKeys = ["HOME", "TRANSACTIONS", "ORDERS", "NETWORK"];
 
@@ -34,7 +34,6 @@ class _BaseScreenState extends State<BaseScreen> {
   void initState() {
     super.initState();
 
-    sliderController.fetchSliderData();
     mypagecontroller.setUpdateIndexCallback((index) {
       setState(() {
         selectedIndex = index;
@@ -105,7 +104,26 @@ class _BaseScreenState extends State<BaseScreen> {
 
               child: FloatingActionButton(
                 onPressed: () {
-                  // Get.to(ServiceScreen());
+                  if (dashboardController.deactiveStatus.value
+                          .trim()
+                          .toLowerCase() ==
+                      "deactivated") {
+                    Get.snackbar(
+                      dashboardController.deactiveStatus.toString(),
+                      dashboardController.deactivateMessage.toString(),
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: Colors.redAccent,
+                      colorText: Colors.white,
+                      margin: const EdgeInsets.all(12),
+                      duration: const Duration(seconds: 1),
+                      icon: const Icon(Icons.block, color: Colors.white),
+                    );
+                  } else {
+                    mypagecontroller.changePage(
+                      ReceiptsScreen(),
+                      isMainPage: false,
+                    );
+                  }
                 },
                 backgroundColor: AppColors.primarycolor2,
                 elevation: 6,

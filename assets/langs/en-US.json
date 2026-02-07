@@ -276,7 +276,16 @@
 "MONEY_TRANSFER": "Money transfer",
 "ORDER": "Order",
 "PURPOSE": "Purpose",
-"SELECT_PURPOSE": "Select purpose"
+"SELECT_PURPOSE": "Select purpose",
+"EXCHANGE_RATE": "Exchange rate",
+"BANK_NAME": "Bank name",
+"HOLDER_NAME": "Holder name",
+"ACCOUNT_HOLDER_NAME": "Account holder name",
+"CARD_NUMBER": "Card number",
+"ACCOUNT_NUMBER": "Account number",
+"SEBA_NUMBER": "SEBA number",
+"DETAILS": "Details"
+
 
 
 

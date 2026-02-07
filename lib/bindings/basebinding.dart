@@ -18,7 +18,6 @@ import '../controllers/payments_controller.dart';
 import '../controllers/province_controller.dart';
 import '../controllers/service_controller.dart';
 import '../controllers/sign_in_controller.dart';
-import '../controllers/slider_controller.dart';
 import '../controllers/sub_reseller_controller.dart';
 import '../controllers/transaction_controller.dart';
 
@@ -41,7 +40,6 @@ class Basebinding implements Bindings {
     Get.lazyPut<DistrictController>(() => DistrictController());
     Get.lazyPut<ServiceController>(() => ServiceController());
     Get.lazyPut<CategorisListController>(() => CategorisListController());
-    Get.lazyPut<SliderController>(() => SliderController());
     Get.lazyPut<BundleController>(() => BundleController());
     Get.lazyPut<ConfirmPinController>(() => ConfirmPinController());
     Get.lazyPut<CustomHistoryController>(() => CustomHistoryController());

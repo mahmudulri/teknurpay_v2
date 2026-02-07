@@ -276,7 +276,16 @@
 "MONEY_TRANSFER": "মানি ট্রান্সফার",
 "ORDER": "অর্ডার",
 "PURPOSE": "উদ্দেশ্য",
-"SELECT_PURPOSE": "উদ্দেশ্য নির্বাচন করুন"
+"SELECT_PURPOSE": "উদ্দেশ্য নির্বাচন করুন",
+"EXCHANGE_RATE": "বিনিময় হার",
+"BANK_NAME": "ব্যাংকের নাম",
+"HOLDER_NAME": "হোল্ডারের নাম",
+"ACCOUNT_HOLDER_NAME": "অ্যাকাউন্ট হোল্ডারের নাম",
+"CARD_NUMBER": "কার্ড নম্বর",
+"ACCOUNT_NUMBER": "অ্যাকাউন্ট নম্বর",
+"SEBA_NUMBER": "সেবা নম্বর",
+"DETAILS": "বিস্তারিত"
+
 
 
 
