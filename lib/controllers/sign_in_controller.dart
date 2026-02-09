@@ -66,6 +66,10 @@ class SignInController extends GetxController {
           results["data"]["user_info"]["currency"]["code"],
         );
         box.write(
+          "currency_symbol",
+          results["data"]["user_info"]["currency"]["symbol"],
+        );
+        box.write(
           "countryID",
           results["data"]["user_info"]["reseller"]["country_id"],
         );
@@ -73,10 +77,7 @@ class SignInController extends GetxController {
           "currencypreferenceID",
           results["data"]["user_info"]["currency_preference_id"],
         );
-        box.write(
-          "currencyName",
-          results["data"]["user_info"]["currency"]["name"],
-        );
+
         box.write(
           "resellerrate",
           results["data"]["user_info"]["currency"]["exchange_rate_per_usd"],

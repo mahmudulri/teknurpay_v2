@@ -353,7 +353,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                   );
                                 },
                                 child: Container(
-                                  height: 240,
+                                  height: 260,
                                   width: screenWidth,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(10),
@@ -442,11 +442,14 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                                                     text: languagesController
                                                         .tr("PAYMENT_METHOD"),
                                                   ),
-                                                  Text(
-                                                    data
-                                                        .paymentMethod!
-                                                        .methodName
-                                                        .toString(),
+                                                  SizedBox(width: 10),
+                                                  Flexible(
+                                                    child: Text(
+                                                      data
+                                                          .paymentMethod!
+                                                          .methodName
+                                                          .toString(),
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -786,7 +789,7 @@ class PaymentDialog extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             Container(
-              height: 420,
+              height: 400,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(10),
@@ -808,8 +811,8 @@ class PaymentDialog extends StatelessWidget {
                   child: Column(
                     children: [
                       Container(
-                        height: 60,
-                        width: 60,
+                        height: 50,
+                        width: 50,
                         padding: const EdgeInsets.all(5.0),
                         child: Image.asset(
                           status.toString() == "pending"
@@ -817,7 +820,7 @@ class PaymentDialog extends StatelessWidget {
                               : status.toString() == "completed"
                               ? "assets/icons/successful.png"
                               : "assets/icons/rejected.png",
-                          height: 60,
+                          height: 50,
                         ),
                       ),
                       KText(
@@ -835,7 +838,7 @@ class PaymentDialog extends StatelessWidget {
                       ),
                       SizedBox(height: 10),
                       Container(
-                        height: 80,
+                        height: 70,
                         width: screenWidth,
                         // color: Colors.red,
                         child: ListView(
@@ -843,7 +846,7 @@ class PaymentDialog extends StatelessWidget {
                           children: [
                             Container(
                               width: 120,
-                              height: 80,
+                              height: 70,
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade300,
                                 borderRadius: BorderRadius.circular(8),
@@ -872,7 +875,7 @@ class PaymentDialog extends StatelessWidget {
                             SizedBox(width: 5),
                             Container(
                               width: 120,
-                              height: 80,
+                              height: 70,
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade300,
                                 borderRadius: BorderRadius.circular(8),
@@ -901,7 +904,7 @@ class PaymentDialog extends StatelessWidget {
                             SizedBox(width: 5),
                             Container(
                               width: 120,
-                              height: 80,
+                              height: 70,
                               decoration: BoxDecoration(
                                 color: Colors.grey.shade300,
                                 borderRadius: BorderRadius.circular(8),
@@ -930,7 +933,7 @@ class PaymentDialog extends StatelessWidget {
                           ],
                         ),
                       ),
-                      SizedBox(height: 40),
+                      SizedBox(height: 15),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -939,10 +942,13 @@ class PaymentDialog extends StatelessWidget {
                             color: Color(0xff637381),
                             fontSize: 15,
                           ),
-                          KText(
-                            text: paymentmethod.toString(),
-                            color: Color(0xff637381),
-                            fontSize: 15,
+                          SizedBox(width: 10),
+                          Flexible(
+                            child: KText(
+                              text: paymentmethod.toString(),
+                              color: Color(0xff637381),
+                              fontSize: 13,
+                            ),
                           ),
                         ],
                       ),

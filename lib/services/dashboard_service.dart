@@ -23,8 +23,8 @@ class DashboardApi {
     );
 
     final decoded = json.decode(response.body);
-    print("STATUS: ${response.statusCode}");
-    print("BODY: ${response.body}");
+    // print("STATUS: ${response.statusCode}");
+    // print("BODY: ${response.body}");
 
     if (response.statusCode == 403) {
       dashboardController.setDeactivated(

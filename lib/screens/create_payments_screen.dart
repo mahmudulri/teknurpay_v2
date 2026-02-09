@@ -59,9 +59,11 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
 
     if (picked != null) {
       mydate.value = picked;
+
       addPaymentController.selectedDate.value = DateFormat(
         'yyyy-MM-dd',
       ).format(picked);
+      print(addPaymentController.selectedDate.value.toString());
     }
   }
 
@@ -86,7 +88,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
       'yyyy-MM-dd',
     ).format(now);
     paymentMethodController.fetchmethods();
-    currencyController.fetchCurrency();
+    currencyController.fetchCurrencyList();
     paymentTypeController.fetchtypes();
     selectedcurrency.value = box.read("currency_code");
     addPaymentController.currencyID.value = box.read("countryID");
@@ -423,7 +425,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                                                 },
                                                             itemCount:
                                                                 currencyController
-                                                                    .allcurrency
+                                                                    .allcurrencylist
                                                                     .value
                                                                     .data!
                                                                     .currencies!
@@ -431,7 +433,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                                             itemBuilder: (context, index) {
                                                               final data =
                                                                   currencyController
-                                                                      .allcurrency
+                                                                      .allcurrencylist
                                                                       .value
                                                                       .data!
                                                                       .currencies![index];

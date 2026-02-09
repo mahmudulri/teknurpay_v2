@@ -26,6 +26,7 @@ import '../controllers/conversation_controller.dart';
 import '../controllers/dashboard_controller.dart';
 import '../controllers/recharge_config_controller.dart';
 import '../controllers/service_controller.dart';
+import '../global_controller/afghan_recharge_controller.dart';
 import '../global_controller/font_controller.dart';
 import '../widgets/button.dart';
 
@@ -41,14 +42,12 @@ class _CreditTransferState extends State<CreditTransfer> {
 
   final countryListController = Get.find<CountryListController>();
   LanguagesController languagesController = Get.put(LanguagesController());
-  CurrencyController currencyController = Get.put(CurrencyController());
-  RechargeConfigController configController = Get.put(
-    RechargeConfigController(),
-  );
+  final CurrencyController currencyController = Get.find<CurrencyController>();
 
   CustomRechargeController customRechargeController = Get.put(
     CustomRechargeController(),
   );
+
   final box = GetStorage();
   int selectedIndex = 0;
 
@@ -64,6 +63,9 @@ class _CreditTransferState extends State<CreditTransfer> {
   ConversationController conversationController = Get.put(
     ConversationController(),
   );
+
+  final AfghanRechargeController controller =
+      Get.find<AfghanRechargeController>();
 
   Future<void> refresh() async {
     final int totalPages =
@@ -104,11 +106,13 @@ class _CreditTransferState extends State<CreditTransfer> {
   @override
   void initState() {
     super.initState();
+    controller.reset();
+    configController.fetchrechargeConfig();
     conversationController.resetConversion();
     customRechargeController.amountController.clear();
     customRechargeController.numberController.clear();
 
-    currencyController.fetchCurrency();
+    currencyController.fetchCurrencyList();
 
     customhistoryController.finalList.clear();
     customhistoryController.initialpage = 1;
@@ -131,10 +135,9 @@ class _CreditTransferState extends State<CreditTransfer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   MyDrawerController drawerController = Get.put(MyDrawerController());
-
+  final Mypagecontroller mypagecontroller = Get.find();
   @override
   Widget build(BuildContext context) {
-    final Mypagecontroller mypagecontroller = Get.find();
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
     // ignore: deprecated_member_use
@@ -329,10 +332,7 @@ class _CreditTransferState extends State<CreditTransfer> {
                                 Expanded(
                                   child: TextField(
                                     keyboardType: TextInputType.phone,
-                                    onChanged: (value) {
-                                      conversationController.inputAmount.value =
-                                          double.tryParse(value) ?? 0.0;
-                                    },
+                                    onChanged: controller.calculate,
                                     controller: customRechargeController
                                         .amountController,
                                     decoration: InputDecoration(
@@ -355,6 +355,17 @@ class _CreditTransferState extends State<CreditTransfer> {
                             ),
                           ),
                         ),
+                        Obx(
+                          () => Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "${controller.convertedAmount.value.toStringAsFixed(2)} " +
+                                    "${controller.box.read("currency_symbol")}",
+                              ),
+                            ],
+                          ),
+                        ),
 
                         SizedBox(height: 8),
                         Container(
@@ -364,62 +375,6 @@ class _CreditTransferState extends State<CreditTransfer> {
                           ),
                           height: 80,
                           child: Obx(() {
-                            final convertedList = conversationController
-                                .getConvertedValues();
-
-                            double buyingPrice = 0.0;
-                            double sellingPrice = 0.0;
-                            String symbol = "";
-
-                            if (convertedList.isNotEmpty) {
-                              final item = convertedList.first;
-                              symbol = item['symbol'];
-                              double baseValue = item['value'];
-
-                              final configData =
-                                  configController.allsettings.value.data;
-
-                              double adjustPercent =
-                                  double.tryParse(
-                                    configData?.adjustValue ?? "0",
-                                  ) ??
-                                  0;
-
-                              bool isIncrease =
-                                  configData?.adjustType == "increase";
-
-                              buyingPrice = baseValue;
-
-                              double adjustedPrice = isIncrease
-                                  ? baseValue +
-                                        (baseValue * adjustPercent / 100)
-                                  : baseValue -
-                                        (baseValue * adjustPercent / 100);
-
-                              final sellingType = configData?.sellingAdjustType;
-                              final sellingValueStr =
-                                  configData?.sellingAdjustValue;
-
-                              if (sellingValueStr == null ||
-                                  sellingValueStr.isEmpty) {
-                                sellingPrice =
-                                    adjustedPrice + (adjustedPrice * 5 / 100);
-                              } else {
-                                double sellingPercent =
-                                    double.tryParse(sellingValueStr) ?? 0;
-                                bool sellingIncrease =
-                                    sellingType == "increase";
-
-                                sellingPrice = sellingIncrease
-                                    ? adjustedPrice +
-                                          (adjustedPrice * sellingPercent / 100)
-                                    : adjustedPrice -
-                                          (adjustedPrice *
-                                              sellingPercent /
-                                              100);
-                              }
-                            }
-
                             return Padding(
                               padding: EdgeInsets.symmetric(
                                 horizontal: 8,
@@ -429,72 +384,81 @@ class _CreditTransferState extends State<CreditTransfer> {
                                 children: [
                                   // Buying Price
                                   Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: AppColors.primaryColor,
-                                          width: 1.5,
+                                    child: GestureDetector(
+                                      onTap: () {},
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          border: Border.all(
+                                            color: AppColors.primaryColor,
+                                            width: 1.5,
+                                          ),
                                         ),
-                                      ),
-                                      padding: EdgeInsets.all(10),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
-                                            children: [
-                                              Container(
-                                                padding: EdgeInsets.all(4),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.orange[100],
-                                                  borderRadius:
-                                                      BorderRadius.circular(6),
+                                        padding: EdgeInsets.all(10),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Container(
+                                                  padding: EdgeInsets.all(4),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.orange[100],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          6,
+                                                        ),
+                                                  ),
+                                                  child: Icon(
+                                                    Icons
+                                                        .arrow_downward_rounded,
+                                                    size: 12,
+                                                    color: Colors.orange[700],
+                                                  ),
                                                 ),
-                                                child: Icon(
-                                                  Icons.arrow_downward_rounded,
-                                                  size: 12,
-                                                  color: Colors.orange[700],
+                                                SizedBox(width: 6),
+                                                Text(
+                                                  languagesController.tr(
+                                                    "BUYING",
+                                                  ),
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: Colors.orange[700],
+                                                    fontWeight: FontWeight.w600,
+                                                    letterSpacing: 0.5,
+                                                  ),
                                                 ),
-                                              ),
-                                              SizedBox(width: 6),
-                                              Text(
-                                                languagesController.tr(
-                                                  "BUYING",
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  "${box.read("currency_symbol")}",
+                                                  style: TextStyle(
+                                                    fontSize: 7,
+                                                    color: Colors.orange[400],
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
                                                 ),
-                                                style: TextStyle(
-                                                  fontSize: 11,
-                                                  color: Colors.orange[700],
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.5,
-                                                ),
-                                              ),
-                                              // SizedBox(width: 4),
-                                              // Text(
-                                              //   "${symbol}",
-                                              //   style: TextStyle(
-                                              //     fontSize: 9,
-                                              //     color: Colors.orange[400],
-                                              //     fontWeight: FontWeight.w600,
-                                              //   ),
-                                              // ),
-                                            ],
-                                          ),
-
-                                          Text(
-                                            buyingPrice.toStringAsFixed(2),
-                                            style: TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w800,
-                                              color: Colors.orange[800],
-                                              letterSpacing: 0.5,
+                                              ],
                                             ),
-                                          ),
-                                        ],
+
+                                            Text(
+                                              controller.buyingPrice.value
+                                                  .toStringAsFixed(2),
+                                              style: TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.w800,
+                                                color: Colors.orange[800],
+                                                letterSpacing: 0.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -547,20 +511,21 @@ class _CreditTransferState extends State<CreditTransfer> {
                                                   letterSpacing: 0.5,
                                                 ),
                                               ),
-                                              // SizedBox(width: 4),
-                                              // Text(
-                                              //   "${symbol}",
-                                              //   style: TextStyle(
-                                              //     fontSize: 9,
-                                              //     color: Colors.green[400],
-                                              //     fontWeight: FontWeight.w600,
-                                              //   ),
-                                              // ),
+                                              SizedBox(width: 4),
+                                              Text(
+                                                "${box.read("currency_symbol")}",
+                                                style: TextStyle(
+                                                  fontSize: 7,
+                                                  color: Colors.green[400],
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
                                             ],
                                           ),
 
                                           Text(
-                                            sellingPrice.toStringAsFixed(2),
+                                            controller.sellingPrice.value
+                                                .toStringAsFixed(2),
                                             style: TextStyle(
                                               fontSize: 17,
                                               fontWeight: FontWeight.w800,
@@ -756,35 +721,379 @@ class _CreditTransferState extends State<CreditTransfer> {
                 ),
               ),
               SizedBox(height: 8),
+
+              // Container(
+              //   height: 60,
+              //   width: screenWidth,
+              //   child: Row(
+              //     children: [
+              //       /// AFN Input
+              //       Expanded(
+              //         flex: 1,
+              //         child: TextField(
+              //           keyboardType: TextInputType.number,
+              //           decoration: const InputDecoration(
+              //             hintText: "AFN Amount",
+              //           ),
+              //           onChanged: controller.calculate,
+              //         ),
+              //       ),
+
+              //       /// Converted Result
+              //       Expanded(
+              //         flex: 1,
+              //         child: Obx(
+              //           () => Text(
+              //             "${controller.convertedAmount.value.toStringAsFixed(2)} "
+              //             "${controller.box.read("currency_symbol")}",
+              //             textAlign: TextAlign.end,
+              //             style: const TextStyle(
+              //               fontSize: 16,
+              //               fontWeight: FontWeight.bold,
+              //             ),
+              //           ),
+              //         ),
+              //       ),
+              //     ],
+              //   ),
+              // ),
+              // Column(
+              //   crossAxisAlignment: CrossAxisAlignment.end,
+              //   children: [
+              //     Obx(
+              //       () => Text(
+              //         "Converted: ${controller.convertedAmount.value.toStringAsFixed(2)} TMN",
+              //       ),
+              //     ),
+
+              //     Obx(
+              //       () => Text(
+              //         "Buying: ${controller.buyingPrice.value.toStringAsFixed(2)} TMN",
+              //         style: const TextStyle(color: Colors.green),
+              //       ),
+              //     ),
+
+              //     Obx(
+              //       () => Text(
+              //         "Selling: ${controller.sellingPrice.value.toStringAsFixed(2)} TMN",
+              //         style: const TextStyle(color: Colors.red),
+              //       ),
+              //     ),
+              //   ],
+              // ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 15, right: 15),
+                  padding: EdgeInsets.only(left: 15, right: 15),
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.secondaryColor,
+
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                      child: Obx(() {
-                        // Ensure expandedIndices matches the length of finalList
-                        if (expandedIndices.length !=
-                            customhistoryController.finalList.length) {
-                          expandedIndices.assignAll(
-                            List.generate(
-                              customhistoryController.finalList.length,
-                              (index) => false,
-                            ),
-                          );
-                        }
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 10, left: 10, right: 10),
+                        child: Obx(() {
+                          if (expandedIndices.length !=
+                              customhistoryController.finalList.length) {
+                            expandedIndices.assignAll(
+                              List.generate(
+                                customhistoryController.finalList.length,
+                                (index) => false,
+                              ),
+                            );
+                          }
 
-                        return customhistoryController.isLoading.value ==
-                                    false &&
-                                customhistoryController.finalList.isNotEmpty
-                            ? RefreshIndicator(
-                                onRefresh: refresh,
-                                child: ListView.builder(
-                                  padding: EdgeInsets.all(0),
+                          return customhistoryController.isLoading.value ==
+                                      false &&
+                                  customhistoryController.finalList.isNotEmpty
+                              ? RefreshIndicator(
+                                  onRefresh: refresh,
+                                  child: ListView.builder(
+                                    padding: EdgeInsets.all(0),
+                                    shrinkWrap: true,
+                                    physics: BouncingScrollPhysics(),
+                                    itemCount: customhistoryController
+                                        .finalList
+                                        .length,
+                                    itemBuilder: (context, index) {
+                                      final data = customhistoryController
+                                          .finalList[index];
+
+                                      return Container(
+                                        margin: EdgeInsets.only(bottom: 5),
+                                        width: screenWidth,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          color: Colors.white,
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            ExpansionTile(
+                                              key: Key(
+                                                index.toString(),
+                                              ), // Ensure state retention
+                                              initiallyExpanded:
+                                                  expandedIndices[index],
+                                              onExpansionChanged: (isExpanded) {
+                                                expandedIndices[index] =
+                                                    isExpanded;
+                                              },
+                                              tilePadding: EdgeInsets.symmetric(
+                                                horizontal: 10,
+                                                vertical: 5,
+                                              ),
+                                              title: Row(
+                                                children: [
+                                                  Container(
+                                                    height: 45,
+                                                    width: 45,
+                                                    decoration: BoxDecoration(
+                                                      image: DecorationImage(
+                                                        image: NetworkImage(
+                                                          data
+                                                              .bundle!
+                                                              .service!
+                                                              .company!
+                                                              .companyLogo
+                                                              .toString(),
+                                                        ),
+                                                        fit: BoxFit.fill,
+                                                      ),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 8),
+                                                  Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        data.bundle!.bundleTitle
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 14,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        data.rechargebleAccount
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          fontSize: 12,
+                                                          color: Colors.grey,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
+                                              trailing: expandedIndices[index]
+                                                  ? null
+                                                  : GestureDetector(
+                                                      onTap: () {
+                                                        expandedIndices[index] =
+                                                            true;
+                                                      },
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          SizedBox(width: 5),
+                                                          Icon(
+                                                            FontAwesomeIcons
+                                                                .chevronDown,
+                                                            size:
+                                                                screenHeight *
+                                                                0.022,
+                                                            color: Color(
+                                                              0xff1890FF,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                              children: [
+                                                Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            languagesController.tr(
+                                                              "TRANSFER_STATUS",
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            data.status
+                                                                        .toString() ==
+                                                                    "0"
+                                                                ? languagesController
+                                                                      .tr(
+                                                                        "PENDING",
+                                                                      )
+                                                                : data.status
+                                                                          .toString() ==
+                                                                      "1"
+                                                                ? languagesController
+                                                                      .tr(
+                                                                        "SUCCESS",
+                                                                      )
+                                                                : languagesController
+                                                                      .tr(
+                                                                        "REJECTED",
+                                                                      ),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  box
+                                                                          .read(
+                                                                            "language",
+                                                                          )
+                                                                          .toString() ==
+                                                                      "Fa"
+                                                                  ? Get.find<
+                                                                          FontController
+                                                                        >()
+                                                                        .currentFont
+                                                                  : null,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 5),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            languagesController
+                                                                .tr("AMOUNT"),
+                                                          ),
+                                                          Text(
+                                                            "${data.bundle.amount} ${box.read("currency_code")}",
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 5),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            languagesController
+                                                                .tr("DATE"),
+                                                            style: TextStyle(
+                                                              fontFamily:
+                                                                  box
+                                                                          .read(
+                                                                            "language",
+                                                                          )
+                                                                          .toString() ==
+                                                                      "Fa"
+                                                                  ? Get.find<
+                                                                          FontController
+                                                                        >()
+                                                                        .currentFont
+                                                                  : null,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            DateFormat(
+                                                              'yyyy-MM-dd',
+                                                            ).format(
+                                                              DateTime.parse(
+                                                                data.createdAt
+                                                                    .toString(),
+                                                              ),
+                                                            ),
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      SizedBox(height: 5),
+                                                      Row(
+                                                        mainAxisAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceBetween,
+                                                        children: [
+                                                          Text(
+                                                            languagesController
+                                                                .tr("TIME"),
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontFamily:
+                                                                  box
+                                                                          .read(
+                                                                            "language",
+                                                                          )
+                                                                          .toString() ==
+                                                                      "Fa"
+                                                                  ? Get.find<
+                                                                          FontController
+                                                                        >()
+                                                                        .currentFont
+                                                                  : null,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            DateFormat(
+                                                              'hh:mm a',
+                                                            ).format(
+                                                              DateTime.parse(
+                                                                data.createdAt
+                                                                    .toString(),
+                                                              ),
+                                                            ),
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                )
+                              : customhistoryController.finalList.isEmpty
+                              ? SizedBox()
+                              : ListView.builder(
                                   shrinkWrap: true,
                                   physics: BouncingScrollPhysics(),
                                   itemCount:
@@ -927,20 +1236,6 @@ class _CreditTransferState extends State<CreditTransfer> {
                                                                     .tr(
                                                                       "REJECTED",
                                                                     ),
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                box
-                                                                        .read(
-                                                                          "language",
-                                                                        )
-                                                                        .toString() ==
-                                                                    "Fa"
-                                                                ? Get.find<
-                                                                        FontController
-                                                                      >()
-                                                                      .currentFont
-                                                                : null,
-                                                          ),
                                                         ),
                                                       ],
                                                     ),
@@ -972,20 +1267,6 @@ class _CreditTransferState extends State<CreditTransfer> {
                                                         Text(
                                                           languagesController
                                                               .tr("DATE"),
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                box
-                                                                        .read(
-                                                                          "language",
-                                                                        )
-                                                                        .toString() ==
-                                                                    "Fa"
-                                                                ? Get.find<
-                                                                        FontController
-                                                                      >()
-                                                                      .currentFont
-                                                                : null,
-                                                          ),
                                                         ),
                                                         Text(
                                                           DateFormat(
@@ -1015,18 +1296,6 @@ class _CreditTransferState extends State<CreditTransfer> {
                                                           style: TextStyle(
                                                             fontWeight:
                                                                 FontWeight.w500,
-                                                            fontFamily:
-                                                                box
-                                                                        .read(
-                                                                          "language",
-                                                                        )
-                                                                        .toString() ==
-                                                                    "Fa"
-                                                                ? Get.find<
-                                                                        FontController
-                                                                      >()
-                                                                      .currentFont
-                                                                : null,
                                                           ),
                                                         ),
                                                         Text(
@@ -1054,240 +1323,9 @@ class _CreditTransferState extends State<CreditTransfer> {
                                       ),
                                     );
                                   },
-                                ),
-                              )
-                            : customhistoryController.finalList.isEmpty
-                            ? SizedBox()
-                            : ListView.builder(
-                                shrinkWrap: true,
-                                physics: BouncingScrollPhysics(),
-                                itemCount:
-                                    customhistoryController.finalList.length,
-                                itemBuilder: (context, index) {
-                                  final data =
-                                      customhistoryController.finalList[index];
-
-                                  return Container(
-                                    margin: EdgeInsets.only(bottom: 5),
-                                    width: screenWidth,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      color: Colors.white,
-                                    ),
-                                    child: Column(
-                                      children: [
-                                        ExpansionTile(
-                                          key: Key(
-                                            index.toString(),
-                                          ), // Ensure state retention
-                                          initiallyExpanded:
-                                              expandedIndices[index],
-                                          onExpansionChanged: (isExpanded) {
-                                            expandedIndices[index] = isExpanded;
-                                          },
-                                          tilePadding: EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 5,
-                                          ),
-                                          title: Row(
-                                            children: [
-                                              Container(
-                                                height: 45,
-                                                width: 45,
-                                                decoration: BoxDecoration(
-                                                  image: DecorationImage(
-                                                    image: NetworkImage(
-                                                      data
-                                                          .bundle!
-                                                          .service!
-                                                          .company!
-                                                          .companyLogo
-                                                          .toString(),
-                                                    ),
-                                                    fit: BoxFit.fill,
-                                                  ),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                              ),
-                                              SizedBox(width: 8),
-                                              Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    data.bundle!.bundleTitle
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    data.rechargebleAccount
-                                                        .toString(),
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 12,
-                                                      color: Colors.grey,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          ),
-                                          trailing: expandedIndices[index]
-                                              ? null
-                                              : GestureDetector(
-                                                  onTap: () {
-                                                    expandedIndices[index] =
-                                                        true;
-                                                  },
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      SizedBox(width: 5),
-                                                      Icon(
-                                                        FontAwesomeIcons
-                                                            .chevronDown,
-                                                        size:
-                                                            screenHeight *
-                                                            0.022,
-                                                        color: Color(
-                                                          0xff1890FF,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                          children: [
-                                            Padding(
-                                              padding: const EdgeInsets.all(
-                                                8.0,
-                                              ),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        languagesController.tr(
-                                                          "TRANSFER_STATUS",
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        data.status
-                                                                    .toString() ==
-                                                                "0"
-                                                            ? languagesController
-                                                                  .tr("PENDING")
-                                                            : data.status
-                                                                      .toString() ==
-                                                                  "1"
-                                                            ? languagesController
-                                                                  .tr("SUCCESS")
-                                                            : languagesController
-                                                                  .tr(
-                                                                    "REJECTED",
-                                                                  ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        languagesController.tr(
-                                                          "AMOUNT",
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        "${data.bundle.amount} ${box.read("currency_code")}",
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        languagesController.tr(
-                                                          "DATE",
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        DateFormat(
-                                                          'yyyy-MM-dd',
-                                                        ).format(
-                                                          DateTime.parse(
-                                                            data.createdAt
-                                                                .toString(),
-                                                          ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(height: 5),
-                                                  Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Text(
-                                                        languagesController.tr(
-                                                          "TIME",
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        DateFormat(
-                                                          'hh:mm a',
-                                                        ).format(
-                                                          DateTime.parse(
-                                                            data.createdAt
-                                                                .toString(),
-                                                          ),
-                                                        ),
-                                                        style: TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              );
-                      }),
+                                );
+                        }),
+                      ),
                     ),
                   ),
                 ),

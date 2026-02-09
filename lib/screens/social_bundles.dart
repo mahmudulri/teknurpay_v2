@@ -303,8 +303,8 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                     .black,
                                                                 fontWeight:
                                                                     FontWeight
-                                                                        .w600,
-                                                                fontSize: 13,
+                                                                        .bold,
+                                                                fontSize: 14,
                                                               ),
                                                             ),
                                                             Row(
@@ -320,7 +320,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                             .w600,
                                                                     fontSize:
                                                                         screenWidth *
-                                                                        .028,
+                                                                        .035,
                                                                     color: Colors
                                                                         .green,
                                                                   ),
@@ -339,7 +339,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                   textStyle: TextStyle(
                                                                     fontSize:
                                                                         screenWidth *
-                                                                        .028,
+                                                                        .035,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
@@ -387,7 +387,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                           .w600,
                                                                   fontSize:
                                                                       screenWidth *
-                                                                      .028,
+                                                                      .035,
                                                                   color: Colors
                                                                       .red,
                                                                 ),
@@ -411,7 +411,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                           .bold,
                                                                   fontSize:
                                                                       screenWidth *
-                                                                      .028,
+                                                                      .035,
                                                                 ),
                                                               ),
                                                               Text(
@@ -561,8 +561,8 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                     .black,
                                                                 fontWeight:
                                                                     FontWeight
-                                                                        .w600,
-                                                                fontSize: 13,
+                                                                        .bold,
+                                                                fontSize: 14,
                                                               ),
                                                             ),
                                                             Row(
@@ -578,7 +578,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                             .w600,
                                                                     fontSize:
                                                                         screenWidth *
-                                                                        .028,
+                                                                        .035,
                                                                     color: Colors
                                                                         .green,
                                                                   ),
@@ -597,7 +597,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                   textStyle: TextStyle(
                                                                     fontSize:
                                                                         screenWidth *
-                                                                        .028,
+                                                                        .035,
                                                                     fontWeight:
                                                                         FontWeight
                                                                             .bold,
@@ -645,7 +645,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                           .w600,
                                                                   fontSize:
                                                                       screenWidth *
-                                                                      .028,
+                                                                      .035,
                                                                   color: Colors
                                                                       .red,
                                                                 ),
@@ -669,7 +669,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                           .bold,
                                                                   fontSize:
                                                                       screenWidth *
-                                                                      .028,
+                                                                      .035,
                                                                 ),
                                                               ),
                                                               Text(

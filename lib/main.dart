@@ -7,12 +7,17 @@ import 'package:teknurpay/helpers/network_checker.dart';
 import 'package:teknurpay/routes/routes.dart';
 
 import 'controllers/currency_controller.dart';
+import 'controllers/recharge_config_controller.dart';
+import 'global_controller/afghan_recharge_controller.dart';
 import 'global_controller/time_zone_controller.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
   await GetStorage.init();
+  Get.put(CurrencyController(), permanent: true);
+  Get.put(RechargeConfigController(), permanent: true);
+  Get.put(AfghanRechargeController(), permanent: true);
   DependencyInjection.init();
 
   runApp(

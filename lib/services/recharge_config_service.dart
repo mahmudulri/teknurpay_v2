@@ -19,6 +19,7 @@ class RechargeConfigApi {
     );
 
     if (response.statusCode == 200) {
+      print(response.body.toString());
       final rechargeconfigModel = RechargeConfigModel.fromJson(
         json.decode(response.body),
       );

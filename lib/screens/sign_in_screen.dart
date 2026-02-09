@@ -409,29 +409,48 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
 
-                  // SizedBox(height: 20),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  //   children: [
-                  //     GestureDetector(
-                  //       onTap: () {
-                  //         signInController.usernameController.text =
-                  //             "01986072587";
-                  //         signInController.passwordController.text = "00000000";
-                  //       },
-                  //       child: Text("01986"),
-                  //     ),
-                  //     SizedBox(width: 10),
-                  //     GestureDetector(
-                  //       onTap: () {
-                  //         signInController.usernameController.text =
-                  //             "0796321768";
-                  //         signInController.passwordController.text = "00000000";
-                  //       },
-                  //       child: Text("0796321"),
-                  //     ),
-                  //   ],
-                  // ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     signInController.usernameController.text =
+                      //         "0700300330";
+                      //     signInController.passwordController.text = "12345678";
+                      //   },
+                      //   child: Text("0700300330"),
+                      // ),
+                      SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          signInController.usernameController.text =
+                              "0796321768";
+                          signInController.passwordController.text = "00000000";
+                        },
+                        child: Text("0796321"),
+                      ),
+                      SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          signInController.usernameController.text =
+                              "0773882155";
+                          signInController.passwordController.text =
+                              "Noorullah8488200";
+                        },
+                        child: Text("0773882155"),
+                      ),
+                      SizedBox(width: 10),
+                      GestureDetector(
+                        onTap: () {
+                          signInController.usernameController.text =
+                              "0792760030";
+                          signInController.passwordController.text = "12345678";
+                        },
+                        child: Text("0792760030"),
+                      ),
+                    ],
+                  ),
                   SizedBox(height: 60),
                   Container(
                     height: 60,

@@ -14,6 +14,7 @@ import '../controllers/add_hawala_controller.dart';
 import '../controllers/branch_controller.dart';
 import '../controllers/conversation_controller.dart';
 import '../controllers/currency_controller.dart';
+import '../controllers/hawala_currency_controller.dart';
 import '../controllers/sign_in_controller.dart';
 import '../global_controller/font_controller.dart';
 import '../global_controller/languages_controller.dart';
@@ -41,6 +42,10 @@ class _HawalaScreenState extends State<HawalaScreen> {
   final CurrencyController currencyController = Get.put(CurrencyController());
   final BranchController branchController = Get.put(BranchController());
 
+  HawalaCurrencyController hawalaCurrencyController = Get.put(
+    HawalaCurrencyController(),
+  );
+
   final box = GetStorage();
 
   List commissionpaidby = [];
@@ -55,8 +60,8 @@ class _HawalaScreenState extends State<HawalaScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    hawalaCurrencyController.fetchcurrency();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -81,7 +86,7 @@ class _HawalaScreenState extends State<HawalaScreen> {
     addHawalaController.currency2.value = "";
     addHawalaController.branch.value = "";
 
-    currencyController.fetchCurrency();
+    currencyController.fetchCurrencyList();
     branchController.fetchallbranch();
     commissionpaidby = [
       languagesController.tr("SENDER"),
@@ -273,15 +278,20 @@ class _HawalaScreenState extends State<HawalaScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            languagesController.tr("HAWALA_AMOUNT"),
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: screenHeight * 0.020,
-                              fontFamily:
-                                  box.read("language").toString() == "Fa"
-                                  ? Get.find<FontController>().currentFont
-                                  : null,
+                          GestureDetector(
+                            onTap: () {
+                              hawalaCurrencyController.fetchcurrency();
+                            },
+                            child: Text(
+                              languagesController.tr("HAWALA_AMOUNT"),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: screenHeight * 0.020,
+                                fontFamily:
+                                    box.read("language").toString() == "Fa"
+                                    ? Get.find<FontController>().currentFont
+                                    : null,
+                              ),
                             ),
                           ),
                           Text(
@@ -342,271 +352,186 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                       ),
                                     ),
                                     onChanged: (value) {
-                                      print("myvalue " + value.toString());
+                                      final selected = addHawalaController
+                                          .selectedRate
+                                          .value;
 
-                                      if (conversationController
-                                              .selectedCurrency
+                                      // যদি কোন currency সিলেক্ট না করা হয় (selected null হয়) তাহলে হিসাব না করো
+                                      if (selected == null ||
+                                          addHawalaController
+                                              .currency
                                               .value
-                                              .toString() !=
-                                          "") {
-                                        print("Doin Calculation");
-
-                                        double amount =
-                                            double.tryParse(
-                                              addHawalaController
-                                                  .amountController
-                                                  .text
-                                                  .trim(),
-                                            ) ??
-                                            0.0;
-
-                                        double resellerRate =
-                                            double.tryParse(
-                                              conversationController
-                                                  .resellerRate
-                                                  .toString(),
-                                            ) ??
-                                            1.0;
-
-                                        double exchangeRate =
-                                            conversationController.currencyRate;
-
+                                              .isEmpty) {
                                         addHawalaController.finalAmount.value =
-                                            ((amount * resellerRate) /
-                                                    exchangeRate)
-                                                .toStringAsFixed(2);
-                                      } else {
-                                        print("Not Selected");
+                                            "0.00";
+                                        return;
                                       }
+
+                                      double input =
+                                          double.tryParse(
+                                            addHawalaController
+                                                .amountController
+                                                .text
+                                                .trim(),
+                                          ) ??
+                                          0;
+                                      double dAmount =
+                                          double.tryParse(
+                                            selected.amount?.toString() ?? "0",
+                                          ) ??
+                                          0;
+                                      double sRate =
+                                          double.tryParse(
+                                            selected.sellRate?.toString() ??
+                                                "0",
+                                          ) ??
+                                          0;
+
+                                      double result = 0;
+                                      if (dAmount > 0 && sRate > 0) {
+                                        result = (input / dAmount) * sRate;
+                                      }
+
+                                      addHawalaController.finalAmount.value =
+                                          result.toStringAsFixed(2);
                                     },
                                   ),
                                 ),
                               ),
-                              // child: Authtextfield(
-                              //   hinttext: languagesController.tr("ENTER_AMOUNT"),
-                              //   controller: addHawalaController.amountController,
-                              // ),
                             ),
                             SizedBox(width: 10),
+
                             Expanded(
                               flex: 1,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  color: Colors.white,
-                                ),
-                                child: Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
+                              child: Obx(() {
+                                // rates আনছি (dynamic list)
+                                final List<dynamic> rates =
+                                    (hawalaCurrencyController
+                                            .hawalafilteredcurrency
+                                            .value
+                                            .data
+                                            ?.rates
+                                        as List?) ??
+                                    <dynamic>[];
+
+                                // helper: নিরাপদে double parse
+                                double _toDouble(dynamic v) {
+                                  if (v == null) return 0;
+                                  return double.tryParse(v.toString()) ?? 0;
+                                }
+
+                                final bool langIsFa =
+                                    box.read("language").toString() == "Fa";
+
+                                // 1) ডুপ্লিকেট toCurrency.id বাদ দিয়ে প্রথম occurrence রাখি
+                                final Map<String, dynamic> uniqueByToId = {};
+                                for (final r in rates) {
+                                  final String toId =
+                                      ((r?.toCurrency?.id) ?? '').toString();
+                                  if (toId.isEmpty) continue;
+                                  // আগে রাখা না থাকলে রাখি (প্রথমটাই থাকবে)
+                                  uniqueByToId.putIfAbsent(toId, () => r);
+                                }
+
+                                // 2) Dropdown items তৈরি
+                                final dropdownItems = uniqueByToId.entries
+                                    .map<DropdownMenuItem<String>>((e) {
+                                      final symbol =
+                                          ((e.value?.toCurrency?.symbol) ?? '')
+                                              .toString();
+                                      return DropdownMenuItem<String>(
+                                        value: e.key, // toCurrency.id
+                                        child: Text(symbol),
+                                      );
+                                    })
+                                    .toList();
+
+                                // 3) বর্তমান value dropdown-এ আছে কিনা
+                                final currentValue =
+                                    addHawalaController.currencyID.value;
+                                final bool valueExists =
+                                    currentValue.isNotEmpty &&
+                                    uniqueByToId.containsKey(currentValue);
+
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      width: 1,
+                                      color: Colors.grey.shade300,
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Obx(
-                                          () => Text(
-                                            addHawalaController.currency.value
-                                                .toString(),
-                                            style: TextStyle(
-                                              color: Colors.grey.shade600,
-                                              fontFamily:
-                                                  box
-                                                          .read("language")
-                                                          .toString() ==
-                                                      "Fa"
-                                                  ? Get.find<FontController>()
-                                                        .currentFont
-                                                  : null,
-                                            ),
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: () {
-                                            showDialog(
-                                              context: context,
-                                              builder: (context) {
-                                                return AlertDialog(
-                                                  content: Container(
-                                                    height: 250,
-                                                    width: double.maxFinite,
-                                                    child: Obx(
-                                                      () =>
-                                                          currencyController
-                                                                  .isLoading
-                                                                  .value ==
-                                                              false
-                                                          ? ListView.separated(
-                                                              separatorBuilder:
-                                                                  (
-                                                                    context,
-                                                                    index,
-                                                                  ) {
-                                                                    return SizedBox(
-                                                                      height: 5,
-                                                                    );
-                                                                  },
-                                                              itemCount:
-                                                                  currencyController
-                                                                      .allcurrency
-                                                                      .value
-                                                                      .data!
-                                                                      .currencies!
-                                                                      .length,
-                                                              itemBuilder: (context, index) {
-                                                                final data =
-                                                                    currencyController
-                                                                        .allcurrency
-                                                                        .value
-                                                                        .data!
-                                                                        .currencies![index];
-                                                                return GestureDetector(
-                                                                  onTap: () {
-                                                                    addHawalaController
-                                                                        .currency
-                                                                        .value = data
-                                                                        .symbol
-                                                                        .toString();
-                                                                    addHawalaController
-                                                                        .currency2
-                                                                        .value = data
-                                                                        .symbol
-                                                                        .toString();
-                                                                    addHawalaController
-                                                                        .currencyID
-                                                                        .value = data
-                                                                        .id
-                                                                        .toString();
-                                                                    // Ensure currency values are available
+                                    color: Colors.white,
+                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  child: DropdownButtonFormField<String>(
+                                    isExpanded: true,
+                                    alignment: !langIsFa
+                                        ? Alignment.centerLeft
+                                        : Alignment.centerRight,
 
-                                                                    conversationController
-                                                                        .selectedCurrency
-                                                                        .value = data
-                                                                        .code
-                                                                        .toString();
+                                    // dropdown-এ না থাকলে null
+                                    value: valueExists ? currentValue : null,
 
-                                                                    conversationController
-                                                                            .currencyRate =
-                                                                        double.tryParse(
-                                                                          data.exchangeRatePerUsd
-                                                                              .toString(),
-                                                                        ) ??
-                                                                        1.0;
+                                    items: dropdownItems,
 
-                                                                    // String rateStr =
-                                                                    //     box.read(
-                                                                    //         "resellerrate");
+                                    onChanged: (value) {
+                                      if (value == null) return;
 
-                                                                    double
-                                                                    resellerRate =
-                                                                        double.tryParse(
-                                                                          conversationController
-                                                                              .resellerRate
-                                                                              .toString(),
-                                                                        ) ??
-                                                                        1.0;
+                                      // 4) নির্বাচিত rate (ডুপ্লিকেট ফ্রি map থেকে)
+                                      final selectedRate = uniqueByToId[value];
 
-                                                                    double
-                                                                    amount =
-                                                                        double.tryParse(
-                                                                          addHawalaController
-                                                                              .amountController
-                                                                              .text
-                                                                              .trim(),
-                                                                        ) ??
-                                                                        0.0;
+                                      // 5) controller আপডেট
+                                      addHawalaController.currencyID.value =
+                                          value;
+                                      addHawalaController.currency.value =
+                                          ((selectedRate?.toCurrency?.symbol) ??
+                                                  '')
+                                              .toString();
+                                      addHawalaController.selectedRate.value =
+                                          selectedRate;
 
-                                                                    double
-                                                                    exchangeRate =
-                                                                        double.tryParse(
-                                                                          data.exchangeRatePerUsd
-                                                                              .toString(),
-                                                                        ) ??
-                                                                        1.0;
+                                      // 6) হিসাব
+                                      final input = _toDouble(
+                                        addHawalaController
+                                            .amountController
+                                            .text
+                                            .trim(),
+                                      );
+                                      final dAmount = _toDouble(
+                                        selectedRate?.amount,
+                                      );
+                                      final sRate = _toDouble(
+                                        selectedRate?.sellRate,
+                                      );
 
-                                                                    // print(signInController
-                                                                    //     .resellerCurrencyRate
-                                                                    //     .toString());
+                                      double result = 0;
+                                      if (dAmount > 0 && sRate > 0) {
+                                        result = (input / dAmount) * sRate;
+                                      }
+                                      addHawalaController.finalAmount.value =
+                                          result.toStringAsFixed(2);
+                                    },
 
-                                                                    addHawalaController
-                                                                            .finalAmount
-                                                                            .value =
-                                                                        ((amount *
-                                                                                    resellerRate) /
-                                                                                exchangeRate)
-                                                                            .toStringAsFixed(
-                                                                              2,
-                                                                            );
-
-                                                                    //  final amount  = (amount * reseller rate) / exchange rate
-
-                                                                    Navigator.pop(
-                                                                      context,
-                                                                    );
-                                                                  },
-                                                                  child: Container(
-                                                                    height: 40,
-                                                                    width: double
-                                                                        .maxFinite,
-                                                                    decoration: BoxDecoration(
-                                                                      border: Border.all(
-                                                                        width:
-                                                                            1,
-                                                                        color: Colors
-                                                                            .grey
-                                                                            .shade300,
-                                                                      ),
-                                                                    ),
-                                                                    child: Padding(
-                                                                      padding:
-                                                                          EdgeInsets.all(
-                                                                            5.0,
-                                                                          ),
-                                                                      child: Center(
-                                                                        child: Row(
-                                                                          children: [
-                                                                            Text(
-                                                                              data.symbol.toString(),
-                                                                            ),
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                );
-                                                              },
-                                                            )
-                                                          : Center(
-                                                              child:
-                                                                  CircularProgressIndicator(),
-                                                            ),
-                                                    ),
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                          child: CircleAvatar(
-                                            backgroundColor: AppColors
-                                                .primaryColor
-                                                .withOpacity(0.7),
-                                            radius: 15,
-                                            child: Icon(
-                                              FontAwesomeIcons.chevronDown,
-                                              color: Colors.white,
-                                              size: 17,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    decoration: InputDecoration(
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.zero,
+                                    ),
+                                    icon: Icon(
+                                      FontAwesomeIcons.chevronDown,
+                                      color: Colors.grey,
+                                      size: 20,
+                                    ),
+                                    hint: Text(
+                                      addHawalaController.currency.value.isEmpty
+                                          ? ''
+                                          : addHawalaController.currency.value,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }),
                             ),
                           ],
                         ),

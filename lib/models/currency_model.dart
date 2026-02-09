@@ -21,37 +21,36 @@ class CurrencyModel {
   });
 
   factory CurrencyModel.fromJson(Map<String, dynamic> json) => CurrencyModel(
-        success: json["success"],
-        code: json["code"],
-        message: json["message"],
-        data: Data.fromJson(json["data"]),
-        payload: List<dynamic>.from(json["payload"].map((x) => x)),
-      );
+    success: json["success"],
+    code: json["code"],
+    message: json["message"],
+    data: Data.fromJson(json["data"]),
+    payload: List<dynamic>.from(json["payload"].map((x) => x)),
+  );
 
   Map<String, dynamic> toJson() => {
-        "success": success,
-        "code": code,
-        "message": message,
-        "data": data!.toJson(),
-        "payload": List<dynamic>.from(payload!.map((x) => x)),
-      };
+    "success": success,
+    "code": code,
+    "message": message,
+    "data": data!.toJson(),
+    "payload": List<dynamic>.from(payload!.map((x) => x)),
+  };
 }
 
 class Data {
   final List<Currency>? currencies;
 
-  Data({
-    this.currencies,
-  });
+  Data({this.currencies});
 
   factory Data.fromJson(Map<String, dynamic> json) => Data(
-        currencies: List<Currency>.from(
-            json["currencies"].map((x) => Currency.fromJson(x))),
-      );
+    currencies: List<Currency>.from(
+      json["currencies"].map((x) => Currency.fromJson(x)),
+    ),
+  );
 
   Map<String, dynamic> toJson() => {
-        "currencies": List<dynamic>.from(currencies!.map((x) => x.toJson())),
-      };
+    "currencies": List<dynamic>.from(currencies!.map((x) => x.toJson())),
+  };
 }
 
 class Currency {
@@ -71,18 +70,18 @@ class Currency {
   });
 
   factory Currency.fromJson(Map<String, dynamic> json) => Currency(
-        id: json["id"],
-        name: json["name"],
-        code: json["code"],
-        symbol: json["symbol"],
-        exchangeRatePerUsd: json["exchange_rate_per_usd"],
-      );
+    id: json["id"],
+    name: json["name"],
+    code: json["code"],
+    symbol: json["symbol"],
+    exchangeRatePerUsd: json["exchange_rate_per_usd"],
+  );
 
   Map<String, dynamic> toJson() => {
-        "id": id,
-        "name": name,
-        "code": code,
-        "symbol": symbol,
-        "exchange_rate_per_usd": exchangeRatePerUsd,
-      };
+    "id": id,
+    "name": name,
+    "code": code,
+    "symbol": symbol,
+    "exchange_rate_per_usd": exchangeRatePerUsd,
+  };
 }

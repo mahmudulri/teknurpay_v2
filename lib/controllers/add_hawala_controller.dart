@@ -7,6 +7,7 @@ import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../models/hawala_currency_model.dart';
 import '../utils/api_endpoints.dart';
 import 'commission_group_controller.dart';
 import 'hawala_list_controller.dart';
@@ -34,6 +35,8 @@ class AddHawalaController extends GetxController {
   RxString paidbyreceiver = "".obs;
   RxString branchId = "".obs;
 
+  Rx<Rate?> selectedRate = Rx<Rate?>(null);
+
   Future<bool> createhawala() async {
     try {
       isLoading.value = true;
@@ -59,6 +62,7 @@ class AddHawalaController extends GetxController {
         'commission_paid_by_receiver': "0",
         'hawala_branch_id': branchId.toString(),
       };
+      print(body.toString());
 
       http.Response response = await http.post(
         url,
@@ -67,7 +71,7 @@ class AddHawalaController extends GetxController {
       );
 
       final results = jsonDecode(response.body);
-
+      print(response.body.toString());
       if (response.statusCode == 201 && results["success"] == true) {
         // Clear fields
         senderNameController.clear();
