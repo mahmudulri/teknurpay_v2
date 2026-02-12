@@ -67,6 +67,9 @@ class _CreditTransferState extends State<CreditTransfer> {
   final AfghanRechargeController controller =
       Get.find<AfghanRechargeController>();
 
+  final RechargeConfigController configController =
+      Get.find<RechargeConfigController>();
+
   Future<void> refresh() async {
     final int totalPages =
         customhistoryController
@@ -106,8 +109,8 @@ class _CreditTransferState extends State<CreditTransfer> {
   @override
   void initState() {
     super.initState();
-    controller.reset();
     configController.fetchrechargeConfig();
+    controller.reset();
     conversationController.resetConversion();
     customRechargeController.amountController.clear();
     customRechargeController.numberController.clear();

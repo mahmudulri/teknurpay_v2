@@ -484,14 +484,7 @@ class _AddNewUserState extends State<AddNewUser> {
                                   child: Row(
                                     children: [
                                       // Flag
-                                      if (flagUrl.isNotEmpty)
-                                        Image.network(
-                                          flagUrl,
-                                          height: 40,
-                                          width: 60,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      const SizedBox(width: 10),
+
                                       // Name
                                       Text(
                                         name,
@@ -855,8 +848,8 @@ class _AddNewUserState extends State<AddNewUser> {
                             children: [
                               Expanded(
                                 child: Text(
-                                  box.read("currencyName") +
-                                      " (${box.read("currency_code")})",
+                                  box.read("currency_code"),
+
                                   style: TextStyle(
                                     fontSize: screenHeight * 0.020,
                                     color: Colors.grey.shade600,
