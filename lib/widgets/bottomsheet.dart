@@ -2,6 +2,7 @@
 
 import 'dart:io';
 
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,22 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
 
   final box = GetStorage();
   final Mypagecontroller mypagecontroller = Get.find();
+
+  String _version = '';
+
+  Future<void> _loadVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = packageInfo.version;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
   @override
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
@@ -643,6 +660,14 @@ class _CustomFullScreenSheetState extends State<CustomFullScreenSheet> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "${languagesController.tr("VERSION")} ${_version.isEmpty ? 'Loading...' : ': $_version'}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                 ],

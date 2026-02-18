@@ -190,6 +190,7 @@ class _CreateSellingPriceScreenState extends State<CreateSellingPriceScreen> {
                             context: context,
                             builder: (context) {
                               return AlertDialog(
+                                backgroundColor: Colors.white,
                                 content: Container(
                                   height: 150,
                                   width: screenWidth,
