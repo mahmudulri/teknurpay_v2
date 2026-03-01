@@ -248,7 +248,6 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                 vertical: 3,
                                               ),
                                               child: Container(
-                                                height: 80,
                                                 width: screenWidth,
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
@@ -265,12 +264,14 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                       BorderRadius.circular(10),
                                                 ),
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5,
-                                                      ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 8,
+                                                  ),
                                                   child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
                                                     children: [
                                                       Image.network(
                                                         data
@@ -278,19 +279,16 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                             .company!
                                                             .companyLogo
                                                             .toString(),
-                                                        height: 60,
-                                                        width: 60,
+                                                        height: 50,
+                                                        width: 50,
+                                                        fit: BoxFit.contain,
                                                       ),
-                                                      SizedBox(width: 5),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsets.symmetric(
-                                                              vertical: 5,
-                                                            ),
+                                                      SizedBox(width: 8),
+                                                      Expanded(
+                                                        flex: 3,
                                                         child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
                                                                   .start,
@@ -298,6 +296,10 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                             Text(
                                                               data.bundleTitle
                                                                   .toString(),
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                               style: TextStyle(
                                                                 color: Colors
                                                                     .black,
@@ -307,7 +309,11 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                 fontSize: 14,
                                                               ),
                                                             ),
+                                                            SizedBox(height: 4),
                                                             Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               children: [
                                                                 Obx(
                                                                   () => KText(
@@ -351,7 +357,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                   width: 3,
                                                                 ),
                                                                 Text(
-                                                                  " ${box.read("currency_code")}",
+                                                                  "${box.read("currency_code")}",
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         screenWidth *
@@ -365,68 +371,76 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                           ],
                                                         ),
                                                       ),
-                                                      Spacer(),
-                                                      Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .end,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .end,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Obx(
-                                                                () => KText(
-                                                                  text: languagesController
-                                                                      .tr(
-                                                                        "BUY",
-                                                                      ),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .035,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
+                                                      SizedBox(width: 8),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Obx(
+                                                              () => KText(
+                                                                text:
+                                                                    languagesController
+                                                                        .tr(
+                                                                          "BUY",
+                                                                        ),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize:
+                                                                    screenWidth *
+                                                                    .035,
+                                                                color:
+                                                                    Colors.red,
                                                               ),
-                                                              Text(
-                                                                " : ",
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
+                                                            ),
+                                                            SizedBox(height: 4),
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Flexible(
+                                                                  child: PriceTextView(
+                                                                    price: data
+                                                                        .buyingPrice
+                                                                        .toString(),
+                                                                    textStyle: TextStyle(
+                                                                      color: Colors
+                                                                          .red,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          screenWidth *
+                                                                          .035,
+                                                                    ),
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                              PriceTextView(
-                                                                price: data
-                                                                    .buyingPrice
-                                                                    .toString(),
-                                                                textStyle: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .035,
+                                                                SizedBox(
+                                                                  width: 2,
                                                                 ),
-                                                              ),
-                                                              Text(
-                                                                " ${box.read("currency_code")}",
-                                                                style: TextStyle(
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .028,
-                                                                  color: Colors
-                                                                      .red,
+                                                                Text(
+                                                                  "${box.read("currency_code")}",
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        screenWidth *
+                                                                        .028,
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ],
                                                   ),
@@ -506,7 +520,6 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                 vertical: 3,
                                               ),
                                               child: Container(
-                                                height: 80,
                                                 width: screenWidth,
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
@@ -523,12 +536,14 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                       BorderRadius.circular(10),
                                                 ),
                                                 child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 8,
-                                                        vertical: 5,
-                                                      ),
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: 8,
+                                                    vertical: 8,
+                                                  ),
                                                   child: Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
                                                     children: [
                                                       Image.network(
                                                         data
@@ -536,19 +551,16 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                             .company!
                                                             .companyLogo
                                                             .toString(),
-                                                        height: 60,
-                                                        width: 60,
+                                                        height: 50,
+                                                        width: 50,
+                                                        fit: BoxFit.contain,
                                                       ),
-                                                      SizedBox(width: 5),
-                                                      Padding(
-                                                        padding:
-                                                            EdgeInsets.symmetric(
-                                                              vertical: 5,
-                                                            ),
+                                                      SizedBox(width: 8),
+                                                      Expanded(
+                                                        flex: 3,
                                                         child: Column(
-                                                          mainAxisAlignment:
-                                                              MainAxisAlignment
-                                                                  .spaceBetween,
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
                                                           crossAxisAlignment:
                                                               CrossAxisAlignment
                                                                   .start,
@@ -556,6 +568,10 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                             Text(
                                                               data.bundleTitle
                                                                   .toString(),
+                                                              maxLines: 2,
+                                                              overflow:
+                                                                  TextOverflow
+                                                                      .ellipsis,
                                                               style: TextStyle(
                                                                 color: Colors
                                                                     .black,
@@ -565,7 +581,11 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                 fontSize: 14,
                                                               ),
                                                             ),
+                                                            SizedBox(height: 4),
                                                             Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
                                                               children: [
                                                                 Obx(
                                                                   () => KText(
@@ -609,7 +629,7 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                                   width: 3,
                                                                 ),
                                                                 Text(
-                                                                  " ${box.read("currency_code")}",
+                                                                  "${box.read("currency_code")}",
                                                                   style: TextStyle(
                                                                     fontSize:
                                                                         screenWidth *
@@ -623,68 +643,76 @@ class _SocialBundlesState extends State<SocialBundles> {
                                                           ],
                                                         ),
                                                       ),
-                                                      Spacer(),
-                                                      Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .end,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .end,
-                                                        children: [
-                                                          Row(
-                                                            children: [
-                                                              Obx(
-                                                                () => KText(
-                                                                  text: languagesController
-                                                                      .tr(
-                                                                        "BUY",
-                                                                      ),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w600,
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .035,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
+                                                      SizedBox(width: 8),
+                                                      Expanded(
+                                                        flex: 2,
+                                                        child: Column(
+                                                          mainAxisSize:
+                                                              MainAxisSize.min,
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Obx(
+                                                              () => KText(
+                                                                text:
+                                                                    languagesController
+                                                                        .tr(
+                                                                          "BUY",
+                                                                        ),
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                fontSize:
+                                                                    screenWidth *
+                                                                    .035,
+                                                                color:
+                                                                    Colors.red,
                                                               ),
-                                                              Text(
-                                                                " : ",
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
+                                                            ),
+                                                            SizedBox(height: 4),
+                                                            Row(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .end,
+                                                              children: [
+                                                                Flexible(
+                                                                  child: PriceTextView(
+                                                                    price: data
+                                                                        .buyingPrice
+                                                                        .toString(),
+                                                                    textStyle: TextStyle(
+                                                                      color: Colors
+                                                                          .red,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      fontSize:
+                                                                          screenWidth *
+                                                                          .035,
+                                                                    ),
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                              PriceTextView(
-                                                                price: data
-                                                                    .buyingPrice
-                                                                    .toString(),
-                                                                textStyle: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .bold,
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .035,
+                                                                SizedBox(
+                                                                  width: 2,
                                                                 ),
-                                                              ),
-                                                              Text(
-                                                                " ${box.read("currency_code")}",
-                                                                style: TextStyle(
-                                                                  fontSize:
-                                                                      screenWidth *
-                                                                      .028,
-                                                                  color: Colors
-                                                                      .red,
+                                                                Text(
+                                                                  "${box.read("currency_code")}",
+                                                                  style: TextStyle(
+                                                                    fontSize:
+                                                                        screenWidth *
+                                                                        .028,
+                                                                    color: Colors
+                                                                        .red,
+                                                                  ),
                                                                 ),
-                                                              ),
-                                                            ],
-                                                          ),
-                                                        ],
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
                                                     ],
                                                   ),

@@ -41,55 +41,54 @@ class _BaseScreenState extends State<BaseScreen> {
     });
   }
 
-  // Future<bool> showExitPopup() async {
-  //   final shouldExit = mypagecontroller.goBack();
-  //   if (shouldExit) {
-  //     return await showDialog(
-  //           context: context,
-  //           builder: (context) => AlertDialog(
-  //             title: Text(languagesController.tr("EXIT_APP")),
-  //             content: Text(languagesController.tr("DO_YOU_WANT_TO_EXIT_APP")),
-  //             actions: [
-  //               ElevatedButton(
-  //                 onPressed: () => Navigator.of(context).pop(false),
-  //                 child: Text(languagesController.tr("NO")),
-  //               ),
-  //               ElevatedButton(
-  //                 onPressed: () => exit(0),
-  //                 child: Text(languagesController.tr("YES")),
-  //               ),
-  //             ],
-  //           ),
-  //         ) ??
-  //         false;
+  Future<bool> showExitPopup() async {
+    final shouldExit = mypagecontroller.goBack();
+    if (shouldExit) {
+      return await showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text(languagesController.tr("EXIT_APP")),
+              content: Text(languagesController.tr("DO_YOU_WANT_TO_EXIT_APP")),
+              actions: [
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(languagesController.tr("NO")),
+                ),
+                ElevatedButton(
+                  onPressed: () => exit(0),
+                  child: Text(languagesController.tr("YES")),
+                ),
+              ],
+            ),
+          ) ??
+          false;
+    }
+    setState(() {}); // rebuild if page stack updated
+    return false;
+  }
+
+  // Future<bool> handleBackPressed() async {
+  //   // If current page is one of the main pages
+  //   if (mypagecontroller.pageStack.length == 1 &&
+  //       mypagecontroller.lastSelectedIndex >= 0 &&
+  //       mypagecontroller.lastSelectedIndex <= 3) {
+  //     if (Platform.isAndroid) {
+  //       SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+  //       return false; // prevent default back behavior
+  //     }
+  //     return true;
   //   }
-  //   setState(() {}); // rebuild if page stack updated
+
+  //   mypagecontroller.goBack();
   //   return false;
   // }
-
-  Future<bool> handleBackPressed() async {
-    // If current page is one of the main pages
-    if (mypagecontroller.pageStack.length == 1 &&
-        mypagecontroller.lastSelectedIndex >= 0 &&
-        mypagecontroller.lastSelectedIndex <= 3) {
-      if (Platform.isAndroid) {
-        SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-        return false; // prevent default back behavior
-      }
-      return true; // let iOS handle normally
-    }
-
-    // Otherwise, pop the top page from stack
-    mypagecontroller.goBack();
-    return false; // prevent default back behavior
-  }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
     return WillPopScope(
-      onWillPop: handleBackPressed,
+      onWillPop: showExitPopup,
       child: Obx(
         () => Scaffold(
           resizeToAvoidBottomInset: false,

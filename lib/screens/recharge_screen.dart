@@ -204,7 +204,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                 padding: EdgeInsets.only(left: 15, right: 15, top: 10),
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
+                    padding: EdgeInsets.symmetric(horizontal: 0),
                     child: Row(
                       children: [
                         GestureDetector(
@@ -423,7 +423,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                   ),
                                   child: Center(
                                     child: Padding(
-                                      padding: const EdgeInsets.symmetric(
+                                      padding: EdgeInsets.symmetric(
                                         horizontal: 15,
                                         vertical: 0,
                                       ),
@@ -451,7 +451,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
               SizedBox(height: 8),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: EdgeInsets.symmetric(horizontal: 10),
                   child: Container(
                     decoration: BoxDecoration(
                       // color: AppColors.secondaryColor,
@@ -1278,23 +1278,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                           vertical: 3,
                                         ),
                                         child: Container(
-                                          height: 80,
-                                          width: screenWidth,
+                                          width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
                                                 color: Colors.grey.withOpacity(
                                                   0.3,
-                                                ), // slightly darker for visibility
-                                                spreadRadius:
-                                                    2, // how much the shadow spreads
-                                                blurRadius:
-                                                    2, // how soft the shadow is
-                                                offset: Offset(
-                                                  0,
-                                                  0,
-                                                ), // 0,0 means shadow spreads evenly
+                                                ),
+                                                spreadRadius: 2,
+                                                blurRadius: 2,
+                                                offset: Offset(0, 0),
                                               ),
                                             ],
                                             borderRadius: BorderRadius.circular(
@@ -1303,8 +1297,8 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                           ),
                                           child: Padding(
                                             padding: EdgeInsets.symmetric(
-                                              horizontal: 5,
-                                              vertical: 5,
+                                              horizontal: 10,
+                                              vertical: 8,
                                             ),
                                             child: Row(
                                               children: [
@@ -1326,152 +1320,131 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                                     ),
                                                   ),
                                                 ),
+                                                SizedBox(width: 10),
+
+                                                // Left Column - Bundle Title and Buying Price
                                                 Expanded(
-                                                  child: Container(
-                                                    // color: Colors.red,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                        left: 10,
-                                                        right: 10,
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        data.bundleTitle
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 14,
+                                                        ),
+                                                        softWrap: true,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                      SizedBox(height: 4),
+                                                      Row(
                                                         children: [
-                                                          Text(
-                                                            data.bundleTitle
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              Obx(
-                                                                () => KText(
-                                                                  text: languagesController
+                                                          Obx(
+                                                            () => KText(
+                                                              text:
+                                                                  languagesController
                                                                       .tr(
                                                                         "BUY",
                                                                       ),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  fontSize: 13,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                              Text(
-                                                                " : ",
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                              PriceTextView(
-                                                                price: data
-                                                                    .buyingPrice
-                                                                    .toString(),
-                                                                textStyle: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 13,
+                                                              color: Colors.red,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            " : ",
+                                                            style: TextStyle(
+                                                              color: Colors.red,
+                                                            ),
+                                                          ),
+                                                          PriceTextView(
+                                                            price: data
+                                                                .buyingPrice
+                                                                .toString(),
+                                                            textStyle:
+                                                                TextStyle(
                                                                   color: Colors
                                                                       .red,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
                                                                 ),
-                                                              ),
-                                                              Text(
-                                                                " ${box.read("currency_code")}",
-                                                                style: TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          ),
+                                                          Text(
+                                                            " ${box.read("currency_code")}",
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: Colors.red,
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
-                                                    ),
+                                                    ],
                                                   ),
                                                 ),
-                                                SizedBox(width: 2),
+
+                                                // Right Column - Validity Type and Selling Price
                                                 Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.end,
                                                   children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        Obx(
-                                                          () => KText(
-                                                            text:
-                                                                data.validityType
-                                                                        .toString() ==
-                                                                    "unlimited"
-                                                                ? languagesController.tr(
+                                                    // Validity Type
+                                                    Obx(
+                                                      () => KText(
+                                                        text:
+                                                            data.validityType
+                                                                    .toString() ==
+                                                                "unlimited"
+                                                            ? languagesController
+                                                                  .tr(
                                                                     "UNLIMITED",
                                                                   )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "monthly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "MONTHLY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "weekly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "WEEKLY",
-                                                                      )
-                                                                      .toString()
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "daily"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "DAILY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "hourly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "HOURLY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "nightly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "NIGHTLY",
-                                                                      )
-                                                                : "",
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontSize: 12,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "monthly"
+                                                            ? languagesController
+                                                                  .tr("MONTHLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "weekly"
+                                                            ? languagesController
+                                                                  .tr("WEEKLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "daily"
+                                                            ? languagesController
+                                                                  .tr("DAILY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "hourly"
+                                                            ? languagesController
+                                                                  .tr("HOURLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "nightly"
+                                                            ? languagesController
+                                                                  .tr("NIGHTLY")
+                                                            : "",
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 12,
+                                                        color: Colors.grey,
+                                                      ),
                                                     ),
-                                                    Spacer(),
+                                                    SizedBox(height: 8),
+
+                                                    // Selling Price
                                                     Row(
                                                       children: [
                                                         Obx(
@@ -1512,7 +1485,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(width: 10),
                                               ],
                                             ),
                                           ),
@@ -2331,23 +2303,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                           vertical: 3,
                                         ),
                                         child: Container(
-                                          height: 80,
-                                          width: screenWidth,
+                                          width: double.infinity,
                                           decoration: BoxDecoration(
                                             color: Colors.white,
                                             boxShadow: [
                                               BoxShadow(
                                                 color: Colors.grey.withOpacity(
                                                   0.3,
-                                                ), // slightly darker for visibility
-                                                spreadRadius:
-                                                    2, // how much the shadow spreads
-                                                blurRadius:
-                                                    2, // how soft the shadow is
-                                                offset: Offset(
-                                                  0,
-                                                  0,
-                                                ), // 0,0 means shadow spreads evenly
+                                                ),
+                                                spreadRadius: 2,
+                                                blurRadius: 2,
+                                                offset: Offset(0, 0),
                                               ),
                                             ],
                                             borderRadius: BorderRadius.circular(
@@ -2356,8 +2322,8 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                           ),
                                           child: Padding(
                                             padding: EdgeInsets.symmetric(
-                                              horizontal: 5,
-                                              vertical: 5,
+                                              horizontal: 10,
+                                              vertical: 8,
                                             ),
                                             child: Row(
                                               children: [
@@ -2379,152 +2345,131 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                                     ),
                                                   ),
                                                 ),
+                                                SizedBox(width: 10),
+
+                                                // Left Column - Bundle Title and Buying Price
                                                 Expanded(
-                                                  child: Container(
-                                                    // color: Colors.red,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(
-                                                        left: 10,
-                                                        right: 10,
+                                                  child: Column(
+                                                    mainAxisSize:
+                                                        MainAxisSize.min,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        data.bundleTitle
+                                                            .toString(),
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 14,
+                                                        ),
+                                                        softWrap: true,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
                                                       ),
-                                                      child: Column(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        crossAxisAlignment:
-                                                            CrossAxisAlignment
-                                                                .start,
+                                                      SizedBox(height: 4),
+                                                      Row(
                                                         children: [
-                                                          Text(
-                                                            data.bundleTitle
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              fontSize: 13,
-                                                            ),
-                                                          ),
-                                                          Row(
-                                                            children: [
-                                                              Obx(
-                                                                () => KText(
-                                                                  text: languagesController
+                                                          Obx(
+                                                            () => KText(
+                                                              text:
+                                                                  languagesController
                                                                       .tr(
                                                                         "BUY",
                                                                       ),
-                                                                  fontWeight:
-                                                                      FontWeight
-                                                                          .w500,
-                                                                  fontSize: 13,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                              Text(
-                                                                " : ",
-                                                                style: TextStyle(
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                              PriceTextView(
-                                                                price: data
-                                                                    .buyingPrice
-                                                                    .toString(),
-                                                                textStyle: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w500,
+                                                              fontSize: 13,
+                                                              color: Colors.red,
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            " : ",
+                                                            style: TextStyle(
+                                                              color: Colors.red,
+                                                            ),
+                                                          ),
+                                                          PriceTextView(
+                                                            price: data
+                                                                .buyingPrice
+                                                                .toString(),
+                                                            textStyle:
+                                                                TextStyle(
                                                                   color: Colors
                                                                       .red,
                                                                   fontWeight:
                                                                       FontWeight
                                                                           .bold,
                                                                 ),
-                                                              ),
-                                                              Text(
-                                                                " ${box.read("currency_code")}",
-                                                                style: TextStyle(
-                                                                  fontSize: 10,
-                                                                  color: Colors
-                                                                      .red,
-                                                                ),
-                                                              ),
-                                                            ],
+                                                          ),
+                                                          Text(
+                                                            " ${box.read("currency_code")}",
+                                                            style: TextStyle(
+                                                              fontSize: 10,
+                                                              color: Colors.red,
+                                                            ),
                                                           ),
                                                         ],
                                                       ),
-                                                    ),
+                                                    ],
                                                   ),
                                                 ),
-                                                SizedBox(width: 2),
+
+                                                // Right Column - Validity Type and Selling Price
                                                 Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   crossAxisAlignment:
                                                       CrossAxisAlignment.end,
                                                   children: [
-                                                    Row(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment.end,
-                                                      crossAxisAlignment:
-                                                          CrossAxisAlignment
-                                                              .end,
-                                                      children: [
-                                                        Obx(
-                                                          () => KText(
-                                                            text:
-                                                                data.validityType
-                                                                        .toString() ==
-                                                                    "unlimited"
-                                                                ? languagesController.tr(
+                                                    // Validity Type
+                                                    Obx(
+                                                      () => KText(
+                                                        text:
+                                                            data.validityType
+                                                                    .toString() ==
+                                                                "unlimited"
+                                                            ? languagesController
+                                                                  .tr(
                                                                     "UNLIMITED",
                                                                   )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "monthly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "MONTHLY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "weekly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "WEEKLY",
-                                                                      )
-                                                                      .toString()
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "daily"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "DAILY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "hourly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "HOURLY",
-                                                                      )
-                                                                : data.validityType
-                                                                          .toString() ==
-                                                                      "nightly"
-                                                                ? languagesController
-                                                                      .tr(
-                                                                        "NIGHTLY",
-                                                                      )
-                                                                : "",
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            fontSize: 12,
-                                                            color: Colors.grey,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "monthly"
+                                                            ? languagesController
+                                                                  .tr("MONTHLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "weekly"
+                                                            ? languagesController
+                                                                  .tr("WEEKLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "daily"
+                                                            ? languagesController
+                                                                  .tr("DAILY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "hourly"
+                                                            ? languagesController
+                                                                  .tr("HOURLY")
+                                                            : data.validityType
+                                                                      .toString() ==
+                                                                  "nightly"
+                                                            ? languagesController
+                                                                  .tr("NIGHTLY")
+                                                            : "",
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        fontSize: 12,
+                                                        color: Colors.grey,
+                                                      ),
                                                     ),
-                                                    Spacer(),
+                                                    SizedBox(height: 8),
+
+                                                    // Selling Price
                                                     Row(
                                                       children: [
                                                         Obx(
@@ -2565,7 +2510,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(width: 10),
                                               ],
                                             ),
                                           ),
