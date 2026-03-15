@@ -39,12 +39,18 @@ class Mypagecontroller extends GetxController {
     }
   }
 
-  bool goBack() {
+  // bool goBack() {
+  //   if (pageStack.length > 1) {
+  //     pageStack.removeLast();
+  //     return false; // don't exit
+  //   } else {
+  //     return true; // allow exit
+  //   }
+  // }
+
+  void goBack() {
     if (pageStack.length > 1) {
       pageStack.removeLast();
-      return false; // don't exit
-    } else {
-      return true; // allow exit
     }
   }
 

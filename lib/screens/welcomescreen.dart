@@ -53,31 +53,32 @@ class _WelcomescreenState extends State<Welcomescreen> {
 
   final Mypagecontroller mypagecontroller = Get.put(Mypagecontroller());
   Future<bool> showExitPopup() async {
-    final shouldExit = mypagecontroller.goBack();
-    if (shouldExit) {
-      return await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(languagesController.tr("EXIT_APP")),
-              content: Text(languagesController.tr("DO_YOU_WANT_TO_EXIT_APP")),
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(languagesController.tr("NO")),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    exit(0);
-                  },
-                  child: Text(languagesController.tr("YES")),
-                ),
-              ],
-            ),
-          ) ??
-          false;
+    // যদি inner page থাকে → শুধু back
+    if (mypagecontroller.pageStack.length > 1) {
+      mypagecontroller.goBack();
+      return false;
     }
-    setState(() {}); // Rebuild screen after popping
-    return false;
+
+    // root page → exit confirmation
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(languagesController.tr("EXIT_APP")),
+        content: Text(languagesController.tr("DO_YOU_WANT_TO_EXIT_APP")),
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(languagesController.tr("NO")),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(languagesController.tr("YES")),
+          ),
+        ],
+      ),
+    );
+
+    return shouldExit ?? false;
   }
 
   String longtext =
@@ -183,7 +184,7 @@ class _WelcomescreenState extends State<Welcomescreen> {
                             buttonName: "Log in",
                             height: 50,
                             onpressed: () {
-                              Get.toNamed(signinscreen);
+                              Get.offAllNamed(signinscreen);
                             },
                           ),
                         ),

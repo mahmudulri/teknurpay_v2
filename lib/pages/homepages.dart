@@ -53,7 +53,9 @@ class _HomepagesState extends State<Homepages> {
     "assets/icons/callsmsplan.png",
   ];
 
-  final dashboardController = Get.find<DashboardController>();
+  // final dashboardController = Get.find<DashboardController>();
+
+  DashboardController dashboardController = Get.put(DashboardController());
   final bundleController = Get.find<BundleController>();
 
   final box = GetStorage();

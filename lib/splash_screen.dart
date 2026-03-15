@@ -61,25 +61,25 @@ class _SplashScreenState extends State<SplashScreen> {
         locale = Locale("en", "US");
     }
 
-    setState(() {
-      EasyLocalization.of(context)!.setLocale(locale);
-    });
+    EasyLocalization.of(context)!.setLocale(locale);
 
-    // If no token, go to onboarding
     if (box.read('userToken') == null) {
-      Get.toNamed(welcomescreen);
+      Get.offAllNamed(welcomescreen);
     } else {
-      // Fetch initial data
       dashboardController.fetchDashboardData();
-      Get.toNamed(basescreen);
+      Get.offAllNamed(basescreen);
     }
   }
 
   @override
   void initState() {
-    Future.delayed(Duration(seconds: 2), () => checkData());
-
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Optional splash delay (UI-safe)
+      Future.delayed(const Duration(seconds: 2), () {
+        checkData();
+      });
+    });
   }
 
   @override

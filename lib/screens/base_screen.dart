@@ -41,54 +41,30 @@ class _BaseScreenState extends State<BaseScreen> {
     });
   }
 
-  Future<bool> showExitPopup() async {
-    final shouldExit = mypagecontroller.goBack();
-    if (shouldExit) {
-      return await showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(languagesController.tr("EXIT_APP")),
-              content: Text(languagesController.tr("DO_YOU_WANT_TO_EXIT_APP")),
-              actions: [
-                ElevatedButton(
-                  onPressed: () => Navigator.of(context).pop(false),
-                  child: Text(languagesController.tr("NO")),
-                ),
-                ElevatedButton(
-                  onPressed: () => exit(0),
-                  child: Text(languagesController.tr("YES")),
-                ),
-              ],
-            ),
-          ) ??
-          false;
-    }
-    setState(() {}); // rebuild if page stack updated
-    return false;
-  }
-
   // Future<bool> handleBackPressed() async {
-  //   // If current page is one of the main pages
-  //   if (mypagecontroller.pageStack.length == 1 &&
-  //       mypagecontroller.lastSelectedIndex >= 0 &&
-  //       mypagecontroller.lastSelectedIndex <= 3) {
-  //     if (Platform.isAndroid) {
-  //       SystemChannels.platform.invokeMethod('SystemNavigator.pop');
-  //       return false; // prevent default back behavior
-  //     }
-  //     return true;
+  //   if (mypagecontroller.pageStack.length > 1) {
+  //     mypagecontroller.goBack();
+  //     return false; // just pop inner page
   //   }
 
-  //   mypagecontroller.goBack();
-  //   return false;
+  //   // root page reached → allow system to exit
+  //   return true;
   // }
 
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    return PopScope(
+      canPop: false, // 🔥 খুব গুরুত্বপূর্ণ
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
 
-    return WillPopScope(
-      onWillPop: showExitPopup,
+        if (mypagecontroller.pageStack.length > 1) {
+          mypagecontroller.goBack();
+        } else {
+          SystemNavigator.pop(); // ✅ Android 15 root exit
+        }
+      },
       child: Obx(
         () => Scaffold(
           resizeToAvoidBottomInset: false,

@@ -84,7 +84,7 @@ class SignInController extends GetxController {
         );
         dashboardController.fetchDashboardData();
 
-        Get.toNamed(basescreen);
+        Get.offAllNamed(basescreen);
 
         if (results["success"] == true) {
           loginsuccess.value = false;

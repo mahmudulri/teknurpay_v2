@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:teknurpay/controllers/dashboard_controller.dart';
+import 'package:teknurpay/global_controller/languages_controller.dart';
+import 'package:teknurpay/global_controller/page_controller.dart';
 import 'package:teknurpay/helpers/network_checker.dart';
 import 'package:teknurpay/routes/routes.dart';
 
@@ -18,6 +21,9 @@ void main() async {
   Get.put(CurrencyController(), permanent: true);
   Get.put(RechargeConfigController(), permanent: true);
   Get.put(AfghanRechargeController(), permanent: true);
+  Get.put(DashboardController(), permanent: true);
+  Get.put(LanguagesController(), permanent: true);
+  Get.put(Mypagecontroller(), permanent: true);
   DependencyInjection.init();
 
   runApp(
