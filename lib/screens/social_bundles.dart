@@ -35,6 +35,7 @@ class _SocialBundlesState extends State<SocialBundles> {
 
   final bundleController = Get.find<BundleController>();
   LanguagesController languagesController = Get.put(LanguagesController());
+  final confirmPinController = Get.find<ConfirmPinController>();
 
   // final confirmPinController = Get.find<ConfirmPinController>();
 
@@ -50,6 +51,7 @@ class _SocialBundlesState extends State<SocialBundles> {
   @override
   void initState() {
     super.initState();
+    confirmPinController.numberController.clear();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color

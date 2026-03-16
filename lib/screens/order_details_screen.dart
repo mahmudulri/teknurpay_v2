@@ -292,7 +292,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                                             fontWeight: FontWeight.w400,
                                           ),
                                           Text(
-                                            "WT#- " + widget.orderID.toString(),
+                                            "TP#- " + widget.orderID.toString(),
                                             style: TextStyle(
                                               fontSize: 14,
                                               color: Color(0xff212B36),
