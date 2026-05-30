@@ -12,6 +12,7 @@ import 'package:teknurpay/routes/routes.dart';
 import 'controllers/currency_controller.dart';
 import 'controllers/recharge_config_controller.dart';
 import 'global_controller/afghan_recharge_controller.dart';
+import 'global_controller/font_controller.dart';
 import 'global_controller/time_zone_controller.dart';
 
 void main() async {
@@ -24,6 +25,8 @@ void main() async {
   Get.put(DashboardController(), permanent: true);
   Get.put(LanguagesController(), permanent: true);
   Get.put(Mypagecontroller(), permanent: true);
+  Get.put(FontController(), permanent: true);
+
   DependencyInjection.init();
 
   runApp(

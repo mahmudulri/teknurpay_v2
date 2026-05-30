@@ -1,0 +1,45 @@
+{
+  "success": true,
+  "message": "Pricing settings fetched successfully",
+  "data": {
+    "features": [
+      "No Ads",
+      "Unlimited Invoice",
+      "Premium Templates",
+      "Add More Shop",
+      "Add Employee"
+    ],
+    "packages": [
+      {
+        "id": 1,
+        "package_name": "One Month",
+        "package_code": "INV-1M-2026",
+        "duration_days": 30,
+        "price": "2.00 USD",
+        "is_offer": false,
+        "offer_title": "",
+        "offer_price": ""
+      },
+      {
+        "id": 2,
+        "package_name": "6 Months",
+        "package_code": "INV-6M-2026",
+        "duration_days": 180,
+        "price": "10.00 USD",
+        "is_offer": false,
+        "offer_title": "",
+        "offer_price": ""
+      },
+      {
+        "id": 3,
+        "package_name": "12 Months",
+        "package_code": "INV-12M-2026",
+        "duration_days": 365,
+        "price": "20.00 USD",
+        "is_offer": true,
+        "offer_title": "Limited Time Offer",
+        "offer_price": "14.99 USD"
+      }
+    ]
+  }
+}

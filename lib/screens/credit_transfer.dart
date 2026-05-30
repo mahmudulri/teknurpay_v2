@@ -235,13 +235,27 @@ class _CreditTransferState extends State<CreditTransfer> {
                                 color: Colors.grey,
                                 image: DecorationImage(
                                   fit: BoxFit.cover,
-                                  image: NetworkImage(
-                                    countryListController.flagimageurl
-                                        .toString(),
+                                  image: AssetImage(
+                                    "assets/images/afnflag.jpg",
                                   ),
                                 ),
                               ),
                             ),
+                            // Container(
+                            //   height: 40,
+                            //   width: 70,
+                            //   decoration: BoxDecoration(
+                            //     borderRadius: BorderRadius.circular(10),
+                            //     color: Colors.grey,
+                            //     image: DecorationImage(
+                            //       fit: BoxFit.cover,
+                            //       image: NetworkImage(
+                            //         countryListController.flagimageurl
+                            //             .toString(),
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
                           ],
                         ),
                         SizedBox(height: 10),
@@ -358,18 +372,18 @@ class _CreditTransferState extends State<CreditTransfer> {
                             ),
                           ),
                         ),
-                        Obx(
-                          () => Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "${controller.convertedAmount.value.toStringAsFixed(2)} " +
-                                    "${controller.box.read("currency_symbol")}",
-                              ),
-                            ],
-                          ),
-                        ),
 
+                        // Obx(
+                        //   () => Row(
+                        //     mainAxisAlignment: MainAxisAlignment.center,
+                        //     children: [
+                        //       Text(
+                        //         "${controller.convertedAmount.value.toStringAsFixed(2)} " +
+                        //             "${controller.box.read("currency_symbol")}",
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
                         SizedBox(height: 8),
                         Container(
                           decoration: BoxDecoration(

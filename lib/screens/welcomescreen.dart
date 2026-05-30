@@ -1,24 +1,12 @@
-import 'dart:ffi';
-import 'dart:io';
 import 'package:teknurpay/widgets/bottomsheet.dart';
-import 'package:teknurpay/widgets/button_one.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:teknurpay/controllers/dashboard_controller.dart';
-import 'package:teknurpay/controllers/sign_in_controller.dart';
 import 'package:teknurpay/global_controller/page_controller.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/routes/routes.dart';
-
-import 'package:teknurpay/screens/sign_up_screen.dart';
-import 'package:teknurpay/utils/colors.dart';
-import 'package:teknurpay/widgets/authtextfield.dart';
-import 'package:teknurpay/widgets/social_button.dart';
 
 import '../widgets/button.dart';
 
@@ -32,15 +20,10 @@ class Welcomescreen extends StatefulWidget {
 class _WelcomescreenState extends State<Welcomescreen> {
   LanguagesController languagesController = Get.put(LanguagesController());
 
-  // final signInController = Get.find<SignInController>();
-
-  // final dashboardController = Get.find<DashboardController>();
-
   final box = GetStorage();
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
@@ -53,13 +36,11 @@ class _WelcomescreenState extends State<Welcomescreen> {
 
   final Mypagecontroller mypagecontroller = Get.put(Mypagecontroller());
   Future<bool> showExitPopup() async {
-    // যদি inner page থাকে → শুধু back
     if (mypagecontroller.pageStack.length > 1) {
       mypagecontroller.goBack();
       return false;
     }
 
-    // root page → exit confirmation
     final shouldExit = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(

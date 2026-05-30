@@ -109,10 +109,37 @@ class _HomepagesState extends State<Homepages> {
 
   final ScrollController scrollController = ScrollController();
 
+  Timer? _timer;
+
   @override
   void initState() {
     super.initState();
     _checkforUpdate();
+
+    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
+      var sliderItems =
+          dashboardController
+              .alldashboardData
+              .value
+              .data
+              ?.advertisementSliders ??
+          [];
+
+      if (sliderItems.isEmpty) return;
+
+      if (currentIndex.value < sliderItems.length - 1) {
+        currentIndex.value++;
+      } else {
+        currentIndex.value = 0;
+      }
+
+      _pageController.animateToPage(
+        currentIndex.value,
+        duration: Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
+
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -162,6 +189,13 @@ class _HomepagesState extends State<Homepages> {
   final PageController _pageController = PageController();
   final Mypagecontroller mypagecontroller = Get.find();
   var currentIndex = 0.obs;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -405,6 +439,7 @@ class _HomepagesState extends State<Homepages> {
                             GestureDetector(
                               onTap: () {
                                 CustomFullScreenSheet.show(context);
+                                // print(box.read("userToken"));
                               },
                               child: Image.asset(
                                 "assets/icons/drawericon.png",
@@ -417,59 +452,82 @@ class _HomepagesState extends State<Homepages> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  GestureDetector(
-                    onTap: () {
-                      companyController.fetchCompany();
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 15),
-                      height: 140,
-                      width: screenWidth,
-                      child: Obx(() {
-                        var sliderItems =
-                            dashboardController
-                                .alldashboardData
-                                .value
-                                .data!
-                                .advertisementSliders ??
-                            [];
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 15),
+                    height: 140,
+                    width: screenWidth,
+                    child: Obx(() {
+                      var sliderItems =
+                          dashboardController
+                              .alldashboardData
+                              .value
+                              .data!
+                              .advertisementSliders ??
+                          [];
 
-                        if (sliderItems.isEmpty) {
-                          return Container(
-                            alignment: Alignment.center,
-                            child: const Text(""),
-                          );
-                        }
-
-                        return PageView.builder(
-                          controller: _pageController,
-                          itemCount: sliderItems.length,
-                          onPageChanged: (index) {
-                            currentIndex.value = index;
-                          },
-                          itemBuilder: (context, index) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                sliderItems[index].adSliderImageUrl ?? "",
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                      color: Colors.grey[300],
-                                      child: const Icon(
-                                        Icons.image_not_supported,
-                                      ),
-                                    ),
-                              ),
-                            );
-                          },
+                      if (sliderItems.isEmpty) {
+                        return Container(
+                          alignment: Alignment.center,
+                          child: const Text(""),
                         );
-                      }),
-                    ),
+                      }
+
+                      return PageView.builder(
+                        controller: _pageController,
+                        itemCount: sliderItems.length,
+                        onPageChanged: (index) {
+                          currentIndex.value = index;
+
+                          // reset timer
+                          _timer?.cancel();
+                          _timer = Timer.periodic(Duration(seconds: 3), (
+                            Timer timer,
+                          ) {
+                            var sliderItems =
+                                dashboardController
+                                    .alldashboardData
+                                    .value
+                                    .data
+                                    ?.advertisementSliders ??
+                                [];
+
+                            if (sliderItems.isEmpty) return;
+
+                            if (currentIndex.value < sliderItems.length - 1) {
+                              currentIndex.value++;
+                            } else {
+                              currentIndex.value = 0;
+                            }
+
+                            _pageController.animateToPage(
+                              currentIndex.value,
+                              duration: Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                            );
+                          });
+                        },
+                        itemBuilder: (context, index) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              sliderItems[index].adSliderImageUrl ?? "",
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    color: Colors.grey[300],
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                    ),
+                                  ),
+                            ),
+                          );
+                        },
+                      );
+                    }),
                   ),
 
                   // Dot indicator below the container
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   Obx(() {
                     var sliderItems =
                         dashboardController
@@ -482,7 +540,7 @@ class _HomepagesState extends State<Homepages> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(sliderItems.length, (index) {
                         return Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          margin: EdgeInsets.symmetric(horizontal: 3),
                           width: currentIndex.value == index ? 10 : 7,
                           height: currentIndex.value == index ? 10 : 7,
                           decoration: BoxDecoration(
@@ -495,6 +553,7 @@ class _HomepagesState extends State<Homepages> {
                       }),
                     );
                   }),
+
                   SizedBox(height: 10),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15),
@@ -796,6 +855,7 @@ class _HomepagesState extends State<Homepages> {
                                                   Text(
                                                     data.categoryName
                                                         .toString(),
+                                                    textAlign: TextAlign.center,
                                                     style: TextStyle(
                                                       color:
                                                           Colors.grey.shade700,

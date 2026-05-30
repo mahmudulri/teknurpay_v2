@@ -31,6 +31,7 @@ Future<void> capturePng(GlobalKey captureKey) async {
     }
 
     Uint8List pngBytes = byteData.buffer.asUint8List();
+
     final result = await ImageGallerySaverPlus.saveImage(
       pngBytes,
       quality: 100,
@@ -41,10 +42,6 @@ Future<void> capturePng(GlobalKey captureKey) async {
       Fluttertoast.showToast(
         msg: languageController.tr("IMAGE_SAVED_TO_GALLERY"),
       );
-      // Get.snackbar(
-      //   languageController.tr("SUCCESS"),
-      //   languageController.tr("IMAGE_SAVED_TO_GALLERY"),
-      // );
     } else {
       Get.snackbar("FAILED", "Could not save image.");
 

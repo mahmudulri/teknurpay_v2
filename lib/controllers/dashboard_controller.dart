@@ -5,11 +5,11 @@ import '../global_controller/balance_controller.dart';
 import '../models/dashboard_data_model.dart';
 
 class DashboardController extends GetxController {
-  @override
-  void onInit() {
-    fetchDashboardData();
-    super.onInit();
-  }
+  // @override
+  // void onInit() {
+  //   fetchDashboardData();
+  //   super.onInit();
+  // }
 
   var isLoading = false.obs;
   final deactiveStatus = ''.obs;
