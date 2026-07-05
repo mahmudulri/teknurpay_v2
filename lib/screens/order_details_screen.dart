@@ -95,374 +95,459 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(),
-                        child: Column(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
                           children: [
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xffE8F4FF),
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20),
+                            // ✅ FULL CARD WATERMARK BACKGROUND
+                            Positioned.fill(
+                              child: Opacity(
+                                opacity: 1.0, // watermark light/dark control
+                                child: Center(
+                                  child: Image.asset(
+                                    "assets/icons/logo.png",
+                                    height: 260,
+                                    width: 260,
+                                    fit: BoxFit.contain,
                                   ),
                                 ),
-                                child: Column(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    SizedBox(height: 8),
-                                    Padding(
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 30,
-                                      ),
-                                      child: Container(
-                                        height: 70,
-                                        width: double.maxFinite,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            15,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            GestureDetector(
-                                              onTap: () {
-                                                print(widget.status.toString());
-                                              },
-                                              child: Image.asset(
-                                                "assets/icons/logo.png",
-                                                height: 60,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        KText(
-                                          text: widget.status.toString() == "0"
-                                              ? languagesController.tr(
-                                                  "PENDING",
-                                                )
-                                              : widget.status.toString() == "1"
-                                              ? languagesController.tr(
-                                                  "CONFIRMED",
-                                                )
-                                              : languagesController.tr(
-                                                  "REJECTED",
-                                                ),
-                                          fontWeight: FontWeight.w600,
-                                          color: widget.status.toString() == "0"
-                                              ? Colors.black
-                                              : widget.status.toString() == "1"
-                                              ? Colors.green
-                                              : Colors.red,
-                                          fontSize: 16,
-                                        ),
-                                        SizedBox(width: 20),
-                                        Image.asset(
-                                          widget.status.toString() == "0"
-                                              ? "assets/icons/info-circle.png"
-                                              : widget.status.toString() == "1"
-                                              ? "assets/icons/confirmed.png"
-                                              : "assets/icons/close-circle.png",
-                                          height: 28,
-                                        ),
-                                      ],
-                                    ),
-                                    Visibility(
-                                      visible: widget.status.toString() == "2",
+                              ),
+                            ),
+
+                            // ✅ Optional diagonal watermark text
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: Center(
+                                  child: Transform.rotate(
+                                    angle: -0.45,
+                                    child: Opacity(
+                                      opacity: 0.045,
                                       child: KText(
-                                        text: widget.rejectReason.toString(),
-                                        color: Colors.red,
-                                        fontSize: 13,
+                                        text: "Manshor Topup",
+                                        fontSize: 36,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.black,
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
                               ),
                             ),
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                color: Colors.white,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Container(
-                                            height: 40,
-                                            width: 40,
+
+                            // ✅ MAIN ORDER DETAILS CONTENT
+                            Column(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Color(
+                                        0xffE8F4FF,
+                                      ).withOpacity(0.95),
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        const SizedBox(height: 8),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 30,
+                                          ),
+                                          child: Container(
+                                            height: 70,
+                                            width: double.maxFinite,
                                             decoration: BoxDecoration(
-                                              image: DecorationImage(
-                                                fit: BoxFit.fill,
-                                                image: NetworkImage(
-                                                  widget.companyLogo.toString(),
-                                                ),
-                                              ),
-                                              shape: BoxShape.circle,
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
                                             ),
-                                          ),
-                                          SizedBox(width: 10),
-                                          Text(
-                                            widget.bundleTitle.toString(),
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              color: Color(0xff212B36),
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                          Spacer(),
-                                          KText(
-                                            text:
-                                                widget.validityType
-                                                        .toString() ==
-                                                    "yearly"
-                                                ? languagesController.tr(
-                                                    "YEARLY",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "unlimited"
-                                                ? languagesController.tr(
-                                                    "UNLIMITED",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "monthly"
-                                                ? languagesController.tr(
-                                                    "MONTHLY",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "weekly"
-                                                ? languagesController.tr(
-                                                    "WEEKLY",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "daily"
-                                                ? languagesController.tr(
-                                                    "DAILY",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "hourly"
-                                                ? languagesController.tr(
-                                                    "HOURLY",
-                                                  )
-                                                : widget.validityType
-                                                          .toString() ==
-                                                      "nightly"
-                                                ? languagesController.tr(
-                                                    "NIGHTLY",
-                                                  )
-                                                : "",
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 14,
-                                            color: Color(0xff3E4094),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 8),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "ORDER_ID",
-                                            ),
-                                            fontSize: 14,
-                                            color: Color(0xff637381),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          Text(
-                                            "TP#- " + widget.orderID.toString(),
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Color(0xff212B36),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "DATE",
-                                            ),
-                                            fontSize: 14,
-                                            color: Color(0xff637381),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            convertToDate(
-                                              widget.createDate.toString(),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "TIME",
-                                            ),
-                                            fontSize: 14,
-                                            color: Color(0xff637381),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            convertToLocalTime(
-                                              widget.createDate.toString(),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              flex: 2,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Color(0xffE8F4FF),
-                                  borderRadius: BorderRadius.vertical(
-                                    bottom: Radius.circular(20),
-                                  ),
-                                ),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 10,
-                                  ),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "PHONE_NUMBER",
-                                            ),
-                                            fontSize: 14,
-                                            color: Color(0xff637381),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Flexible(
-                                            child: Text(
-                                              widget.rechargebleAccount
-                                                  .toString(),
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Color(0xff212B36),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "SENDER",
-                                            ),
-                                            fontSize: 14,
-                                            color: Color(0xff637381),
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                          SizedBox(width: 10),
-                                          Flexible(
-                                            child: KText(
-                                              text: widget.resellerName
-                                                  .toString(),
-                                              fontSize: 14,
-                                              color: Color(0xff212B36),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      SizedBox(height: 10),
-                                      Visibility(
-                                        visible: showprice,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            KText(
-                                              text: languagesController.tr(
-                                                "PRICE",
-                                              ),
-                                              fontSize: 14,
-                                              color: Color(0xff637381),
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                            Row(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
                                               children: [
-                                                KText(
-                                                  text: box.read(
-                                                    "currency_code",
-                                                  ),
-                                                  fontSize: 14,
-                                                  color: Colors.grey,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                                SizedBox(width: 8),
-                                                Text(
-                                                  NumberFormat.currency(
-                                                    locale: 'en_US',
-                                                    symbol: '',
-                                                    decimalDigits: 2,
-                                                  ).format(
-                                                    double.parse(
-                                                      widget.sellingPrice
-                                                          .toString(),
-                                                    ),
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Color(0xff212B36),
-                                                    fontSize: 14,
-                                                    fontWeight: FontWeight.w600,
+                                                GestureDetector(
+                                                  onTap: () {
+                                                    print(
+                                                      widget.status.toString(),
+                                                    );
+                                                  },
+                                                  child: Image.asset(
+                                                    "assets/icons/logo.png",
+                                                    height: 60,
                                                   ),
                                                 ),
                                               ],
                                             ),
+                                          ),
+                                        ),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            KText(
+                                              text:
+                                                  widget.status.toString() ==
+                                                      "0"
+                                                  ? languagesController.tr(
+                                                      "PENDING",
+                                                    )
+                                                  : widget.status.toString() ==
+                                                        "1"
+                                                  ? languagesController.tr(
+                                                      "CONFIRMED",
+                                                    )
+                                                  : languagesController.tr(
+                                                      "REJECTED",
+                                                    ),
+                                              fontWeight: FontWeight.w600,
+                                              color:
+                                                  widget.status.toString() ==
+                                                      "0"
+                                                  ? Colors.black
+                                                  : widget.status.toString() ==
+                                                        "1"
+                                                  ? Colors.green
+                                                  : Colors.red,
+                                              fontSize: 16,
+                                            ),
+                                            const SizedBox(width: 20),
+                                            Image.asset(
+                                              widget.status.toString() == "0"
+                                                  ? "assets/icons/info-circle.png"
+                                                  : widget.status.toString() ==
+                                                        "1"
+                                                  ? "assets/icons/confirmed.png"
+                                                  : "assets/icons/close-circle.png",
+                                              height: 28,
+                                            ),
                                           ],
                                         ),
-                                      ),
-                                    ],
+                                        Visibility(
+                                          visible:
+                                              widget.status.toString() == "2",
+                                          child: KText(
+                                            text: widget.rejectReason
+                                                .toString(),
+                                            color: Colors.red,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
+
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    color: Colors.white.withOpacity(0.92),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Container(
+                                                height: 40,
+                                                width: 40,
+                                                decoration: BoxDecoration(
+                                                  image: DecorationImage(
+                                                    fit: BoxFit.fill,
+                                                    image: NetworkImage(
+                                                      widget.companyLogo
+                                                          .toString(),
+                                                    ),
+                                                  ),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Expanded(
+                                                child: Text(
+                                                  widget.bundleTitle.toString(),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    color: Color(0xff212B36),
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              KText(
+                                                text:
+                                                    widget.validityType
+                                                            .toString() ==
+                                                        "yearly"
+                                                    ? languagesController.tr(
+                                                        "YEARLY",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "unlimited"
+                                                    ? languagesController.tr(
+                                                        "UNLIMITED",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "monthly"
+                                                    ? languagesController.tr(
+                                                        "MONTHLY",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "weekly"
+                                                    ? languagesController.tr(
+                                                        "WEEKLY",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "daily"
+                                                    ? languagesController.tr(
+                                                        "DAILY",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "hourly"
+                                                    ? languagesController.tr(
+                                                        "HOURLY",
+                                                      )
+                                                    : widget.validityType
+                                                              .toString() ==
+                                                          "nightly"
+                                                    ? languagesController.tr(
+                                                        "NIGHTLY",
+                                                      )
+                                                    : "",
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 14,
+                                                color: const Color(0xff3E4094),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 8),
+
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "ORDER_ID",
+                                                ),
+                                                fontSize: 14,
+                                                color: const Color(0xff637381),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              Text(
+                                                "TP#- ${widget.orderID}",
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  color: Color(0xff212B36),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "DATE",
+                                                ),
+                                                fontSize: 14,
+                                                color: const Color(0xff637381),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                convertToDate(
+                                                  widget.createDate.toString(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "TIME",
+                                                ),
+                                                fontSize: 14,
+                                                color: const Color(0xff637381),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                convertToLocalTime(
+                                                  widget.createDate.toString(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  flex: 2,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: const Color(
+                                        0xffE8F4FF,
+                                      ).withOpacity(0.92),
+                                      borderRadius: const BorderRadius.vertical(
+                                        bottom: Radius.circular(20),
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "PHONE_NUMBER",
+                                                ),
+                                                fontSize: 14,
+                                                color: const Color(0xff637381),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Flexible(
+                                                child: Text(
+                                                  widget.rechargebleAccount
+                                                      .toString(),
+                                                  textAlign: TextAlign.end,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Color(0xff212B36),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 10),
+
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              KText(
+                                                text: languagesController.tr(
+                                                  "SENDER",
+                                                ),
+                                                fontSize: 14,
+                                                color: const Color(0xff637381),
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Flexible(
+                                                child: KText(
+                                                  text: widget.resellerName
+                                                      .toString(),
+                                                  fontSize: 14,
+                                                  color: const Color(
+                                                    0xff212B36,
+                                                  ),
+                                                  textAlign: TextAlign.end,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 10),
+
+                                          Visibility(
+                                            visible: showprice,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                KText(
+                                                  text: languagesController.tr(
+                                                    "PRICE",
+                                                  ),
+                                                  fontSize: 14,
+                                                  color: const Color(
+                                                    0xff637381,
+                                                  ),
+                                                  fontWeight: FontWeight.w400,
+                                                ),
+                                                Row(
+                                                  children: [
+                                                    KText(
+                                                      text: box
+                                                          .read("currency_code")
+                                                          .toString(),
+                                                      fontSize: 14,
+                                                      color: Colors.grey,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                    const SizedBox(width: 8),
+                                                    Text(
+                                                      NumberFormat.currency(
+                                                        locale: 'en_US',
+                                                        symbol: '',
+                                                        decimalDigits: 2,
+                                                      ).format(
+                                                        double.parse(
+                                                          widget.sellingPrice
+                                                              .toString(),
+                                                        ),
+                                                      ),
+                                                      style: const TextStyle(
+                                                        color: Color(
+                                                          0xff212B36,
+                                                        ),
+                                                        fontSize: 14,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
@@ -471,6 +556,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                 ),
                 SizedBox(height: 10),
+
                 Container(
                   decoration: BoxDecoration(
                     color: Colors.white,
