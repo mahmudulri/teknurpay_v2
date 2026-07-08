@@ -100,19 +100,19 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         child: Stack(
                           children: [
                             // ✅ FULL CARD WATERMARK BACKGROUND
-                            Positioned.fill(
-                              child: Opacity(
-                                opacity: 1.0, // watermark light/dark control
-                                child: Center(
-                                  child: Image.asset(
-                                    "assets/icons/logo.png",
-                                    height: 260,
-                                    width: 260,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                            ),
+                            // Positioned.fill(
+                            //   child: Opacity(
+                            //     opacity: 1.0, // watermark light/dark control
+                            //     child: Center(
+                            //       child: Image.asset(
+                            //         "assets/icons/logo.png",
+                            //         height: 260,
+                            //         width: 260,
+                            //         fit: BoxFit.contain,
+                            //       ),
+                            //     ),
+                            //   ),
+                            // ),
 
                             // ✅ Optional diagonal watermark text
                             Positioned.fill(
