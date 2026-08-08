@@ -10,6 +10,7 @@ import 'package:teknurpay/controllers/dashboard_controller.dart';
 import 'package:teknurpay/controllers/drawer_controller.dart';
 import 'package:teknurpay/controllers/service_controller.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
+import 'package:teknurpay/models/country_list_model.dart';
 import 'package:teknurpay/pages/homepages.dart';
 import 'package:teknurpay/widgets/bottomsheet.dart';
 import 'package:teknurpay/widgets/drawer.dart';
@@ -163,42 +164,77 @@ class _InternetPackState extends State<InternetPack> {
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 10),
+                              const SizedBox(height: 10),
                               GridView.builder(
-                                padding: EdgeInsets.all(0),
+                                padding: EdgeInsets.zero,
                                 shrinkWrap: true,
-                                physics: BouncingScrollPhysics(),
+                                physics: const BouncingScrollPhysics(),
                                 gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
                                       crossAxisCount: 2,
-                                      crossAxisSpacing: 8.0,
-                                      mainAxisSpacing: 8.0,
+                                      crossAxisSpacing: 8,
+                                      mainAxisSpacing: 8,
                                       childAspectRatio: 1.5,
                                     ),
                                 itemCount: countrylistController
                                     .finalCountryList
                                     .length,
                                 itemBuilder: (context, index) {
-                                  final data = countrylistController
+                                  final Country data = countrylistController
                                       .finalCountryList[index];
+
                                   return GestureDetector(
                                     onTap: () {
-                                      box.write("country_id", data["id"]);
+                                      final Country selectedCountry =
+                                          countrylistController
+                                              .finalCountryList[index];
+
+                                      final bool enableOperatorLookup =
+                                          selectedCountry.enableOperatorLookup;
+
+                                      box.write(
+                                        "country_id",
+                                        selectedCountry.id,
+                                      );
+
                                       box.write(
                                         "countryName",
-                                        data["country_name"],
+                                        selectedCountry.countryName ?? "",
                                       );
-                                      serviceController.reserveDigit.clear();
-                                      bundleController.finalList.clear();
+
                                       box.write(
                                         "maxlength",
-                                        data["phone_number_length"],
+                                        selectedCountry.phoneNumberLength ?? "",
                                       );
+
+                                      // গুরুত্বপূর্ণ: lookup value storage-এও save করছি
+                                      box.write(
+                                        "enable_operator_lookup",
+                                        enableOperatorLookup,
+                                      );
+
                                       box.write("validity_type", "");
                                       box.write("company_id", "");
                                       box.write("search_tag", "");
+
+                                      serviceController.reserveDigit.clear();
+                                      bundleController.resetBundles();
+
+                                      print(
+                                        "Selected country: ${selectedCountry.countryName}",
+                                      );
+                                      print(
+                                        "Selected lookup value: $enableOperatorLookup",
+                                      );
+                                      print(
+                                        "Stored lookup value: ${box.read("enable_operator_lookup")}",
+                                      );
+
                                       mypagecontroller.changePage(
-                                        RechargeScreen(),
+                                        RechargeScreen(
+                                          enableOperatorLookup:
+                                              enableOperatorLookup,
+                                        ),
                                         isMainPage: false,
                                       );
                                     },
@@ -208,20 +244,13 @@ class _InternetPackState extends State<InternetPack> {
                                           color: AppColors.primaryColor
                                               .withOpacity(0.3),
                                           blurRadius: 5,
-                                          offset: const Offset(
-                                            3,
-                                            0,
-                                          ), // push inward from right
+                                          offset: const Offset(3, 0),
                                         ),
-                                        // Top side shadow
                                         Shadow(
                                           color: AppColors.primaryColor
                                               .withOpacity(0.3),
                                           blurRadius: 5,
-                                          offset: const Offset(
-                                            0,
-                                            -3,
-                                          ), // push inward from top
+                                          offset: const Offset(0, -3),
                                         ),
                                       ],
                                       child: Container(
@@ -240,12 +269,13 @@ class _InternetPackState extends State<InternetPack> {
                                                 radius: 30,
                                                 backgroundColor: Colors.grey,
                                                 backgroundImage: NetworkImage(
-                                                  data["country_flag_image_url"],
+                                                  data.countryFlagImageUrl ??
+                                                      "",
                                                 ),
                                               ),
-                                              SizedBox(height: 10),
+                                              const SizedBox(height: 10),
                                               Text(
-                                                data["country_name"],
+                                                data.countryName ?? "",
                                                 style: TextStyle(
                                                   color: AppColors.primaryColor,
                                                   fontSize:
@@ -262,7 +292,7 @@ class _InternetPackState extends State<InternetPack> {
                               ),
                             ],
                           )
-                        : Center(child: CircularProgressIndicator()),
+                        : const Center(child: CircularProgressIndicator()),
                   ),
                 ),
               ),

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../controllers/account_transaction_controller.dart';
-import '../../controllers/counter_party_controller.dart';
+import 'package:teknurpay/helpers/language_changer.dart';
 import '../../global_controller/languages_controller.dart';
+import '../../utils/colors.dart';
 import '../../helpers/localtime_helper.dart';
+import '../controllers/account_transaction_controller.dart';
+import '../controllers/counter_party_controller.dart';
 
 class Alltransactions extends StatefulWidget {
   Alltransactions({super.key});
@@ -30,7 +30,7 @@ class _AlltransactionsState extends State<Alltransactions> {
     super.initState();
     counterPartyController.initialpage = 1;
     counterPartyController.finalList.clear();
-    counterPartyController.fetchtransactions();
+    counterPartyController.fetchcounterpary();
     controller.initialpage = 1;
     controller.finalList.clear();
     controller.fetchtransactions();
@@ -41,46 +41,27 @@ class _AlltransactionsState extends State<Alltransactions> {
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: AppColors.secondaryColor,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Row(
           children: [
             Text(
               languagesController.tr("TRANSACTIONS"),
-              style: GoogleFonts.rubik(
+              style: TextStyle(
                 color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Spacer(),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
-
-              child: Image.asset("assets/icons/headphone.png", height: 25),
-            ),
-            SizedBox(width: 5),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
-
-              child: Image.asset("assets/icons/bell.png", height: 25),
-            ),
-            SizedBox(width: 5),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
-
-              child: Image.asset("assets/icons/gridmenu.png", height: 25),
-            ),
+            const LanguageSelectorButton(size: 42, iconSize: 25),
           ],
         ),
         scrolledUnderElevation: 0.0,
-        surfaceTintColor: Colors.white,
+        surfaceTintColor: AppColors.listbuilderboxColor,
         elevation: 0.0,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.listbuilderboxColor,
         centerTitle: true,
       ),
 
@@ -91,7 +72,7 @@ class _AlltransactionsState extends State<Alltransactions> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFFFFFFF), Color(0xFFC5E3FF)],
+            colors: [AppColors.secondaryColor, AppColors.primarycolor2],
           ),
         ),
         child: Padding(
@@ -107,7 +88,7 @@ class _AlltransactionsState extends State<Alltransactions> {
                       Expanded(
                         child: Container(
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
+                            color: AppColors.secondaryColor,
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Center(
@@ -142,7 +123,7 @@ class _AlltransactionsState extends State<Alltransactions> {
                         height: 55,
                         width: 55,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade200,
+                          color: AppColors.secondaryColor,
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Padding(
@@ -158,7 +139,7 @@ class _AlltransactionsState extends State<Alltransactions> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: AppColors.listbuilderboxColor,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Padding(
@@ -196,161 +177,195 @@ class _AlltransactionsState extends State<Alltransactions> {
                           ),
                           SizedBox(height: 5),
                           Expanded(
-                            child: Obx(
-                              () => controller.isLoading.value == false
-                                  ? ListView.builder(
-                                      itemCount: controller.finalList.length,
-                                      itemBuilder: (context, index) {
-                                        final data =
-                                            controller.finalList[index];
+                            child: Obx(() {
+                              if (controller.isLoading.value) {
+                                return const Center(
+                                  child: CircularProgressIndicator(
+                                    color: AppColors.primaryColor,
+                                  ),
+                                );
+                              }
 
-                                        return Container(
-                                          margin: EdgeInsets.only(bottom: 5),
-                                          height: 80,
-                                          width: screenWidth,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              width: 1,
-                                              color: Colors.grey.shade300,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              8,
+                              // transactionType null হলে আপাতত list-এ দেখানো হবে না।
+                              final visibleTransactions = controller.finalList
+                                  .where((item) {
+                                    final String type =
+                                        item.transactionType
+                                            ?.toString()
+                                            .trim() ??
+                                        '';
+
+                                    return type.isNotEmpty &&
+                                        type.toLowerCase() != 'null';
+                                  })
+                                  .toList();
+
+                              return ListView.builder(
+                                itemCount: visibleTransactions.length,
+                                itemBuilder: (context, index) {
+                                  final data = visibleTransactions[index];
+
+                                  final String transactionType =
+                                      data.transactionType
+                                          ?.toString()
+                                          .trim()
+                                          .toUpperCase() ??
+                                      '';
+
+                                  final bool isReceivable =
+                                      transactionType == 'RECEIVABLE';
+
+                                  final bool isPayable =
+                                      transactionType == 'PAYABLE';
+
+                                  final String transactionTitle = isReceivable
+                                      ? languagesController.tr('I_PAID')
+                                      : isPayable
+                                      ? languagesController.tr('I_RECEIVED')
+                                      : transactionType;
+
+                                  return Container(
+                                    margin: EdgeInsets.only(bottom: 5),
+                                    height: 80,
+                                    width: screenWidth,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.listbuilderboxColor,
+                                      border: Border.all(
+                                        width: 1,
+                                        color: AppColors.primarycolor2
+                                            .withOpacity(0.35),
+                                      ),
+                                      borderRadius: BorderRadius.circular(8),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withOpacity(0.03),
+                                          blurRadius: 7,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(8.0),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 26,
+                                            backgroundColor:
+                                                AppColors.secondaryColor,
+                                            child: Center(
+                                              child: Padding(
+                                                padding: EdgeInsets.all(15.0),
+                                                child: Image.asset(
+                                                  "assets/icons/transicon.png",
+                                                  color: isReceivable
+                                                      ? AppColors.primaryColor
+                                                      : isPayable
+                                                      ? AppColors.primarycolor2
+                                                      : AppColors.primarycolor2,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                          child: Padding(
-                                            padding: EdgeInsets.all(8.0),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
                                               children: [
-                                                CircleAvatar(
-                                                  radius: 26,
-                                                  backgroundColor:
-                                                      Colors.grey.shade100,
-                                                  child: Center(
-                                                    child: Padding(
-                                                      padding: EdgeInsets.all(
-                                                        15.0,
-                                                      ),
-                                                      child: Image.asset(
-                                                        "assets/icons/transicon.png",
-                                                        color:
-                                                            data.transactionType
-                                                                    .toString() ==
-                                                                "CREDIT"
-                                                            ? Color(0xff8E59FF)
-                                                            : null,
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      data
+                                                          .counterpartyAccount!
+                                                          .name
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .grey
+                                                            .shade700,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                       ),
                                                     ),
-                                                  ),
-                                                ),
-                                                SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Column(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceEvenly,
-                                                    children: [
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            data
-                                                                .counterpartyAccount!
-                                                                .name
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Colors
+                                                    Text(
+                                                      transactionTitle,
+                                                      style: TextStyle(
+                                                        fontSize: 10,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: isReceivable
+                                                            ? AppColors
+                                                                  .primaryColor
+                                                            : isPayable
+                                                            ? AppColors
+                                                                  .primaryColor
+                                                            : Colors
                                                                   .grey
                                                                   .shade700,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                            ),
-                                                          ),
-                                                          Text(
-                                                            data.transactionType
-                                                                        .toString() ==
-                                                                    "null"
-                                                                ? "N/A"
-                                                                : data.transactionType
-                                                                      .toString(),
-                                                            style: TextStyle(
-                                                              fontSize: 10,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                              color:
-                                                                  data.transactionType
-                                                                          .toString() ==
-                                                                      "CREDIT"
-                                                                  ? Colors.green
-                                                                  : Colors.red,
-                                                            ),
-                                                          ),
-                                                        ],
                                                       ),
-                                                      Row(
-                                                        mainAxisAlignment:
-                                                            MainAxisAlignment
-                                                                .spaceBetween,
-                                                        children: [
-                                                          Text(
-                                                            data.amount
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Color(
-                                                                0xffD850E7,
-                                                              ),
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w500,
-                                                            ),
-                                                          ),
-
-                                                          Text(
-                                                            convertToDate(
-                                                              data.createdAt
-                                                                  .toString(),
-                                                            ),
-                                                            style: TextStyle(
-                                                              fontSize: 12,
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade500,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            data.description
-                                                                .toString(),
-                                                            style: TextStyle(
-                                                              fontSize: 13,
-                                                              color: Colors
-                                                                  .grey
-                                                                  .shade500,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
+                                                    ),
+                                                  ],
                                                 ),
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      data.amount.toString(),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: AppColors
+                                                            .primaryColor,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+
+                                                    Text(
+                                                      convertToDate(
+                                                        data.createdAt
+                                                            .toString(),
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .grey
+                                                            .shade500,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                // Row(
+                                                //   children: [
+                                                //     Text(
+                                                //       data.description
+                                                //           .toString(),
+                                                //       style: TextStyle(
+                                                //         fontSize: 13,
+                                                //         color: Colors
+                                                //             .grey
+                                                //             .shade500,
+                                                //       ),
+                                                //     ),
+                                                //   ],
+                                                // ),
                                               ],
                                             ),
                                           ),
-                                        );
-                                      },
-                                    )
-                                  : Center(child: CircularProgressIndicator()),
-                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }),
                           ),
                         ],
                       ),
@@ -358,6 +373,31 @@ class _AlltransactionsState extends State<Alltransactions> {
                   ),
                 ),
                 SizedBox(height: 5),
+                // GestureDetector(
+                //   onTap: () {
+                //     Get.to(() => CreateTransactionScreen());
+                //   },
+                //   child: Container(
+                //     height: 55,
+                //     width: screenWidth,
+                //     decoration: BoxDecoration(
+                //       image: DecorationImage(
+                //         image: AssetImage("assets/svg/abutton.webp"),
+                //       ),
+                //     ),
+                //     child: Center(
+                //       child: Text(
+                //         languagesController.tr("NEW_TRANSACTION"),
+                //         style: TextStyle(
+                //           color: AppColors.listbuilderboxColor,
+                //           fontWeight: FontWeight.w600,
+                //           fontSize: 18,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                // SizedBox(height: 5),
               ],
             ),
           ),

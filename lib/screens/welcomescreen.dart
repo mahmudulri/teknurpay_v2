@@ -155,7 +155,8 @@ class _WelcomescreenState extends State<Welcomescreen> {
                             buttonName: "Register",
                             height: 50,
                             onpressed: () {
-                              whatsapp();
+                              // whatsapp();
+                              Get.toNamed(signiupcreen);
                             },
                           ),
                         ),

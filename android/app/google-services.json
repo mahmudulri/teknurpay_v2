@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "789791449201",
+    "project_id": "teknur-pay",
+    "storage_bucket": "teknur-pay.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:789791449201:android:c2eb640883c38108db7bd0",
+        "android_client_info": {
+          "package_name": "com.teknurpayapp.woosat"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCanyenAyTiSDvXeMbqoHtJzCxhS2dMkUo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

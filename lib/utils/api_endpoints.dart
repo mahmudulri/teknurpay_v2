@@ -1,14 +1,14 @@
 class ApiEndPoints {
-  // static String baseUrl =
-  //     "https://app-api-vpro-wl-waslat.milliekit.com/api/reseller/";
-
-  // static String publicUrl =
-  //     "https://app-api-vpro-wl-waslat.milliekit.com/api/public/";
-
   static String baseUrl =
-      "https://app-api-vpro-tn-teknur.milliekit.com/api/reseller/";
+      "https://app-api-vpro-wl-waslat.milliekit.com/api/reseller/";
+
   static String publicUrl =
-      "https://app-api-vpro-tn-teknur.milliekit.com/api/public/";
+      "https://app-api-vpro-wl-waslat.milliekit.com/api/public/";
+
+  // static String baseUrl =
+  //     "https://app-api-vpro-tn-teknur.milliekit.com/api/reseller/";
+  // static String publicUrl =
+  //     "https://app-api-vpro-tn-teknur.milliekit.com/api/public/";
 
   static OtherendPoints otherendpoints = OtherendPoints();
 }
@@ -41,5 +41,6 @@ class OtherendPoints {
   final String companies = "companies";
   final String loanbalance = "reseller-balances";
   final String appsetting = "app-setting";
+  final String withdrawrequests = "withdraw-requests";
   final String rechargeconfig = "get-afg-custom-recharge-config";
 }

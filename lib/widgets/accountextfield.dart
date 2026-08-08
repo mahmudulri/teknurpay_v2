@@ -5,6 +5,8 @@ class Accountextfield extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final String hint;
+  final int? maxLines;
+  final TextInputAction? textInputAction;
 
   final double height; // container height
   final double borderRadius; // custom radius
@@ -15,6 +17,8 @@ class Accountextfield extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.hint,
+    this.maxLines = 1,
+    this.textInputAction,
 
     this.height = 55,
     this.borderRadius = 12,
@@ -29,6 +33,8 @@ class Accountextfield extends StatelessWidget {
       child: TextField(
         controller: controller,
         keyboardType: keyboardType,
+        maxLines: maxLines,
+        textInputAction: textInputAction,
         decoration: InputDecoration(
           labelText: label,
           hintText: hint,
@@ -36,11 +42,7 @@ class Accountextfield extends StatelessWidget {
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(borderRadius),
           ),
-          isDense: false,
-          contentPadding: EdgeInsets.symmetric(
-            vertical: box.read("direction") == "rtl" ? 12 : 20,
-            horizontal: 12,
-          ),
+          contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         ),
       ),
     );

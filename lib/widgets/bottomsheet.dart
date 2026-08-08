@@ -17,7 +17,6 @@ import 'package:teknurpay/screens/termscondition.dart';
 import 'package:teknurpay/utils/colors.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../accounting/accounting_base.dart';
 import '../controllers/dashboard_controller.dart';
 import '../controllers/sign_in_controller.dart';
 import '../pages/homepages.dart';

@@ -1,24 +1,52 @@
+import 'dart:developer';
+
 import 'package:easy_localization/easy_localization.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+
+import 'package:teknurpay/controllers/currency_controller.dart';
 import 'package:teknurpay/controllers/dashboard_controller.dart';
+import 'package:teknurpay/controllers/recharge_config_controller.dart';
+import 'package:teknurpay/global_controller/afghan_recharge_controller.dart';
+import 'package:teknurpay/global_controller/font_controller.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/global_controller/page_controller.dart';
+import 'package:teknurpay/global_controller/time_zone_controller.dart';
 import 'package:teknurpay/helpers/network_checker.dart';
 import 'package:teknurpay/routes/routes.dart';
+import 'package:teknurpay/services/firebase_notification_service.dart';
 
-import 'controllers/currency_controller.dart';
-import 'controllers/recharge_config_controller.dart';
-import 'global_controller/afghan_recharge_controller.dart';
-import 'global_controller/font_controller.dart';
-import 'global_controller/time_zone_controller.dart';
+@pragma('vm:entry-point')
+Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
 
-void main() async {
+  log('========== BACKGROUND FCM ==========');
+  log('Message ID: ${message.messageId}');
+  log('Title: ${message.notification?.title}');
+  log('Body: ${message.notification?.body}');
+  log('Type: ${message.data['type']}');
+  log('Event: ${message.data['event']}');
+  log('Notification ID: ${message.data['notification_id']}');
+  log('Order ID: ${message.data['order_id']}');
+  log('Status: ${message.data['status']}');
+  log('Reseller ID: ${message.data['reseller_id']}');
+  log('Message: ${message.data['message']}');
+  log('Full Data: ${message.data}');
+  log('====================================');
+}
+
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await EasyLocalization.ensureInitialized();
   await GetStorage.init();
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+
   Get.put(CurrencyController(), permanent: true);
   Get.put(RechargeConfigController(), permanent: true);
   Get.put(AfghanRechargeController(), permanent: true);
@@ -29,9 +57,77 @@ void main() async {
 
   DependencyInjection.init();
 
+  FirebaseNotificationService.instance.configure(
+    refreshOrders: (Map<String, dynamic> data) async {
+      /*
+       * কোনো order status update হবে না।
+       * শুধু Firebase notification data log হবে।
+       */
+      log('========== ORDER NOTIFICATION ==========');
+      log('Type: ${data['type']}');
+      log('Order ID: ${data['order_id']}');
+      log('Status: ${data['status']}');
+      log('Message: ${data['message']}');
+      log('Full Data: $data');
+      log('========================================');
+    },
+
+    refreshGeneralNotifications: (Map<String, dynamic> data) async {
+      /*
+       * কোনো notification API call বা list refresh হবে না।
+       * শুধু notification receive করে log করবে।
+       */
+      log('========== GENERAL NOTIFICATION ==========');
+      log('Title: ${data['title']}');
+      log('Body: ${data['body']}');
+      log('Type: ${data['type']}');
+      log('Event: ${data['event']}');
+      log('Notification ID: ${data['notification_id']}');
+      log('Reseller ID: ${data['reseller_id']}');
+      log('Message: ${data['message']}');
+      log('Full Data: $data');
+      log('==========================================');
+    },
+
+    refreshBalance: (Map<String, dynamic> data) async {
+      /*
+       * Dashboard বা balance history refresh হবে না।
+       */
+      log('========== BALANCE NOTIFICATION ==========');
+      log('Type: ${data['type']}');
+      log('Message: ${data['message']}');
+      log('Full Data: $data');
+      log('==========================================');
+    },
+
+    refreshPayments: (Map<String, dynamic> data) async {
+      /*
+       * Payment history refresh হবে না।
+       */
+      log('========== PAYMENT NOTIFICATION ==========');
+      log('Type: ${data['type']}');
+      log('Message: ${data['message']}');
+      log('Full Data: $data');
+      log('==========================================');
+    },
+
+    refreshHawala: (Map<String, dynamic> data) async {
+      /*
+       * Hawala history refresh হবে না।
+       */
+      log('========== HAWALA NOTIFICATION ==========');
+      log('Type: ${data['type']}');
+      log('Message: ${data['message']}');
+      log('Full Data: $data');
+      log('=========================================');
+    },
+  );
+
+  await FirebaseNotificationService.instance.initialize();
+
   runApp(
     EasyLocalization(
-      supportedLocales: [
+      supportedLocales: const [
         Locale('en', 'US'),
         Locale('fa', 'IR'),
         Locale('ar', 'AE'),
@@ -40,12 +136,10 @@ void main() async {
         Locale('bn', 'BD'),
       ],
       path: 'assets/langs',
-      fallbackLocale: Locale('en', 'US'),
-      child: MyApp(),
+      fallbackLocale: const Locale('en', 'US'),
+      child: const MyApp(),
     ),
   );
-
-  //
 }
 
 class MyApp extends StatefulWidget {
@@ -56,8 +150,10 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final box = GetStorage();
+  final GetStorage box = GetStorage();
+
   final TimeZoneController timeZoneController = Get.put(TimeZoneController());
+
   @override
   void initState() {
     super.initState();
@@ -65,16 +161,21 @@ class _MyAppState extends State<MyApp> {
   }
 
   void initTimezone() {
-    Duration offset = DateTime.now().timeZoneOffset;
+    final Duration offset = DateTime.now().timeZoneOffset;
 
-    timeZoneController.sign = offset.isNegative ? "-" : "+";
+    timeZoneController.sign = offset.isNegative ? '-' : '+';
+
     timeZoneController.hour = offset.inHours.abs().toString().padLeft(2, '0');
+
     timeZoneController.minute = (offset.inMinutes.abs() % 60)
         .toString()
         .padLeft(2, '0');
 
-    print(
-      "Offset = ${timeZoneController.sign}${timeZoneController.hour}:${timeZoneController.minute}",
+    debugPrint(
+      'Offset = '
+      '${timeZoneController.sign}'
+      '${timeZoneController.hour}:'
+      '${timeZoneController.minute}',
     );
   }
 
@@ -93,8 +194,10 @@ class _MyAppState extends State<MyApp> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Schedule locale update after the current frame
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       Get.updateLocale(context.locale);
     });
   }

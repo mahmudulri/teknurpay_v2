@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import 'package:lottie/lottie.dart';
+import 'package:teknurpay/accounting/pages/alltransactions.dart';
+import 'package:teknurpay/accounting/pages/counter_party.dart';
 import '../global_controller/languages_controller.dart';
 import '../utils/colors.dart';
-import 'pages/alltransactions.dart';
-import 'pages/counter_party.dart';
-import 'pages/inventory.dart';
+import 'controllers/accounting_currency_controller.dart';
+import 'controllers/statistic_controller.dart';
+import 'pages/accounts.dart';
 import 'pages/offices.dart';
 
 class AccountingBaseScreen extends StatefulWidget {
@@ -16,204 +19,206 @@ class AccountingBaseScreen extends StatefulWidget {
 }
 
 class _AccountingBaseScreenState extends State<AccountingBaseScreen> {
-  int _currentIndex = 0;
-  final PageController _pageController = PageController();
-
   final languagesController = Get.find<LanguagesController>();
+
+  AccountingCurrencyController currencyController = Get.put(
+    AccountingCurrencyController(),
+  );
+  StatisticController statisticController = Get.put(StatisticController());
+
+  bool showMain = false;
+
+  int currentIndex = 0;
+  late Widget currentPage;
 
   final List<Widget> _pages = [
     Offices(),
+    AccountsPage(),
     CounterParty(),
     Alltransactions(),
-    Inventory(),
+    // Inventory(),
   ];
-
-  int currentIndex = 0;
-
-  // void onTabTapped(int index) {
-  //   setState(() => _currentIndex = index);
-  //   _pageController.animateToPage(
-  //     index,
-  //     duration: Duration(milliseconds: 300),
-  //     curve: Curves.easeInOut,
-  //   );
-  // }
-
-  late Widget currentPage;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentPage = Offices();
+    _showIntroAnimation();
+  }
+
+  void _showIntroAnimation() {
+    setState(() => showMain = false);
+
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() => showMain = true);
+      }
+    });
+  }
+
+  Future<bool> _onWillPop() async {
+    setState(() => showMain = false);
+    await Future.delayed(const Duration(seconds: 2));
+    return true;
   }
 
   @override
   Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Color(0xff3498db),
+        body: AnimatedSwitcher(
+          duration: Duration(milliseconds: 800),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: animation, child: child),
+            );
+          },
+          child: showMain ? _mainScaffold() : _introImage(),
+        ),
+      ),
+    );
+  }
+
+  Widget _introImage() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Lottie.asset(
+            'assets/loties/accounting.json',
+            key: ValueKey('intro'),
+            width: 200,
+            height: 300,
+          ),
+          Text(
+            languagesController.tr("MY_ACCOUNTING"),
+            style: TextStyle(
+              fontSize: 30,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _mainScaffold() {
     return Scaffold(
       body: currentPage,
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFC5E3FF),
-            // gradient: LinearGradient(
-            //   begin: Alignment.topCenter,
-            //   end: Alignment.bottomCenter,
-            //   colors: [Color(0xFFFFFFFF), Color(0xFFC5E3FF)],
-            // ),
-          ),
-          height: 67,
-          child: ClipRRect(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-            child: BottomAppBar(
-              elevation: 7.0,
-              shape: CircularNotchedRectangle(),
-              notchMargin: 10,
-              color: Colors.white,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  MaterialButton(
-                    minWidth: 40,
-                    onPressed: () {
-                      setState(() {
-                        currentPage = Offices();
-
-                        currentIndex = 0;
-                      });
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.dashboard,
-                          color: currentIndex == 0
-                              ? AppColors.primaryColor
-                              : Colors.black,
-                        ),
-                        Text(
-                          languagesController.tr("OFFICES"),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: currentIndex == 0
-                                ? AppColors.primaryColor
-                                : Colors.black,
-                            fontWeight: currentIndex == 0
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(color: Color(0xFFC5E3FF)),
+        child: SafeArea(
+          top: false,
+          child: SizedBox(
+            height: 68,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              child: BottomAppBar(
+                elevation: 7,
+                padding: EdgeInsets.zero,
+                shape: const CircularNotchedRectangle(),
+                notchMargin: 10,
+                color: Colors.white,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: _navItem(
+                        icon: Icons.dashboard,
+                        index: 0,
+                        label: languagesController.tr("OFFICES"),
+                      ),
                     ),
-                  ),
-                  MaterialButton(
-                    minWidth: 40,
-                    onPressed: () {
-                      setState(() {
-                        currentPage = CounterParty();
-                        currentIndex = 1;
-                      });
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.people_alt,
-                          color: currentIndex == 1
-                              ? AppColors.primaryColor
-                              : Colors.black,
-                        ),
-                        Text(
-                          languagesController.tr("COUNTER_PARTY"),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: currentIndex == 1
-                                ? AppColors.primaryColor
-                                : Colors.black,
-                            fontWeight: currentIndex == 1
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: _navItem(
+                        icon: Icons.account_balance,
+                        index: 1,
+                        label: languagesController.tr("ACCOUNTS"),
+                      ),
                     ),
-                  ),
-                  MaterialButton(
-                    minWidth: 40,
-                    onPressed: () {
-                      setState(() {
-                        currentPage = Alltransactions();
-                        currentIndex = 2;
-                      });
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.swap_horiz,
-                          color: currentIndex == 2
-                              ? AppColors.primaryColor
-                              : Colors.black,
-                        ),
-
-                        Text(
-                          languagesController.tr("TRANSACTIONS"),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: currentIndex == 2
-                                ? AppColors.primaryColor
-                                : Colors.black,
-                            fontWeight: currentIndex == 2
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: _navItem(
+                        icon: Icons.people_alt,
+                        index: 2,
+                        label: languagesController.tr("COUNTER_PARTY"),
+                      ),
                     ),
-                  ),
-                  MaterialButton(
-                    minWidth: 40,
-                    onPressed: () {
-                      setState(() {
-                        currentPage = Inventory();
-                        currentIndex = 3;
-
-                        // print(orderlistController.initialpage);
-                        // print(orderlistController.finalList.length);
-                      });
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.inventory_2,
-                          color: currentIndex == 3
-                              ? AppColors.primaryColor
-                              : Colors.black,
-                        ),
-
-                        Text(
-                          languagesController.tr("INVENTORY"),
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: currentIndex == 3
-                                ? AppColors.primaryColor
-                                : Colors.black,
-                            fontWeight: currentIndex == 3
-                                ? FontWeight.w700
-                                : FontWeight.w400,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: _navItem(
+                        icon: Icons.swap_horiz,
+                        index: 3,
+                        label: languagesController.tr("TRANSACTIONS"),
+                      ),
                     ),
-                  ),
-                ],
+                    // Expanded(
+                    //   child: _navItem(
+                    //     icon: Icons.inventory_2,
+                    //     index: 4,
+                    //     label: languagesController.tr("INVENTORY"),
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 🔹 Bottom nav item builder
+  Widget _navItem({
+    required IconData icon,
+    required int index,
+    required String label,
+  }) {
+    final bool isActive = currentIndex == index;
+
+    return InkWell(
+      onTap: () {
+        setState(() {
+          currentIndex = index;
+          currentPage = _pages[index];
+        });
+      },
+      child: SizedBox.expand(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              size: 21,
+              color: isActive
+                  ? AppColors.primaryColor
+                  : const Color(0xFF667085),
+            ),
+            const SizedBox(height: 2),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2),
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 9,
+                  height: 1,
+                  color: isActive
+                      ? AppColors.primaryColor
+                      : const Color(0xFF667085),
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w400,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

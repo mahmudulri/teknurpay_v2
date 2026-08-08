@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import '../../global_controller/languages_controller.dart';
+import 'package:teknurpay/global_controller/languages_controller.dart';
 
 class Inventory extends StatelessWidget {
   Inventory({super.key});
@@ -18,7 +17,7 @@ class Inventory extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Text(
           languagesController.tr("INVENTORY"),
-          style: GoogleFonts.rubik(
+          style: TextStyle(
             color: Colors.black,
             fontSize: 18,
             fontWeight: FontWeight.w500,

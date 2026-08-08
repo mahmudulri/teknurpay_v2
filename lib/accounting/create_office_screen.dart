@@ -1,16 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import '../controllers/accounting_currency_controller.dart';
-import '../controllers/create_office_controller.dart';
-
 import '../global_controller/languages_controller.dart';
 import '../widgets/accountextfield.dart';
 import '../widgets/drawer.dart';
+import 'controllers/accounting_currency_controller.dart';
+import 'controllers/create_office_controller.dart';
 
 class CreateOfficeScreen extends StatefulWidget {
   CreateOfficeScreen({super.key});
@@ -22,9 +18,7 @@ class CreateOfficeScreen extends StatefulWidget {
 class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
   final languagesController = Get.find<LanguagesController>();
 
-  AccountingCurrencyController currencyController = Get.put(
-    AccountingCurrencyController(),
-  );
+  final currencyController = Get.find<AccountingCurrencyController>();
 
   CreateOfficeController createOfficeController = Get.put(
     CreateOfficeController(),
@@ -38,7 +32,6 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    currencyController.fetchCurrencyList();
   }
 
   final box = GetStorage();
@@ -53,29 +46,34 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            Text(
-              languagesController.tr("ADD_NEW_OFFICE"),
-              style: GoogleFonts.rubik(
-                color: Colors.black,
-                fontSize: 20,
-                fontWeight: FontWeight.w500,
+            GestureDetector(
+              onTap: () {
+                currencyController.fetchCurrencyList();
+              },
+              child: Text(
+                languagesController.tr("ADD_NEW_OFFICE"),
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
             Spacer(),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
+            // CircleAvatar(
+            //   radius: 20,
+            //   backgroundColor: Colors.grey.shade100,
 
-              child: Image.asset("assets/icons/headphone.png", height: 25),
-            ),
-            SizedBox(width: 5),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
+            //   child: Image.asset("assets/icons/headphone.png", height: 25),
+            // ),
+            // SizedBox(width: 5),
+            // CircleAvatar(
+            //   radius: 20,
+            //   backgroundColor: Colors.grey.shade100,
 
-              child: Image.asset("assets/icons/bell.png", height: 25),
-            ),
-            SizedBox(width: 5),
+            //   child: Image.asset("assets/icons/bell.png", height: 25),
+            // ),
+            // SizedBox(width: 5),
             GestureDetector(
               onTap: () {
                 showDialog(
@@ -219,18 +217,18 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
           padding: EdgeInsets.symmetric(horizontal: 13, vertical: 5),
           child: Container(
             margin: EdgeInsets.only(bottom: 60),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
+            // decoration: BoxDecoration(
+            //   color: Colors.white,
+            //   borderRadius: BorderRadius.circular(12),
+            //   boxShadow: [
+            //     BoxShadow(
+            //       color: Colors.black12,
+            //       blurRadius: 10,
+            //       spreadRadius: 2,
+            //       offset: Offset(0, 4),
+            //     ),
+            //   ],
+            // ),
             child: Padding(
               padding: EdgeInsets.only(top: 8, left: 8, right: 8),
               child: ListView(
@@ -291,7 +289,8 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
                     label: languagesController.tr("ADDRESS"),
                     hint: languagesController.tr("ENTER_ADDRESS"),
 
-                    height: 55,
+                    height: 100,
+                    maxLines: 4,
                   ),
 
                   SizedBox(height: 10),
@@ -308,18 +307,16 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
                       ),
                       SizedBox(width: 5),
                       Transform.scale(
-                        scale: 1.3,
+                        scale: 0.85, // আগে 1.3 ছিল
                         child: Switch(
-                          activeThumbColor: Colors.green,
                           value: createOfficeController.isactive.value,
+                          activeThumbColor: Colors.green,
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
                           onChanged: (value) {
                             setState(() {
                               isActive = value;
                               createOfficeController.isactive.value = value;
-                              print(
-                                createOfficeController.isactive.value
-                                    .toString(),
-                              );
                             });
                           },
                         ),
@@ -342,7 +339,8 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
                     label: languagesController.tr("NOTES"),
                     hint: languagesController.tr("ENTER_NOTES"),
 
-                    height: 55,
+                    height: 120,
+                    maxLines: 5,
                   ),
 
                   SizedBox(height: 8),
@@ -363,12 +361,14 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
                                   .allcurrencylist
                                   .value
                                   .data!
+                                  .currencies!
                                   .length,
                               itemBuilder: (context, index) {
                                 final data = currencyController
                                     .allcurrencylist
                                     .value
-                                    .data![index];
+                                    .data!
+                                    .currencies![index];
 
                                 final bool isSelected = selectedIndex == index;
                                 return GestureDetector(

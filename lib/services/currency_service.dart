@@ -10,19 +10,16 @@ import '../utils/api_endpoints.dart';
 class CurrencyApi {
   final box = GetStorage();
   Future<CurrencyModel> fetchcurrency() async {
-    final url =
-        Uri.parse(ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.currency);
+    final url = Uri.parse(ApiEndPoints.publicUrl + "currencies");
+
     print(url);
 
     var response = await http.get(
       url,
-      headers: {
-        'Authorization': 'Bearer ${box.read("userToken")}',
-      },
+      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
     );
 
     if (response.statusCode == 200) {
-      // print(response.body.toString());
       final currencyModel = CurrencyModel.fromJson(json.decode(response.body));
 
       return currencyModel;

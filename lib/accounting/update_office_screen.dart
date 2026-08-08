@@ -1,20 +1,17 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:google_fonts/google_fonts.dart';
-
-import '../controllers/accounting_currency_controller.dart';
-
-import '../controllers/create_office_controller.dart';
-import '../global_controller/languages_controller.dart';
+import 'package:teknurpay/global_controller/languages_controller.dart';
 import '../widgets/accountextfield.dart';
 import '../widgets/drawer.dart';
+import 'controllers/accounting_currency_controller.dart';
+import 'controllers/update_office_controller.dart';
 
 class UpdateOfficeScreen extends StatefulWidget {
   UpdateOfficeScreen({
     super.key,
+    this.officeid,
     this.officeName,
     this.defaultAccountName,
     this.phoneNumber,
@@ -27,6 +24,7 @@ class UpdateOfficeScreen extends StatefulWidget {
     this.openingBalance,
   });
 
+  String? officeid;
   String? officeName;
   String? defaultAccountName;
   String? phoneNumber;
@@ -34,6 +32,7 @@ class UpdateOfficeScreen extends StatefulWidget {
   String? location;
   String? address;
   String? isActive;
+
   String? notes;
   String? currencyCode;
   String? openingBalance;
@@ -45,23 +44,26 @@ class UpdateOfficeScreen extends StatefulWidget {
 class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
   final languagesController = Get.find<LanguagesController>();
 
-  AccountingCurrencyController currencyController = Get.put(
-    AccountingCurrencyController(),
-  );
+  final currencyController = Get.find<AccountingCurrencyController>();
 
-  CreateOfficeController createOfficeController = Get.put(
-    CreateOfficeController(),
-  );
-
-  bool isActive = false;
+  UpdateOfficeController updateController = Get.put(UpdateOfficeController());
 
   int selectedIndex = -1;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currencyController.fetchCurrencyList();
+
+    updateController.nameController.text = widget.officeName.toString();
+    // updateController.defaultnameController.text = widget.defaultAccountName
+    //     .toString();
+    updateController.phoneController.text = widget.phoneNumber.toString();
+    updateController.idController.text = widget.codeNumber.toString();
+    updateController.locationController.text = widget.location.toString();
+    updateController.addressController.text = widget.address.toString();
+    updateController.isActive.value = widget.isActive.toString();
+    updateController.notesController.text = widget.notes.toString();
   }
 
   final box = GetStorage();
@@ -78,27 +80,27 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
           children: [
             Text(
               languagesController.tr("UPDATE_OFFICE"),
-              style: GoogleFonts.rubik(
+              style: TextStyle(
                 color: Colors.black,
                 fontSize: 20,
                 fontWeight: FontWeight.w500,
               ),
             ),
             Spacer(),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
+            // CircleAvatar(
+            //   radius: 20,
+            //   backgroundColor: Colors.grey.shade100,
 
-              child: Image.asset("assets/icons/headphone.png", height: 25),
-            ),
-            SizedBox(width: 5),
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: Colors.grey.shade100,
+            //   child: Image.asset("assets/icons/headphone.png", height: 25),
+            // ),
+            // SizedBox(width: 5),
+            // CircleAvatar(
+            //   radius: 20,
+            //   backgroundColor: Colors.grey.shade100,
 
-              child: Image.asset("assets/icons/bell.png", height: 25),
-            ),
-            SizedBox(width: 5),
+            //   child: Image.asset("assets/icons/bell.png", height: 25),
+            // ),
+            // SizedBox(width: 5),
             GestureDetector(
               onTap: () {
                 showDialog(
@@ -261,26 +263,26 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                 children: [
                   SizedBox(height: 10),
                   Accountextfield(
-                    controller: createOfficeController.nameController,
+                    controller: updateController.nameController,
                     label: languagesController.tr("NAME"),
                     hint: languagesController.tr("NAME_OF_THE_OFFICE"),
 
                     height: 55,
                   ),
                   SizedBox(height: 20),
-                  Accountextfield(
-                    controller: createOfficeController.defaultnameController,
-                    label: languagesController.tr("DEFAULT_ACCOUNT_NAME"),
-                    hint: languagesController.tr("ENTER_DEFAULT_ACCOUNT_NAME"),
 
-                    height: 55,
-                  ),
+                  // Accountextfield(
+                  //   controller: updateController.defaultnameController,
+                  //   label: languagesController.tr("DEFAULT_ACCOUNT_NAME"),
+                  //   hint: languagesController.tr("ENTER_DEFAULT_ACCOUNT_NAME"),
 
-                  SizedBox(height: 20),
+                  //   height: 55,
+                  // ),
 
+                  // SizedBox(height: 20),
                   Accountextfield(
                     keyboardType: TextInputType.number,
-                    controller: createOfficeController.phoneController,
+                    controller: updateController.phoneController,
                     label: languagesController.tr("PHONE_NUMBER"),
                     hint: languagesController.tr("ENTER_PHONE_NUMBER"),
 
@@ -290,7 +292,7 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                   SizedBox(height: 20),
 
                   Accountextfield(
-                    controller: createOfficeController.idController,
+                    controller: updateController.idController,
                     label: languagesController.tr("ID_NUMBER"),
                     hint: languagesController.tr("ENTER_ID_NUMBER"),
 
@@ -300,7 +302,7 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                   SizedBox(height: 20),
 
                   Accountextfield(
-                    controller: createOfficeController.locationController,
+                    controller: updateController.locationController,
                     label: languagesController.tr("LOCATION"),
                     hint: languagesController.tr("ENTER_LOCATION"),
 
@@ -310,11 +312,12 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                   SizedBox(height: 20),
 
                   Accountextfield(
-                    controller: createOfficeController.addressController,
+                    controller: updateController.addressController,
                     label: languagesController.tr("ADDRESS"),
                     hint: languagesController.tr("ENTER_ADDRESS"),
 
-                    height: 55,
+                    height: 120,
+                    maxLines: 5,
                   ),
 
                   SizedBox(height: 10),
@@ -330,23 +333,27 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                         ),
                       ),
                       SizedBox(width: 5),
-                      Transform.scale(
-                        scale: 1.3,
-                        child: Switch(
-                          activeThumbColor: Colors.green,
-                          value: createOfficeController.isactive.value,
-                          onChanged: (value) {
-                            setState(() {
-                              isActive = value;
-                              createOfficeController.isactive.value = value;
-                              print(
-                                createOfficeController.isactive.value
-                                    .toString(),
-                              );
-                            });
-                          },
+                      Obx(
+                        () => Transform.scale(
+                          scale: 1.2,
+                          child: Switch(
+                            activeThumbColor: Colors.green,
+
+                            // string -> bool
+                            value: updateController.isActive.value == "1",
+
+                            onChanged: (bool value) {
+                              // bool -> string
+                              updateController.isActive.value = value
+                                  ? "1"
+                                  : "0";
+
+                              print(updateController.isActive.value);
+                            },
+                          ),
                         ),
                       ),
+
                       SizedBox(width: 5),
                       Text(
                         languagesController.tr("ACTIVE"),
@@ -361,11 +368,12 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                   SizedBox(height: 10),
 
                   Accountextfield(
-                    controller: createOfficeController.notesController,
+                    controller: updateController.notesController,
                     label: languagesController.tr("NOTES"),
                     hint: languagesController.tr("ENTER_NOTES"),
 
-                    height: 55,
+                    height: 120,
+                    maxLines: 5,
                   ),
 
                   SizedBox(height: 8),
@@ -386,22 +394,22 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                                   .allcurrencylist
                                   .value
                                   .data!
+                                  .currencies!
                                   .length,
                               itemBuilder: (context, index) {
                                 final data = currencyController
                                     .allcurrencylist
                                     .value
-                                    .data![index];
+                                    .data!
+                                    .currencies![index];
 
                                 final bool isSelected = selectedIndex == index;
                                 return GestureDetector(
                                   onTap: () {
                                     setState(() {
                                       selectedIndex = index;
-                                      createOfficeController
-                                          .currencyController
-                                          .text = data.code
-                                          .toString();
+                                      updateController.currencyController.text =
+                                          data.code.toString();
                                     });
                                   },
                                   child: Container(
@@ -440,20 +448,19 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                   ),
                   SizedBox(height: 20),
 
-                  Accountextfield(
-                    keyboardType: TextInputType.number,
-                    controller: createOfficeController.amountController,
-                    label: languagesController.tr("OPENING_BALANCE"),
-                    hint: languagesController.tr("ENTER_OPENING_BALANCE"),
+                  // Accountextfield(
+                  //   keyboardType: TextInputType.number,
+                  //   controller: updateController.amountController,
+                  //   label: languagesController.tr("OPENING_BALANCE"),
+                  //   hint: languagesController.tr("ENTER_OPENING_BALANCE"),
 
-                    height: 55,
-                  ),
-
+                  //   height: 55,
+                  // ),
                   SizedBox(height: 10),
                   Obx(
                     () => GestureDetector(
                       onTap: () {
-                        createOfficeController.createnow();
+                        updateController.updatenow(widget.officeid.toString());
                       },
                       child: Container(
                         height: 55,
@@ -465,7 +472,7 @@ class _UpdateOfficeScreenState extends State<UpdateOfficeScreen> {
                         ),
                         child: Center(
                           child: Text(
-                            createOfficeController.isLoading.value == false
+                            updateController.isLoading.value == false
                                 ? languagesController.tr("UPDATE_OFFICE_NOW")
                                 : languagesController.tr("PLEASE_WAIT"),
                             style: TextStyle(

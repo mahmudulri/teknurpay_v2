@@ -62,6 +62,11 @@ dependencies:
   image_gallery_saver_plus: ^4.0.1
   in_app_update: ^4.2.5
   google_fonts: ^7.0.0
+  firebase_core: ^4.12.1
+  firebase_messaging: ^16.4.3
+  device_info_plus: ^12.4.0
+  uuid: ^4.6.0
+  flutter_local_notifications: ^19.0.0
 
 dev_dependencies:
   flutter_test:

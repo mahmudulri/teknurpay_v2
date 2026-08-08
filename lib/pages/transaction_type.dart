@@ -1,3 +1,4 @@
+import 'package:teknurpay/screens/withdraw_screen.dart';
 import 'package:teknurpay/widgets/button_one.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -344,6 +345,37 @@ class _TransactionsTypeState extends State<TransactionsType> {
                           } else {
                             mypagecontroller.changePage(
                               CommissionTransferScreen(),
+                              isMainPage: false,
+                            );
+                          }
+                        },
+                      ),
+                      SizedBox(height: 10),
+                      PaymentButton(
+                        buttonName: languagesController.tr("WITHDRAW"),
+                        imagelink: "assets/icons/wallet.png",
+                        mycolor: Color(0xff04B75D),
+                        onpressed: () {
+                          if (dashboardController.deactiveStatus.value
+                                  .trim()
+                                  .toLowerCase() ==
+                              "deactivated") {
+                            Get.snackbar(
+                              dashboardController.deactiveStatus.toString(),
+                              dashboardController.deactivateMessage.toString(),
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                              margin: const EdgeInsets.all(12),
+                              duration: const Duration(seconds: 1),
+                              icon: const Icon(
+                                Icons.block,
+                                color: Colors.white,
+                              ),
+                            );
+                          } else {
+                            mypagecontroller.changePage(
+                              WithdrawScreen(),
                               isMainPage: false,
                             );
                           }
