@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "আপনার পূর্ণ নাম লিখুন",
     "ENTER_CONTACT_NAME": "যোগাযোগের নাম লিখুন",
     "INVALID_INPUT": "অবৈধ ইনপুট",
-    "ALREADY_REGISTERED": "ইতিমধ্যে নিবন্ধিত"
+    "ALREADY_REGISTERED": "ইতিমধ্যে নিবন্ধিত",
+    "PLEASE_ENTER_FULL_NAME": "আপনার পূর্ণ নাম লিখুন",
+    "PLEASE_ENTER_CONTACT_NAME": "যোগাযোগের নাম লিখুন",
+    "PLEASE_ENTER_PHONE_NUMBER": "ফোন নম্বর লিখুন",
+    "PLEASE_SELECT_CURRENCY": "একটি মুদ্রা নির্বাচন করুন",
+    "PLEASE_SELECT_PASSWORD": "একটি পাসওয়ার্ড লিখুন",
+    "PLEASE_CONFIRM_THE_PASSWORD": "পাসওয়ার্ড নিশ্চিত করুন",
+    "PASSWORD_DO_NOT_MATCH": "পাসওয়ার্ড মিলছে না",
+    "PLEASE_ENTER_A_VALID_EMAIL": "একটি সঠিক ইমেইল লিখুন",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "PIN লিখুন এবং নিশ্চিত করুন",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "PIN মিলছে না",
+    "REGISTRATION_SUCCESSFULL": "নিবন্ধন সফল হয়েছে",
+    "SOMETHING_ERROR": "কিছু ভুল হয়েছে",
+    "WRONG": "ভুল"
 }

@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_inner_shadow/flutter_inner_shadow.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:teknurpay/screens/sign_up_screen.dart';
 import 'package:teknurpay/utils/colors.dart';
 import 'package:teknurpay/widgets/authtextfield.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
@@ -407,6 +407,29 @@ class _SignInScreenState extends State<SignInScreen> {
                         await signInController.signIn();
                       },
                     ),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      KText(
+                        text: languagesController.tr("HAVE_NOT_REGISTERED_YET"),
+                        color: AppColors.fontColor,
+                        fontSize: 14,
+                      ),
+                      SizedBox(width: 4),
+                      GestureDetector(
+                        onTap: () {
+                          Get.to(() => SignUpScreen());
+                        },
+                        child: KText(
+                          text: languagesController.tr("REGISTER"),
+                          color: AppColors.primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
                   ),
 
                   SizedBox(height: 20),

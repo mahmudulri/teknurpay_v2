@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "أدخل اسمك الكامل",
     "ENTER_CONTACT_NAME": "أدخل اسم جهة الاتصال",
     "INVALID_INPUT": "إدخال غير صالح",
-    "ALREADY_REGISTERED": "مسجل بالفعل"
+    "ALREADY_REGISTERED": "مسجل بالفعل",
+    "PLEASE_ENTER_FULL_NAME": "يرجى إدخال اسمك الكامل",
+    "PLEASE_ENTER_CONTACT_NAME": "يرجى إدخال اسم جهة الاتصال",
+    "PLEASE_ENTER_PHONE_NUMBER": "يرجى إدخال رقم الهاتف",
+    "PLEASE_SELECT_CURRENCY": "يرجى اختيار العملة",
+    "PLEASE_SELECT_PASSWORD": "يرجى إدخال كلمة المرور",
+    "PLEASE_CONFIRM_THE_PASSWORD": "يرجى تأكيد كلمة المرور",
+    "PASSWORD_DO_NOT_MATCH": "كلمتا المرور غير متطابقتين",
+    "PLEASE_ENTER_A_VALID_EMAIL": "يرجى إدخال بريد إلكتروني صالح",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "يرجى إدخال رمز PIN وتأكيده",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "رمزا PIN غير متطابقين",
+    "REGISTRATION_SUCCESSFULL": "تم التسجيل بنجاح",
+    "SOMETHING_ERROR": "حدث خطأ ما",
+    "WRONG": "خطأ"
 }

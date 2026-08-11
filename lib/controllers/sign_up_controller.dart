@@ -7,6 +7,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
+import 'package:teknurpay/utils/api_endpoints.dart';
 
 final languagesController = Get.find<LanguagesController>();
 
@@ -161,9 +162,7 @@ class SignUpController extends GetxController {
       };
       print(fields.toString());
 
-      final url = Uri.parse(
-        "https://api-vpro-hetz-25.watandaronline.com/api/public/reseller-self-register",
-      );
+      final url = Uri.parse(ApiEndPoints.publicUrl + "reseller-self-register");
       final request = http.MultipartRequest('POST', url);
       request.headers.addAll(headers);
       request.fields.addAll(fields);

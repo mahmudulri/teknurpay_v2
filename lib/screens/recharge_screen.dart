@@ -3,12 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:teknurpay/controllers/drawer_controller.dart';
 import 'package:teknurpay/widgets/bottomsheet.dart';
-import 'package:teknurpay/widgets/drawer.dart';
 import 'package:lottie/lottie.dart';
 import 'package:teknurpay/controllers/bundle_controller.dart';
 import 'package:teknurpay/controllers/confirm_pin_controller.dart';
@@ -18,11 +16,8 @@ import 'package:teknurpay/utils/colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:teknurpay/widgets/number_textfield.dart';
 import '../controllers/service_controller.dart';
-import '../global_controller/font_controller.dart';
 import '../global_controller/page_controller.dart';
-import '../pages/homepages.dart';
 import '../widgets/custom_text.dart';
-import 'country_selection.dart';
 
 class RechargeScreen extends StatefulWidget {
   const RechargeScreen({super.key, required this.enableOperatorLookup});
@@ -552,10 +547,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                       originalCompanyId != null &&
                                       currentCompanyId == originalCompanyId;
 
-                                  /*
-             * Detected operator শুধু full-number lookup
-             * confirm হওয়ার পরে দেখানো হবে।
-             */
                                   final bool isDetected =
                                       isFullNumber &&
                                       isOperatorLookupConfirmed &&

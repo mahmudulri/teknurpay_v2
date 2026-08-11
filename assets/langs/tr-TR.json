@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "Adınızı ve soyadınızı girin",
     "ENTER_CONTACT_NAME": "Kişi adını girin",
     "INVALID_INPUT": "Geçersiz giriş",
-    "ALREADY_REGISTERED": "Zaten kayıtlı"
+    "ALREADY_REGISTERED": "Zaten kayıtlı",
+    "PLEASE_ENTER_FULL_NAME": "Lütfen adınızı ve soyadınızı girin",
+    "PLEASE_ENTER_CONTACT_NAME": "Lütfen kişi adını girin",
+    "PLEASE_ENTER_PHONE_NUMBER": "Lütfen telefon numarasını girin",
+    "PLEASE_SELECT_CURRENCY": "Lütfen bir para birimi seçin",
+    "PLEASE_SELECT_PASSWORD": "Lütfen bir şifre girin",
+    "PLEASE_CONFIRM_THE_PASSWORD": "Lütfen şifreyi doğrulayın",
+    "PASSWORD_DO_NOT_MATCH": "Şifreler eşleşmiyor",
+    "PLEASE_ENTER_A_VALID_EMAIL": "Lütfen geçerli bir e-posta girin",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "Lütfen PIN'i girin ve doğrulayın",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "PIN kodları eşleşmiyor",
+    "REGISTRATION_SUCCESSFULL": "Kayıt başarılı",
+    "SOMETHING_ERROR": "Bir şeyler yanlış gitti",
+    "WRONG": "Yanlış"
 }

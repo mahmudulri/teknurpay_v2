@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "Enter your full name",
     "ENTER_CONTACT_NAME": "Enter contact name",
     "INVALID_INPUT": "Invalid input",
-    "ALREADY_REGISTERED": "Already registered"
+    "ALREADY_REGISTERED": "Already registered",
+    "PLEASE_ENTER_FULL_NAME": "Please enter your full name",
+    "PLEASE_ENTER_CONTACT_NAME": "Please enter contact name",
+    "PLEASE_ENTER_PHONE_NUMBER": "Please enter phone number",
+    "PLEASE_SELECT_CURRENCY": "Please select a currency",
+    "PLEASE_SELECT_PASSWORD": "Please enter a password",
+    "PLEASE_CONFIRM_THE_PASSWORD": "Please confirm the password",
+    "PASSWORD_DO_NOT_MATCH": "Passwords do not match",
+    "PLEASE_ENTER_A_VALID_EMAIL": "Please enter a valid email",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "Please enter and confirm your PIN",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "PINs do not match",
+    "REGISTRATION_SUCCESSFULL": "Registration successful",
+    "SOMETHING_ERROR": "Something went wrong",
+    "WRONG": "Wrong"
 }

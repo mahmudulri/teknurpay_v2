@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "خپل بشپړ نوم دننه کړئ",
     "ENTER_CONTACT_NAME": "د اړیکې نوم دننه کړئ",
     "INVALID_INPUT": "ناسم معلومات",
-    "ALREADY_REGISTERED": "مخکې ثبت شوی"
+    "ALREADY_REGISTERED": "مخکې ثبت شوی",
+    "PLEASE_ENTER_FULL_NAME": "مهرباني وکړئ خپل بشپړ نوم دننه کړئ",
+    "PLEASE_ENTER_CONTACT_NAME": "مهرباني وکړئ د اړیکې نوم دننه کړئ",
+    "PLEASE_ENTER_PHONE_NUMBER": "مهرباني وکړئ د تلیفون شمېره دننه کړئ",
+    "PLEASE_SELECT_CURRENCY": "مهرباني وکړئ اسعار وټاکئ",
+    "PLEASE_SELECT_PASSWORD": "مهرباني وکړئ پټنوم دننه کړئ",
+    "PLEASE_CONFIRM_THE_PASSWORD": "مهرباني وکړئ پټنوم تایید کړئ",
+    "PASSWORD_DO_NOT_MATCH": "پټنومونه سره سمون نه خوري",
+    "PLEASE_ENTER_A_VALID_EMAIL": "مهرباني وکړئ معتبر برېښنالیک دننه کړئ",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "مهرباني وکړئ PIN دننه او تایید کړئ",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "PIN کوډونه سره سمون نه خوري",
+    "REGISTRATION_SUCCESSFULL": "نوم‌لیکنه په بریالیتوب ترسره شوه",
+    "SOMETHING_ERROR": "یوه ستونزه رامنځته شوه",
+    "WRONG": "ناسم"
 }

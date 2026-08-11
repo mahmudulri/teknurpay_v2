@@ -435,5 +435,18 @@
     "ENTER_YOUR_FULL_NAME": "نام کامل خود را وارد کنید",
     "ENTER_CONTACT_NAME": "نام مخاطب را وارد کنید",
     "INVALID_INPUT": "ورودی نامعتبر است",
-    "ALREADY_REGISTERED": "قبلاً ثبت شده است"
+    "ALREADY_REGISTERED": "قبلاً ثبت شده است",
+    "PLEASE_ENTER_FULL_NAME": "لطفاً نام کامل خود را وارد کنید",
+    "PLEASE_ENTER_CONTACT_NAME": "لطفاً نام مخاطب را وارد کنید",
+    "PLEASE_ENTER_PHONE_NUMBER": "لطفاً شماره تلفن را وارد کنید",
+    "PLEASE_SELECT_CURRENCY": "لطفاً ارز را انتخاب کنید",
+    "PLEASE_SELECT_PASSWORD": "لطفاً رمز عبور را وارد کنید",
+    "PLEASE_CONFIRM_THE_PASSWORD": "لطفاً رمز عبور را تأیید کنید",
+    "PASSWORD_DO_NOT_MATCH": "رمزهای عبور مطابقت ندارند",
+    "PLEASE_ENTER_A_VALID_EMAIL": "لطفاً یک ایمیل معتبر وارد کنید",
+    "PLEASE_FILL_BOTH_PIN_AND_CONFIRM_PIN": "لطفاً PIN را وارد و تأیید کنید",
+    "PIN_AND_CONFIRM_PIN_DO_NOT_MATCH": "کدهای PIN مطابقت ندارند",
+    "REGISTRATION_SUCCESSFULL": "ثبت‌نام با موفقیت انجام شد",
+    "SOMETHING_ERROR": "مشکلی پیش آمد",
+    "WRONG": "اشتباه"
 }
