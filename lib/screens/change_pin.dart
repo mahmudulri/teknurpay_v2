@@ -144,7 +144,9 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                       SizedBox(height: 8),
                       Obx(
                         () => ChangePinBox(
-                          hintText: languagesController.tr("ENTER_OLD_PIN"),
+                          hintText: languagesController.tr(
+                            "ENTER_YOUR_OLD_PIN",
+                          ),
                           controller: changePinController.oldPinController,
                         ),
                       ),
@@ -163,7 +165,9 @@ class _ChangePinScreenState extends State<ChangePinScreen> {
                       SizedBox(height: 8),
                       Obx(
                         () => ChangePinBox(
-                          hintText: languagesController.tr("ENTER_NEW_PIN"),
+                          hintText: languagesController.tr(
+                            "ENTER_YOUR_NEW_PIN",
+                          ),
                           controller: changePinController.newPinController,
                         ),
                       ),

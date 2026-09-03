@@ -63,6 +63,21 @@ class _OfficesState extends State<Offices> {
   }
 
   bool isQuickMenuOpen = false;
+
+  bool showOffice = true;
+
+  Future<void> _animatedBack() async {
+    setState(() {
+      showOffice = false;
+    });
+
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (mounted) {
+      Get.back();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -80,44 +95,7 @@ class _OfficesState extends State<Offices> {
     var screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       backgroundColor: AppColors.secondaryColor,
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     setState(() {
-      //       isQuickMenuOpen = !isQuickMenuOpen;
-      //     });
-      //   },
-      //   elevation: 8,
-      //   backgroundColor: AppColors.secondaryColor,
-      //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      //   child: AnimatedSwitcher(
-      //     duration: const Duration(milliseconds: 200),
-      //     child: isQuickMenuOpen
-      //         ? Container(
-      //             key: const ValueKey("close"),
-      //             height: double.infinity,
-      //             width: double.infinity,
-      //             decoration: BoxDecoration(
-      //               color: const Color(0xFFFF4343),
-      //               borderRadius: BorderRadius.circular(16),
-      //             ),
-      //             child: const Icon(
-      //               Icons.close_rounded,
-      //               color: AppColors.listbuilderboxColor,
-      //               size: 30,
-      //             ),
-      //           )
-      //         : ClipRRect(
-      //             key: const ValueKey("image"),
-      //             borderRadius: BorderRadius.circular(16),
-      //             child: SizedBox.expand(
-      //               child: Image.asset(
-      //                 "assets/icons/float.png",
-      //                 fit: BoxFit.cover,
-      //               ),
-      //             ),
-      //           ),
-      //   ),
-      // ),
+
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: Row(
@@ -149,23 +127,19 @@ class _OfficesState extends State<Offices> {
                   : SizedBox(),
             ),
 
-            // Text(
-            //   languagesController.tr("OFFICES"),
-            //   style: TextStyle(
-            //     color: Colors.black,
-            //     fontSize: 20,
-            //     fontWeight: FontWeight.w500,
-            //   ),
-            // ),
             Spacer(),
 
-            // CircleAvatar(
-            //   radius: 20,
-            //   backgroundColor: Colors.grey.shade100,
-
-            //   child: Image.asset("assets/icons/bell.png", height: 25),
-            // ),
-            // SizedBox(width: 5),
+            GestureDetector(
+              onTap: () {
+                Get.back();
+              },
+              child: CircleAvatar(
+                radius: 20,
+                backgroundColor: AppColors.fontColor,
+                child: Image.asset("assets/icons/telecom.png", height: 25),
+              ),
+            ),
+            SizedBox(width: 5),
             const LanguageSelectorButton(size: 42, iconSize: 25),
           ],
         ),
@@ -293,14 +267,16 @@ class _OfficesState extends State<Offices> {
                         balanceRelationIcon =
                             Icons.check_circle_outline_rounded;
                       } else if (iWillReceive) {
+                        balanceRelationText = languagesController.tr('YOU_OWE');
+                        balanceRelationColor = AppColors.primaryColor;
+
+                        balanceRelationIcon = Icons.south_west_rounded;
+                      } else {
                         balanceRelationText = languagesController.tr(
                           'YOU_ARE_OWED',
                         );
-                        balanceRelationColor = AppColors.primaryColor;
-                        balanceRelationIcon = Icons.south_west_rounded;
-                      } else {
-                        balanceRelationText = languagesController.tr('YOU_OWE');
                         balanceRelationColor = const Color(0xFFD92D20);
+
                         balanceRelationIcon = Icons.north_east_rounded;
                       }
 
@@ -348,12 +324,13 @@ class _OfficesState extends State<Offices> {
                                     style: TextStyle(
                                       color: balanceRelationColor,
                                       fontSize: 23,
-                                      fontWeight: FontWeight.w700,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
+
                             const SizedBox(height: 8),
                             Text(
                               '$accountsCount ${languagesController.tr('ACCOUNTS')}  •  '
@@ -626,8 +603,17 @@ class _OfficesState extends State<Offices> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 8),
-                            Row(
+                          ],
+                        ),
+                      );
+                    }),
+
+                    const SizedBox(height: 8),
+
+                    // Main action menus are intentionally outside the statistics card.
+                    Obx(
+                      () => statisticController.isLoading.value == false
+                          ? Row(
                               children: [
                                 Expanded(
                                   child: Container(
@@ -695,12 +681,11 @@ class _OfficesState extends State<Offices> {
                                   ),
                                 ),
                               ],
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                    SizedBox(height: 8),
+                            )
+                          : SizedBox(),
+                    ),
+
+                    const SizedBox(height: 8),
 
                     Expanded(
                       child: Obx(
@@ -739,109 +724,146 @@ class _OfficesState extends State<Offices> {
                                     },
                                     child: Container(
                                       width: screenWidth,
-                                      margin: EdgeInsets.only(bottom: 5),
-                                      padding: EdgeInsets.all(16),
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 11,
+                                      ),
                                       decoration: BoxDecoration(
                                         color: AppColors.listbuilderboxColor,
-                                        borderRadius: BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(16),
                                         border: Border.all(
+                                          color: Colors.grey.shade200,
                                           width: 1,
-                                          color: Colors.grey.shade300,
                                         ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(
+                                              0.035,
+                                            ),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ],
                                       ),
                                       child: Row(
                                         children: [
+                                          /// Office Icon
+                                          Container(
+                                            height: 46,
+                                            width: 46,
+                                            padding: const EdgeInsets.all(10),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.primaryColor
+                                                  .withOpacity(0.10),
+                                              borderRadius:
+                                                  BorderRadius.circular(13),
+                                            ),
+                                            child: Image.asset(
+                                              "assets/icons/office.png",
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+
+                                          const SizedBox(width: 11),
+
+                                          /// Office Information
                                           Expanded(
                                             child: Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
+                                                /// Office Name + Code
                                                 Text(
-                                                  data.name.toString(),
-                                                  style: TextStyle(
+                                                  data.name?.toString() ?? '',
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: const TextStyle(
                                                     fontSize: 15,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.grey.shade700,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: Color(0xFF1E293B),
                                                   ),
                                                 ),
-                                                SizedBox(height: 5),
+
+                                                const SizedBox(height: 7),
+
+                                                /// Accounts + Transactions
                                                 Row(
                                                   children: [
-                                                    Text(
-                                                      languagesController.tr(
-                                                        "ACCOUNTS",
-                                                      ),
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors
-                                                            .grey
-                                                            .shade500,
-                                                      ),
+                                                    _buildOfficeInfoChip(
+                                                      icon: Icons
+                                                          .account_balance_wallet_outlined,
+                                                      value:
+                                                          data.accountsCount
+                                                              ?.toString() ??
+                                                          '0',
+                                                      label: languagesController
+                                                          .tr("ACCOUNTS"),
                                                     ),
-                                                    SizedBox(width: 2),
-                                                    Text(
-                                                      ":",
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors
-                                                            .grey
-                                                            .shade500,
-                                                      ),
-                                                    ),
-                                                    SizedBox(width: 2),
-                                                    Text(
-                                                      data.accountsCount
-                                                          .toString(),
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors
-                                                            .grey
-                                                            .shade500,
-                                                      ),
+
+                                                    const SizedBox(width: 7),
+
+                                                    _buildOfficeInfoChip(
+                                                      icon: Icons
+                                                          .swap_horiz_rounded,
+                                                      value:
+                                                          data.transactionCount
+                                                              ?.toString() ??
+                                                          '0',
+                                                      label: languagesController
+                                                          .tr("TRANSACTIONS"),
                                                     ),
                                                   ],
                                                 ),
-                                                SizedBox(height: 5),
-                                                Row(
-                                                  children: [
-                                                    Text(
-                                                      languagesController.tr(
-                                                        "TRANSACTIONS",
-                                                      ),
-                                                      style: TextStyle(
-                                                        fontSize: 14,
+
+                                                /// Location
+                                                if (data.location != null &&
+                                                    data.location
+                                                        .toString()
+                                                        .trim()
+                                                        .isNotEmpty) ...[
+                                                  const SizedBox(height: 7),
+                                                  Row(
+                                                    children: [
+                                                      Icon(
+                                                        Icons
+                                                            .location_on_outlined,
+                                                        size: 13,
                                                         color: Colors
                                                             .grey
                                                             .shade500,
                                                       ),
-                                                    ),
-                                                    SizedBox(width: 2),
-                                                    Text(
-                                                      ":",
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors
-                                                            .grey
-                                                            .shade500,
+                                                      const SizedBox(width: 4),
+                                                      Expanded(
+                                                        child: Text(
+                                                          data.location
+                                                              .toString(),
+                                                          maxLines: 1,
+                                                          overflow: TextOverflow
+                                                              .ellipsis,
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .grey
+                                                                .shade500,
+                                                            fontSize: 10,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                        ),
                                                       ),
-                                                    ),
-                                                    SizedBox(width: 2),
-                                                    Text(
-                                                      data.transactionCount
-                                                          .toString(),
-                                                      style: TextStyle(
-                                                        fontSize: 14,
-                                                        color: Colors
-                                                            .grey
-                                                            .shade500,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
+                                                    ],
+                                                  ),
+                                                ],
                                               ],
                                             ),
                                           ),
+
+                                          const SizedBox(width: 8),
+
+                                          /// More Button
                                           GestureDetector(
+                                            behavior: HitTestBehavior.opaque,
                                             onTap: () {
                                               showDialog(
                                                 context: context,
@@ -855,7 +877,6 @@ class _OfficesState extends State<Offices> {
                                                     ),
                                                     contentPadding:
                                                         EdgeInsets.zero,
-
                                                     content: ClipRRect(
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -868,85 +889,128 @@ class _OfficesState extends State<Offices> {
                                                             .listbuilderboxColor,
                                                         child: Padding(
                                                           padding:
-                                                              EdgeInsets.symmetric(
+                                                              const EdgeInsets.symmetric(
                                                                 vertical: 8,
                                                               ),
                                                           child: Column(
                                                             children: [
                                                               Expanded(
-                                                                child: Container(
-                                                                  color: Colors
-                                                                      .green,
-                                                                  child: Column(
-                                                                    children: [
-                                                                      Expanded(
-                                                                        flex: 1,
-                                                                        child: Container(
+                                                                child: GestureDetector(
+                                                                  onTap: () {
+                                                                    Get.back();
+
+                                                                    Get.to(
+                                                                      () => UpdateOfficeScreen(
+                                                                        officeid: data
+                                                                            .id
+                                                                            .toString(),
+                                                                        officeName:
+                                                                            data.name,
+                                                                        phoneNumber:
+                                                                            data.phone,
+                                                                        codeNumber: data
+                                                                            .code
+                                                                            .toString(),
+                                                                        location:
+                                                                            data.location,
+                                                                        address:
+                                                                            data.address,
+                                                                        isActive: data
+                                                                            .isActive
+                                                                            .toString(),
+                                                                        notes: data
+                                                                            .notes,
+                                                                      ),
+                                                                    );
+                                                                  },
+                                                                  child: Container(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    child: Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        const Icon(
+                                                                          Icons
+                                                                              .edit_outlined,
+                                                                          size:
+                                                                              19,
                                                                           color:
-                                                                              Colors.white,
-                                                                          child: GestureDetector(
-                                                                            onTap: () {
-                                                                              Get.back();
-                                                                              Get.to(
-                                                                                () => UpdateOfficeScreen(
-                                                                                  officeid: data.id.toString(),
-                                                                                  officeName: data.name,
-                                                                                  phoneNumber: data.phone,
-                                                                                  codeNumber: data.code.toString(),
-                                                                                  location: data.location,
-                                                                                  address: data.address,
-                                                                                  isActive: data.isActive.toString(),
-                                                                                  notes: data.notes,
-                                                                                ),
-                                                                              );
-                                                                            },
-                                                                            child: Center(
-                                                                              child: Text(
-                                                                                languagesController.tr(
-                                                                                  "EDIT_OFFICE",
-                                                                                ),
-                                                                              ),
-                                                                            ),
+                                                                              AppColors.primaryColor,
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              8,
+                                                                        ),
+                                                                        Text(
+                                                                          languagesController.tr(
+                                                                            "EDIT_OFFICE",
+                                                                          ),
+                                                                          style: const TextStyle(
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
                                                                           ),
                                                                         ),
-                                                                      ),
-                                                                      Container(
-                                                                        height:
-                                                                            1,
-                                                                        width:
-                                                                            screenWidth,
-                                                                        color: Colors
-                                                                            .grey
-                                                                            .shade200,
-                                                                      ),
-                                                                      Expanded(
-                                                                        flex: 1,
-                                                                        child: GestureDetector(
-                                                                          onTap: () {
-                                                                            deleteOfficeController.deleteoffice(
-                                                                              data.id.toString(),
-                                                                            );
-                                                                            Navigator.pop(
-                                                                              context,
-                                                                            );
-                                                                          },
-                                                                          child: Container(
+                                                                      ],
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                              ),
+
+                                                              Container(
+                                                                height: 1,
+                                                                color: Colors
+                                                                    .grey
+                                                                    .shade200,
+                                                              ),
+
+                                                              Expanded(
+                                                                child: GestureDetector(
+                                                                  onTap: () {
+                                                                    deleteOfficeController
+                                                                        .deleteoffice(
+                                                                          data.id
+                                                                              .toString(),
+                                                                        );
+
+                                                                    Navigator.pop(
+                                                                      context,
+                                                                    );
+                                                                  },
+                                                                  child: Container(
+                                                                    color: Colors
+                                                                        .white,
+                                                                    child: Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .center,
+                                                                      children: [
+                                                                        const Icon(
+                                                                          Icons
+                                                                              .delete_outline_rounded,
+                                                                          size:
+                                                                              19,
+                                                                          color:
+                                                                              Colors.red,
+                                                                        ),
+                                                                        const SizedBox(
+                                                                          width:
+                                                                              8,
+                                                                        ),
+                                                                        Text(
+                                                                          languagesController.tr(
+                                                                            "DELETE_OFFICE",
+                                                                          ),
+                                                                          style: const TextStyle(
                                                                             color:
-                                                                                Colors.white,
-                                                                            child: Center(
-                                                                              child: Text(
-                                                                                languagesController.tr(
-                                                                                  "DELETE_OFFICE",
-                                                                                ),
-                                                                                style: TextStyle(
-                                                                                  color: Colors.red,
-                                                                                ),
-                                                                              ),
-                                                                            ),
+                                                                                Colors.red,
+                                                                            fontWeight:
+                                                                                FontWeight.w600,
                                                                           ),
                                                                         ),
-                                                                      ),
-                                                                    ],
+                                                                      ],
+                                                                    ),
                                                                   ),
                                                                 ),
                                                               ),
@@ -959,9 +1023,19 @@ class _OfficesState extends State<Offices> {
                                                 },
                                               );
                                             },
-                                            child: Image.asset(
-                                              "assets/icons/more.png",
-                                              height: 25,
+                                            child: Container(
+                                              height: 34,
+                                              width: 34,
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFF4F6F8),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Icon(
+                                                Icons.more_horiz_rounded,
+                                                size: 21,
+                                                color: Colors.grey.shade600,
+                                              ),
                                             ),
                                           ),
                                         ],
@@ -1197,4 +1271,48 @@ String _formatAmount(double amount) {
   }
 
   return amount.toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '');
+}
+
+Widget _buildOfficeInfoChip({
+  required IconData icon,
+  required String value,
+  required String label,
+}) {
+  return Flexible(
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F8FA),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.primaryColor),
+          const SizedBox(width: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF344054),
+            ),
+          ),
+          const SizedBox(width: 3),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

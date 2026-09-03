@@ -11,7 +11,9 @@ import 'controllers/office_list_controller.dart';
 import 'models/office_list_model.dart';
 
 class CreateCounterparyScreen extends StatefulWidget {
-  const CreateCounterparyScreen({super.key});
+  final bool isPopup;
+
+  const CreateCounterparyScreen({super.key, this.isPopup = false});
 
   @override
   State<CreateCounterparyScreen> createState() =>
@@ -133,20 +135,6 @@ class _CreateCounterparyScreenState extends State<CreateCounterparyScreen> {
       return;
     }
 
-    if (email.isEmpty) {
-      showValidationToast(languageController.tr('EMAIL_IS_REQUIRED'));
-      return;
-    }
-
-    final RegExp emailRegex = RegExp(
-      r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',
-    );
-
-    if (!emailRegex.hasMatch(email)) {
-      showValidationToast(languageController.tr('ENTER_A_VALID_EMAIL_ADDRESS'));
-      return;
-    }
-
     if (currency.isEmpty) {
       showValidationToast(languageController.tr('PLEASE_SELECT_A_CURRENCY'));
       return;
@@ -168,12 +156,447 @@ class _CreateCounterparyScreenState extends State<CreateCounterparyScreen> {
       setState(() {
         selectedCurrencyIndex = -1;
       });
+
+      if (widget.isPopup) {
+        Get.back(result: true);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width;
+
+    final Widget formContent = Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [AppColors.secondaryColor, AppColors.primarycolor2],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 13),
+          child: ListView(
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            children: [
+              const SizedBox(height: 18),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.listbuilderboxColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                    ),
+                  ),
+                  child: Accountextfield(
+                    controller: formController.nameController,
+                    label: languageController.tr('NAME'),
+                    hint: languageController.tr('COUNTER_PARTY_NAME'),
+                    height: 68,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.listbuilderboxColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                    ),
+                  ),
+                  child: Accountextfield(
+                    keyboardType: TextInputType.phone,
+                    controller: formController.phoneController,
+                    label: languageController.tr('PHONE_NUMBER'),
+                    hint: languageController.tr('ENTER_PHONE_NUMBER'),
+                    height: 68,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.listbuilderboxColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                    ),
+                  ),
+                  child: Accountextfield(
+                    keyboardType: TextInputType.emailAddress,
+                    controller: formController.emailController,
+                    label: languageController.tr('EMAIL'),
+                    hint: languageController.tr('ENTER_EMAIL_ADDRESS'),
+                    height: 68,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              Obx(
+                () => SizedBox(
+                  height: 55,
+                  child: DropdownButtonFormField<String>(
+                    value: formController.selectedType.value,
+                    isExpanded: true,
+                    decoration: dropdownDecoration(
+                      languageController.tr('TYPE'),
+                    ),
+                    items: typeOptions.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item['value'],
+                        child: Text(
+                          item['title'] ?? '',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      if (value == null) {
+                        return;
+                      }
+
+                      formController.selectedType.value = value;
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              Obx(
+                () => SizedBox(
+                  height: 55,
+                  child: DropdownButtonFormField<String>(
+                    value: formController.selectedAccountType.value,
+                    isExpanded: true,
+                    decoration: dropdownDecoration(
+                      languageController.tr('ACCOUNT_TYPE'),
+                    ),
+                    items: accountTypeOptions.map((item) {
+                      return DropdownMenuItem<String>(
+                        value: item['value'],
+                        child: Text(
+                          item['title'] ?? '',
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      if (value == null) {
+                        return;
+                      }
+
+                      formController.selectedAccountType.value = value;
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Obx(
+                () => Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        languageController.tr('CREATE_DEFAULT_ACCOUNT'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                    Switch(
+                      value: formController.createDefaultAccount.value,
+                      onChanged: (bool value) {
+                        formController.changeDefaultAccountStatus(value);
+
+                        if (value) {
+                          _loadOfficeList();
+                        }
+                      },
+                      activeColor: AppColors.primaryColor,
+                    ),
+                  ],
+                ),
+              ),
+
+              Obx(() {
+                if (!formController.createDefaultAccount.value) {
+                  return const SizedBox.shrink();
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.only(top: 5, bottom: 15),
+                  child: buildOfficeDropdown(),
+                );
+              }),
+
+              Text(
+                languageController.tr('CURRENCY'),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              SizedBox(
+                height: 42,
+                width: screenWidth,
+                child: Obx(() {
+                  if (currencyController.isLoading.value) {
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppColors.primaryColor,
+                      ),
+                    );
+                  }
+
+                  final currencies =
+                      currencyController
+                          .allcurrencylist
+                          .value
+                          .data
+                          ?.currencies ??
+                      [];
+
+                  if (currencies.isEmpty) {
+                    return Center(
+                      child: Text(languageController.tr('NO_CURRENCY_FOUND')),
+                    );
+                  }
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: currencies.length,
+                    itemBuilder: (context, index) {
+                      final currency = currencies[index];
+
+                      final bool isSelected = selectedCurrencyIndex == index;
+
+                      return GestureDetector(
+                        onTap: () {
+                          final String code =
+                              currency.code?.toString().trim() ?? '';
+
+                          formController.selectCurrency(
+                            id: currency.id,
+                            code: code,
+                          );
+
+                          setState(() {
+                            selectedCurrencyIndex = index;
+                          });
+                        },
+                        child: Container(
+                          margin: const EdgeInsetsDirectional.only(end: 6),
+                          padding: const EdgeInsets.symmetric(horizontal: 13),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primaryColor.withValues(alpha: 0.10)
+                                : AppColors.listbuilderboxColor,
+                            border: Border.all(
+                              width: isSelected ? 1.5 : 1,
+                              color: isSelected
+                                  ? AppColors.primaryColor
+                                  : AppColors.primarycolor2.withValues(
+                                      alpha: 0.35,
+                                    ),
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            currency.code?.toString() ?? '',
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppColors.primaryColor
+                                  : Colors.grey.shade700,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+              const SizedBox(height: 20),
+
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.listbuilderboxColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    inputDecorationTheme: const InputDecorationTheme(
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      disabledBorder: InputBorder.none,
+                    ),
+                  ),
+                  child: Accountextfield(
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    controller: formController.balanceController,
+                    label: languageController.tr('OPENING_BALANCE'),
+                    hint: languageController.tr('ENTER_OPENING_BALANCE'),
+                    height: 68,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              Obx(
+                () => GestureDetector(
+                  onTap: formController.isLoading.value
+                      ? null
+                      : validateAndCreate,
+                  child: Opacity(
+                    opacity: formController.isLoading.value ? 0.65 : 1,
+                    child: Container(
+                      height: 55,
+                      width: screenWidth,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primarycolor2,
+                          width: 1.3,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primaryColor.withValues(
+                              alpha: 0.28,
+                            ),
+                            blurRadius: 12,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: formController.isLoading.value
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              languageController.tr('CREATE_NOW'),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 18,
+                              ),
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    if (widget.isPopup) {
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.90,
+        decoration: const BoxDecoration(
+          color: AppColors.listbuilderboxColor,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 45,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+              child: Row(
+                children: [
+                  const SizedBox(width: 40),
+                  Expanded(
+                    child: Text(
+                      languageController.tr('CREATE_COUNTER_PARTY'),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    borderRadius: BorderRadius.circular(50),
+                    onTap: () => Get.back(),
+                    child: const SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: Icon(Icons.close_rounded),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(child: formContent),
+          ],
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: AppColors.listbuilderboxColor,
@@ -192,384 +615,7 @@ class _CreateCounterparyScreenState extends State<CreateCounterparyScreen> {
         backgroundColor: AppColors.listbuilderboxColor,
         centerTitle: true,
       ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [AppColors.secondaryColor, AppColors.primarycolor2],
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 13),
-            child: ListView(
-              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-              children: [
-                const SizedBox(height: 18),
-
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.listbuilderboxColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      inputDecorationTheme: const InputDecorationTheme(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                    ),
-                    child: Accountextfield(
-                      controller: formController.nameController,
-                      label: languageController.tr('NAME'),
-                      hint: languageController.tr('COUNTER_PARTY_NAME'),
-                      height: 68,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.listbuilderboxColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      inputDecorationTheme: const InputDecorationTheme(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                    ),
-                    child: Accountextfield(
-                      keyboardType: TextInputType.phone,
-                      controller: formController.phoneController,
-                      label: languageController.tr('PHONE_NUMBER'),
-                      hint: languageController.tr('ENTER_PHONE_NUMBER'),
-                      height: 68,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.listbuilderboxColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      inputDecorationTheme: const InputDecorationTheme(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                    ),
-                    child: Accountextfield(
-                      keyboardType: TextInputType.emailAddress,
-                      controller: formController.emailController,
-                      label: languageController.tr('EMAIL'),
-                      hint: languageController.tr('ENTER_EMAIL_ADDRESS'),
-                      height: 68,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                Obx(
-                  () => SizedBox(
-                    height: 55,
-                    child: DropdownButtonFormField<String>(
-                      value: formController.selectedType.value,
-                      isExpanded: true,
-                      decoration: dropdownDecoration(
-                        languageController.tr('TYPE'),
-                      ),
-                      items: typeOptions.map((item) {
-                        return DropdownMenuItem<String>(
-                          value: item['value'],
-                          child: Text(
-                            item['title'] ?? '',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        if (value == null) {
-                          return;
-                        }
-
-                        formController.selectedType.value = value;
-                      },
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                Obx(
-                  () => SizedBox(
-                    height: 55,
-                    child: DropdownButtonFormField<String>(
-                      value: formController.selectedAccountType.value,
-                      isExpanded: true,
-                      decoration: dropdownDecoration(
-                        languageController.tr('ACCOUNT_TYPE'),
-                      ),
-                      items: accountTypeOptions.map((item) {
-                        return DropdownMenuItem<String>(
-                          value: item['value'],
-                          child: Text(
-                            item['title'] ?? '',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        if (value == null) {
-                          return;
-                        }
-
-                        formController.selectedAccountType.value = value;
-                      },
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                Obx(
-                  () => Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          languageController.tr('CREATE_DEFAULT_ACCOUNT'),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
-                      Switch(
-                        value: formController.createDefaultAccount.value,
-                        onChanged: (bool value) {
-                          formController.changeDefaultAccountStatus(value);
-
-                          if (value) {
-                            _loadOfficeList();
-                          }
-                        },
-                        activeColor: AppColors.primaryColor,
-                      ),
-                    ],
-                  ),
-                ),
-
-                Obx(() {
-                  if (!formController.createDefaultAccount.value) {
-                    return const SizedBox.shrink();
-                  }
-
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 5, bottom: 15),
-                    child: buildOfficeDropdown(),
-                  );
-                }),
-
-                Text(
-                  languageController.tr('CURRENCY'),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                SizedBox(
-                  height: 42,
-                  width: screenWidth,
-                  child: Obx(() {
-                    if (currencyController.isLoading.value) {
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.primaryColor,
-                        ),
-                      );
-                    }
-
-                    final currencies =
-                        currencyController
-                            .allcurrencylist
-                            .value
-                            .data
-                            ?.currencies ??
-                        [];
-
-                    if (currencies.isEmpty) {
-                      return Center(
-                        child: Text(languageController.tr('NO_CURRENCY_FOUND')),
-                      );
-                    }
-
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: currencies.length,
-                      itemBuilder: (context, index) {
-                        final currency = currencies[index];
-
-                        final bool isSelected = selectedCurrencyIndex == index;
-
-                        return GestureDetector(
-                          onTap: () {
-                            final String code =
-                                currency.code?.toString().trim() ?? '';
-
-                            formController.selectCurrency(
-                              id: currency.id,
-                              code: code,
-                            );
-
-                            setState(() {
-                              selectedCurrencyIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsetsDirectional.only(end: 6),
-                            padding: const EdgeInsets.symmetric(horizontal: 13),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? AppColors.primaryColor.withValues(
-                                      alpha: 0.10,
-                                    )
-                                  : AppColors.listbuilderboxColor,
-                              border: Border.all(
-                                width: isSelected ? 1.5 : 1,
-                                color: isSelected
-                                    ? AppColors.primaryColor
-                                    : AppColors.primarycolor2.withValues(
-                                        alpha: 0.35,
-                                      ),
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              currency.code?.toString() ?? '',
-                              style: TextStyle(
-                                color: isSelected
-                                    ? AppColors.primaryColor
-                                    : Colors.grey.shade700,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w400,
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }),
-                ),
-                const SizedBox(height: 20),
-
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppColors.listbuilderboxColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      inputDecorationTheme: const InputDecorationTheme(
-                        border: InputBorder.none,
-                        enabledBorder: InputBorder.none,
-                        focusedBorder: InputBorder.none,
-                        disabledBorder: InputBorder.none,
-                      ),
-                    ),
-                    child: Accountextfield(
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      controller: formController.balanceController,
-                      label: languageController.tr('OPENING_BALANCE'),
-                      hint: languageController.tr('ENTER_OPENING_BALANCE'),
-                      height: 68,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                Obx(
-                  () => GestureDetector(
-                    onTap: formController.isLoading.value
-                        ? null
-                        : validateAndCreate,
-                    child: Opacity(
-                      opacity: formController.isLoading.value ? 0.65 : 1,
-                      child: Container(
-                        height: 55,
-                        width: screenWidth,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryColor,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppColors.primarycolor2,
-                            width: 1.3,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primaryColor.withValues(
-                                alpha: 0.28,
-                              ),
-                              blurRadius: 12,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        alignment: Alignment.center,
-                        child: formController.isLoading.value
-                            ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2.5,
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    Colors.white,
-                                  ),
-                                ),
-                              )
-                            : Text(
-                                languageController.tr('CREATE_NOW'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 18,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
-        ),
-      ),
+      body: formContent,
     );
   }
 

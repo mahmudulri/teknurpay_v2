@@ -1,7 +1,6 @@
 import 'package:get/get.dart';
 import '../models/accountdetails_model.dart';
 import '../services/account_details_service.dart';
-import '../services/transaction_of_account_service.dart';
 
 class AccountDetailsController extends GetxController {
   var isLoading = false.obs;

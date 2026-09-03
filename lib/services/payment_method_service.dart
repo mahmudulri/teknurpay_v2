@@ -12,19 +12,20 @@ class PaymentMethodSApi {
   final box = GetStorage();
   Future<PaymentMethodModel> fetchmethod() async {
     final url = Uri.parse(
-        ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.paymentmethod);
+      ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.paymentmethod,
+    );
+    print(url);
 
     var response = await http.get(
       url,
-      headers: {
-        'Authorization': 'Bearer ${box.read("userToken")}',
-      },
+      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
     );
 
     if (response.statusCode == 200) {
       // print(response.body.toString());
-      final methodmodel =
-          PaymentMethodModel.fromJson(json.decode(response.body));
+      final methodmodel = PaymentMethodModel.fromJson(
+        json.decode(response.body),
+      );
 
       return methodmodel;
     } else {

@@ -209,7 +209,7 @@ class _AccountingBaseScreenState extends State<AccountingBaseScreen> {
                 overflow: TextOverflow.ellipsis,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 9,
+                  fontSize: 12,
                   height: 1,
                   color: isActive
                       ? AppColors.primaryColor

@@ -19,6 +19,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/dashboard_controller.dart';
 import '../controllers/sign_in_controller.dart';
+import '../global_controller/fcm_device_token_controller.dart';
 import '../pages/homepages.dart';
 import '../screens/change_password_screen.dart';
 import '../screens/change_pin.dart';
@@ -833,9 +834,15 @@ class LogoutDialogBox extends StatelessWidget {
                   Expanded(
                     flex: 2,
                     child: GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         signInController.usernameController.clear();
                         signInController.passwordController.clear();
+
+                        final FcmDeviceTokenController fcmController =
+                            Get.find<FcmDeviceTokenController>();
+
+                        final bool tokenDisabled = await fcmController
+                            .disableTokenBeforeLogout();
 
                         box.remove("userToken");
                         mypagecontroller.changePage(

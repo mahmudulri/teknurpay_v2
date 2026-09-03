@@ -8,7 +8,7 @@ class AccountTransactionApi {
   final box = GetStorage();
   Future<AccountTransactionsModel> fetchtransactions(int pageNo) async {
     final url = Uri.parse(
-      "${ApiEndPoints.baseUrl}accounting/transactions?page=${pageNo}",
+      "${ApiEndPoints.baseUrl}accounting/transactions?page=${pageNo}&per_page=25",
     );
     print("order Url : " + url.toString());
 

@@ -1,3 +1,4 @@
+import 'package:teknurpay/screens/sign_up_screen.dart';
 import 'package:teknurpay/widgets/bottomsheet.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:flutter/material.dart';
@@ -156,7 +157,7 @@ class _WelcomescreenState extends State<Welcomescreen> {
                             height: 50,
                             onpressed: () {
                               // whatsapp();
-                              Get.toNamed(signiupcreen);
+                              Get.to(() => SignUpScreen());
                             },
                           ),
                         ),

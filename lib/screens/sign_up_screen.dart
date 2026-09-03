@@ -528,9 +528,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   Widget _fieldLabel(String text, {bool optional = false}) {
     return Row(
-      mainAxisAlignment: isRtl
-          ? MainAxisAlignment.end
-          : MainAxisAlignment.start,
       children: [
         Flexible(
           child: KText(

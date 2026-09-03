@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:teknurpay/accounting/controllers/accounting_currency_controller.dart';
 import 'package:teknurpay/accounting/controllers/counter_party_controller.dart';
 import 'package:teknurpay/accounting/controllers/create_account_controller2.dart';
+import 'package:teknurpay/accounting/create_counterpary_screen.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/utils/colors.dart';
 import 'package:teknurpay/widgets/accountextfield.dart';
@@ -123,12 +124,42 @@ class _CreateAccountScreen2State extends State<CreateAccountScreen2> {
             padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 15),
             children: [
               /// Counterparty dropdown.
-              _buildCounterpartyDropdown(),
+              Row(
+                children: [
+                  Expanded(child: _buildCounterpartyDropdown()),
+
+                  const SizedBox(width: 10),
+
+                  GestureDetector(
+                    onTap: () async {
+                      final bool? created = await Get.bottomSheet<bool>(
+                        const CreateCounterparyScreen(isPopup: true),
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        ignoreSafeArea: false,
+                      );
+
+                      if (created == true) {
+                        counterPartyController.finalList.clear();
+                        await counterPartyController.fetchcounterpary();
+                      }
+                    },
+                    child: Container(
+                      height: 50,
+                      width: 50,
+
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryColor,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
+                      child: const Icon(Icons.add, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
 
               const SizedBox(height: 18),
-
-              /// Office dropdown removed because officeId
-              /// comes from the previous screen.
 
               /// Currency dropdown.
               _buildCurrencyDropdown(),
@@ -267,15 +298,30 @@ class _CreateAccountScreen2State extends State<CreateAccountScreen2> {
         return _loadingDropdown(label: languageController.tr('COUNTER_PARTY'));
       }
 
-      final counterpartyList = counterPartyController.finalList;
+      // Original list
+      final originalList = counterPartyController.finalList;
 
-      final int? selectedValue =
-          formController.selectedCounterpartyId.value > 0 &&
-              counterpartyList.any(
-                (item) =>
-                    item.id == formController.selectedCounterpartyId.value,
-              )
-          ? formController.selectedCounterpartyId.value
+      // Remove duplicate counterparty IDs
+      final Map<int, dynamic> uniqueMap = {};
+
+      for (final item in originalList) {
+        final int? id = item.id;
+
+        if (id != null && !uniqueMap.containsKey(id)) {
+          uniqueMap[id] = item;
+        }
+      }
+
+      final counterpartyList = uniqueMap.values.toList();
+
+      final int selectedId = formController.selectedCounterpartyId.value;
+
+      final int matchCount = counterpartyList
+          .where((item) => item.id == selectedId)
+          .length;
+
+      final int? selectedValue = selectedId > 0 && matchCount == 1
+          ? selectedId
           : null;
 
       return DropdownButtonFormField<int>(
@@ -287,7 +333,7 @@ class _CreateAccountScreen2State extends State<CreateAccountScreen2> {
           label: languageController.tr('COUNTER_PARTY'),
           hint: languageController.tr('SELECT_COUNTER_PARTY'),
         ),
-        items: counterpartyList.map((counterparty) {
+        items: counterpartyList.map<DropdownMenuItem<int>>((counterparty) {
           return DropdownMenuItem<int>(
             value: counterparty.id,
             child: Row(
@@ -323,6 +369,7 @@ class _CreateAccountScreen2State extends State<CreateAccountScreen2> {
             ),
           );
         }).toList(),
+
         onChanged: (int? id) {
           if (id == null) return;
 

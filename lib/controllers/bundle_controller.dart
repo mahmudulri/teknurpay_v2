@@ -19,23 +19,38 @@ class BundleController extends GetxController {
     try {
       isLoading.value = true;
 
+      print("======================================");
+      print("🚀 Bundle API Request");
+      print("📄 Requested Page : $initialpage");
+      print("======================================");
+
       final BundleModel response = await BundlesApi().fetchBundles(initialpage);
 
       allbundleslist.value = response;
 
       final List<Bundle> bundles = response.data?.bundles ?? <Bundle>[];
 
+      final int totalPages = response.payload?.pagination.totalPages ?? 0;
+
+      print("✅ Bundle API Response");
+      print("📄 Current Page : $initialpage");
+      print("📚 Total Pages  : $totalPages");
+      print("📦 Bundles received : ${bundles.length}");
+
       if (initialpage == 1) {
         finalList.clear();
       }
 
       finalList.addAll(bundles);
+
+      print("📦 Total bundles in list : ${finalList.length}");
+      print("======================================");
     } catch (e) {
       if (initialpage == 1) {
         finalList.clear();
       }
 
-      print("Normal bundle API error: $e");
+      print("❌ Normal bundle API error: $e");
     } finally {
       isLoading.value = false;
     }

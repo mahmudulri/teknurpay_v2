@@ -8,7 +8,7 @@ class CounterpartyApi {
   final box = GetStorage();
   Future<CounterPartyModel> fetchcounterpary(int pageNo) async {
     final url = Uri.parse(
-      "${ApiEndPoints.baseUrl}accounting/counterparties?page=${pageNo}",
+      "${ApiEndPoints.baseUrl}accounting/counterparties?page=${pageNo}&per_page=25",
     );
     print("order Url : " + url.toString());
 

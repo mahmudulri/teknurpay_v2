@@ -64,12 +64,55 @@ class CreateCounterPartyController extends GetxController {
     return num.tryParse(value) ?? 0;
   }
 
+  String getCounterPartyEmail() {
+    final String typedEmail = emailController.text.trim();
+
+    if (typedEmail.isNotEmpty) {
+      return typedEmail;
+    }
+
+    final String fullName = nameController.text.trim();
+    final String phone = phoneController.text.trim();
+
+    String firstName = '';
+
+    if (fullName.isNotEmpty) {
+      firstName = fullName.split(RegExp(r'\s+')).first;
+    }
+
+    firstName = firstName.toLowerCase();
+
+    firstName = firstName.replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+    if (firstName.isEmpty) {
+      firstName = 'user';
+    }
+
+    final String phoneDigits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+
+    String lastDigits = '';
+
+    if (phoneDigits.length >= 4) {
+      lastDigits = phoneDigits.substring(phoneDigits.length - 4);
+    } else if (phoneDigits.isNotEmpty) {
+      lastDigits = phoneDigits;
+    } else {
+      lastDigits = DateTime.now().millisecondsSinceEpoch.toString().substring(
+        DateTime.now().millisecondsSinceEpoch.toString().length - 4,
+      );
+    }
+
+    return '$firstName.woosat.$lastDigits@gmail.com';
+  }
+
   Map<String, dynamic> getCounterPartyData() {
     final Map<String, dynamic> body = {
       'name': nameController.text.trim(),
       'type': selectedType.value.trim().toLowerCase(),
       'phone': phoneController.text.trim(),
-      'email': emailController.text.trim(),
+
+      'email': getCounterPartyEmail(),
+
       'default_currency_code': selectedCurrencyCode.value.trim(),
       'create_default_account': createDefaultAccount.value,
       'currency_code': selectedCurrencyCode.value.trim(),
@@ -153,6 +196,7 @@ class CreateCounterPartyController extends GetxController {
 
       debugPrint('Create counterparty URL: $url');
       debugPrint('Create counterparty body: ${jsonEncode(body)}');
+      debugPrint('Counterparty email: ${body['email']}');
 
       final String token = box.read('userToken')?.toString() ?? '';
 

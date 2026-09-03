@@ -12,7 +12,7 @@ class AccountTransactionController extends GetxController {
 
   var alltransactions = AccountTransactionsModel().obs;
 
-  void fetchtransactions() async {
+  Future<void> fetchtransactions() async {
     try {
       isLoading(true);
       await AccountTransactionApi().fetchtransactions(initialpage).then((

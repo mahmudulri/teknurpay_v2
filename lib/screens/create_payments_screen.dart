@@ -9,11 +9,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-
-import '../controllers/add_hawala_controller.dart';
 import '../controllers/add_payment_controller.dart';
-import '../controllers/branch_controller.dart';
-import '../controllers/conversation_controller.dart';
 import '../controllers/currency_controller.dart';
 import '../controllers/payment_method_controller.dart';
 import '../controllers/payment_type_controller.dart';
@@ -24,8 +20,6 @@ import '../global_controller/page_controller.dart';
 import '../utils/colors.dart';
 import '../widgets/authtextfield.dart';
 import '../widgets/bottomsheet.dart';
-import '../widgets/button_one.dart';
-import 'hawala_list_screen.dart';
 import 'receipts_screen.dart';
 
 class CreatePaymentsScreen extends StatefulWidget {

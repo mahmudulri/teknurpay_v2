@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:in_app_update/in_app_update.dart';
-import 'package:teknurpay/accounting/accounting_base.dart';
 import 'package:teknurpay/controllers/notifications_controller.dart';
 import 'package:teknurpay/pages/notification_details_page.dart';
 import 'package:teknurpay/screens/all_notifications_page.dart';
 import 'package:teknurpay/screens/financial_screen.dart';
+import 'package:teknurpay/widgets/accounting_pin_pad.dart';
 import 'package:teknurpay/widgets/custom_text.dart';
 import 'package:teknurpay/widgets/button.dart';
 import 'package:flutter/material.dart';
@@ -507,16 +507,15 @@ class _HomepagesState extends State<Homepages> {
                             SizedBox(width: 8),
                             GestureDetector(
                               onTap: () {
-                                Get.to(() => AccountingBaseScreen());
+                                AccountingPinPad.show(context);
                               },
-
                               child: Icon(
                                 Icons.account_balance,
                                 color: AppColors.primaryColor,
-                                size: 22,
+                                size: 25,
                               ),
                             ),
-                            SizedBox(width: 8),
+                            SizedBox(width: 15),
                             GestureDetector(
                               onTap: () {
                                 CustomFullScreenSheet.show(context);

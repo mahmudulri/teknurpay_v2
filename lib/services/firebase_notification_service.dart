@@ -41,7 +41,7 @@ class FirebaseNotificationService {
 
   static const String _channelId = 'jahanpay_realtime_notifications';
 
-  static const String _channelName = 'JahanPay Notifications';
+  static const String _channelName = 'TeknurPay Notifications';
 
   static const String _channelDescription =
       'Order, balance, payment and Hawala updates';
@@ -362,7 +362,7 @@ class FirebaseNotificationService {
       default:
         return backendTitle?.trim().isNotEmpty == true
             ? backendTitle!
-            : 'JahanPay Notification';
+            : 'TeknurPay Notification';
     }
   }
 

@@ -3,14 +3,32 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/utils/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../controllers/account_details_controller.dart';
 import '../controllers/make_transaction_controller.dart';
 import '../controllers/transactions_of_account_controller.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
-  const AccountDetailsScreen({super.key, this.accountID});
+  const AccountDetailsScreen({
+    super.key,
+    this.accountID,
+    this.accountName,
+    this.accountType,
+    this.balance,
+    this.currency,
+    this.category,
+    this.partyName,
+    this.partyPhone,
+  });
 
   final String? accountID;
+  final String? accountName;
+  final String? accountType;
+  final String? balance;
+  final String? currency;
+  final String? category;
+  final String? partyName;
+  final String? partyPhone;
 
   @override
   State<AccountDetailsScreen> createState() => _AccountDetailsScreenState();
@@ -56,10 +74,120 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
     ]);
   }
 
+  String _safeText(String? value) {
+    if (value == null || value.trim().isEmpty || value == "null") {
+      return "--";
+    }
+
+    return value.trim();
+  }
+
+  Future<void> _shareToWhatsApp() async {
+    final String text = _generateAccountShareText();
+
+    final Uri whatsappUrl = Uri.parse(
+      "https://wa.me/?text=${Uri.encodeComponent(text)}",
+    );
+
+    final bool opened = await launchUrl(
+      whatsappUrl,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!opened) {
+      Get.snackbar(
+        "Error",
+        "Unable to open WhatsApp",
+        snackPosition: SnackPosition.BOTTOM,
+        margin: const EdgeInsets.all(12),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  String _generateAccountShareText() {
+    final account = accountDetailsController.alldata.value.data?.account;
+
+    final String officeName = _safeText(account?.office?.name?.toString());
+
+    final String name = _safeText(widget.partyName);
+    final String phone = _safeText(widget.partyPhone);
+    final String accountName = _safeText(widget.accountName);
+
+    final String category = _translateShareValue(widget.category);
+    final String accountType = _translateShareValue(widget.accountType);
+
+    final String currency = _translateShareValue(
+      widget.currency,
+      fallbackToOriginal: true,
+    );
+
+    final double balanceAmount =
+        double.tryParse(widget.balance?.replaceAll(",", "").trim() ?? "0") ?? 0;
+
+    final String formattedBalance = _formatAmount(balanceAmount.abs());
+
+    final DateTime now = DateTime.now();
+
+    final String date =
+        "${now.year}/"
+        "${now.month.toString().padLeft(2, '0')}/"
+        "${now.day.toString().padLeft(2, '0')}";
+
+    final String balanceTitle = balanceAmount < 0
+        ? languageController.tr("DEBT_BALANCE")
+        : languageController.tr("AVAILABLE_BALANCE");
+
+    final String balanceSign = balanceAmount < 0 ? "-" : "";
+
+    return '''
+$officeName
+${languageController.tr("DATE")}: $date
+
+${languageController.tr("NAME")}: $name
+${languageController.tr("PHONE")}: $phone
+
+${languageController.tr("ACCOUNT")}: $accountName
+${languageController.tr("CATEGORY")}: $category
+${languageController.tr("ACCOUNT_TYPE")}: $accountType
+
+*$balanceTitle: $balanceSign$formattedBalance $currency*
+'''
+        .trim();
+  }
+
+  String _translateShareValue(
+    String? value, {
+    bool fallbackToOriginal = false,
+  }) {
+    if (value == null || value.trim().isEmpty) {
+      return "--";
+    }
+
+    final String originalValue = value.trim();
+
+    final String translationKey = originalValue.toUpperCase().replaceAll(
+      RegExp(r'[^A-Z0-9]+'),
+      '_',
+    );
+
+    final String translatedValue = languageController.tr(translationKey);
+
+    /// Translation পাওয়া না গেলে raw key দেখাবো না।
+    if (translatedValue.trim().isEmpty || translatedValue == translationKey) {
+      if (fallbackToOriginal) {
+        return originalValue;
+      }
+
+      return _formatText(originalValue);
+    }
+
+    return translatedValue;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width;
-
     return SafeArea(
       top: false,
       child: Scaffold(
@@ -67,7 +195,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         appBar: AppBar(
           title: Text(
             languageController.tr("ACCOUNT_DETAILS"),
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 20,
               fontWeight: FontWeight.w500,
@@ -78,6 +206,174 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           scrolledUnderElevation: 0,
           elevation: 0,
           centerTitle: true,
+
+          actions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: PopupMenuButton<String>(
+                tooltip: "Actions",
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Color(0xFF344054),
+                  size: 26,
+                ),
+                onSelected: (value) async {
+                  if (value == "copy_text") {
+                    final String text = _generateAccountShareText();
+
+                    await Clipboard.setData(ClipboardData(text: text));
+
+                    Get.snackbar(
+                      languageController.tr("COPPIED"),
+                      languageController.tr(
+                        "ACCOUNT_INFORMATION_COPIED_TO_CLIPBOARD",
+                      ),
+
+                      snackPosition: SnackPosition.BOTTOM,
+                      margin: const EdgeInsets.all(12),
+                      backgroundColor: AppColors.primaryColor,
+                      colorText: Colors.white,
+                      duration: const Duration(seconds: 2),
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        color: Colors.white,
+                      ),
+                    );
+                  } else if (value == "whatsapp") {
+                    await _shareToWhatsApp();
+                  } else if (value == "image") {
+                    print("Generate Image");
+                  } else if (value == "pdf") {
+                    print("Generate PDF");
+                  }
+                },
+
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+
+                elevation: 5,
+
+                itemBuilder: (context) => [
+                  PopupMenuItem<String>(
+                    value: "copy_text",
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 36,
+                          width: 36,
+                          decoration: BoxDecoration(
+                            color: AppColors.secondaryColor,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.copy_rounded,
+                            size: 19,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          languageController.tr("COPY_AS_TEXT"),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  PopupMenuItem<String>(
+                    value: "whatsapp",
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 36,
+                          width: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEAFBF0),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.chat_rounded,
+                            size: 20,
+                            color: Color(0xFF25D366),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          languageController.tr("SEND_TO_WHATSAPP"),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  PopupMenuItem<String>(
+                    value: "image",
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 36,
+                          width: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1EEFF),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            size: 20,
+                            color: Color(0xFF7A5AF8),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          languageController.tr("GENERATE_IMAGE"),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  PopupMenuItem<String>(
+                    value: "pdf",
+                    child: Row(
+                      children: [
+                        Container(
+                          height: 36,
+                          width: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFEDEC),
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: const Icon(
+                            Icons.picture_as_pdf_outlined,
+                            size: 20,
+                            color: Color(0xFFD92D20),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          languageController.tr("GENERATE_PDF"),
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         body: Container(
           width: double.infinity,
@@ -220,14 +516,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     balanceRelationColor = const Color(0xFF667085);
                     balanceRelationIcon = Icons.check_circle_outline_rounded;
                   } else if (youOweCounterparty) {
-                    balanceRelationText = languagesController.tr("YOU_OWE");
-                    balanceRelationColor = const Color(0xFFD92D20);
+                    balanceRelationText = languagesController.tr("HE_OWED");
+
+                    balanceRelationColor = AppColors.greenColor;
                     balanceRelationIcon = Icons.north_east_rounded;
                   } else {
-                    balanceRelationText = languagesController.tr(
-                      "YOU_ARE_OWED",
-                    );
-                    balanceRelationColor = AppColors.primaryColor;
+                    balanceRelationText = languagesController.tr("HE_OWE");
+                    balanceRelationColor = const Color(0xFFD92D20);
                     balanceRelationIcon = Icons.south_west_rounded;
                   }
 
@@ -319,7 +614,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 5),
                         Row(
                           children: [
                             Icon(
@@ -351,15 +646,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: AppColors.secondaryColor,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
+
+                        // color: AppColors.secondaryColor,
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            /// ================= LEFT : PAID =================
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondaryColor,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
@@ -393,8 +691,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                               "$currencyCode ${_formatAmount(payableAmount.abs())}",
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: AppColors.primaryColor,
+                                              style: const TextStyle(
+                                                color: Colors.red,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -406,12 +704,18 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                   ),
                                 ),
                               ),
-                              Container(
-                                height: 44,
-                                width: 1,
-                                color: Colors.grey.shade300,
-                              ),
-                              Expanded(
+                            ),
+
+                            /// Gap between two parts
+                            const SizedBox(width: 10),
+
+                            /// ================= RIGHT : RECEIVED =================
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondaryColor,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                                 child: Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
@@ -445,8 +749,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                               "$currencyCode ${_formatAmount(receivableAmount.abs())}",
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: TextStyle(
-                                                color: AppColors.primaryColor,
+                                              style: const TextStyle(
+                                                color: AppColors.greenColor,
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w700,
                                               ),
@@ -458,8 +762,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -610,61 +914,52 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                         Color statusBackgroundColor;
                         Color statusTextColor;
 
-                        switch (normalizedStatus) {
-                          case "posted":
-                            statusBackgroundColor = const Color(0xFFE9F9F0);
-                            statusTextColor = const Color(0xFF159455);
-                            break;
-                          case "pending":
-                            statusBackgroundColor = const Color(0xFFFFF4E5);
-                            statusTextColor = const Color(0xFFE08A00);
-                            break;
-                          case "reversed":
-                          case "cancelled":
-                          case "failed":
-                            statusBackgroundColor = const Color(0xFFFFEDEC);
-                            statusTextColor = const Color(0xFFD92D20);
-                            break;
-                          default:
-                            statusBackgroundColor = const Color(0xFFF2F4F7);
-                            statusTextColor = const Color(0xFF667085);
-                        }
+                        final bool hasReference =
+                            transaction.reference != null &&
+                            transaction.reference.toString().trim().isNotEmpty;
 
                         return Container(
                           width: double.infinity,
-                          margin: const EdgeInsets.only(bottom: 7),
-                          padding: const EdgeInsets.all(13),
+                          margin: const EdgeInsets.only(bottom: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.listbuilderboxColor,
-                            borderRadius: BorderRadius.circular(13),
-                            border: Border.all(color: Colors.grey.shade200),
+                            borderRadius: BorderRadius.circular(11),
+                            border: Border.all(
+                              color: Colors.grey.shade200,
+                              width: 0.8,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.025),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
                           child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Container(
-                                height: 44,
-                                width: 44,
+                                height: 36,
+                                width: 36,
                                 decoration: BoxDecoration(
                                   color: visual.backgroundColor,
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: Icon(
                                   visual.icon,
                                   color: visual.iconColor,
-                                  size: 24,
+                                  size: 19,
                                 ),
                               ),
-                              const SizedBox(width: 11),
+                              const SizedBox(width: 9),
                               Expanded(
                                 child: Column(
+                                  mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
@@ -674,27 +969,30 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                             transactionType == "PAYABLE"
                                                 ? "${languagesController.tr("I_PAID_TO")} ${_currentAccountName()}"
                                                 : "${languagesController.tr("I_RECEIVED_FROM")} ${_currentAccountName()}",
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: const TextStyle(
                                               color: Color(0xFF344054),
-                                              fontSize: 14,
+                                              fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                             ),
                                           ),
                                         ),
-                                        const SizedBox(width: 8),
+                                        const SizedBox(width: 6),
                                         Text(
                                           "${isPositive ? '+' : '-'}$currencyCode ${_formatAmount(amount.abs())}",
+                                          maxLines: 1,
                                           style: TextStyle(
                                             color: isPositive
                                                 ? const Color(0xFF159455)
                                                 : const Color(0xFFD92D20),
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 5),
+                                    const SizedBox(height: 3),
                                     Text(
                                       transaction.description
                                                   ?.toString()
@@ -705,168 +1003,61 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                                           : languagesController.tr(
                                               "NO_DESCRIPTION",
                                             ),
-                                      maxLines: 2,
+                                      maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         color: Colors.grey.shade600,
-                                        fontSize: 12,
-                                        height: 1.35,
+                                        fontSize: 10.5,
+                                        height: 1.2,
                                       ),
                                     ),
-                                    const SizedBox(height: 9),
+                                    const SizedBox(height: 5),
                                     Row(
                                       children: [
                                         Icon(
                                           Icons.calendar_today_outlined,
-                                          size: 13,
+                                          size: 11,
                                           color: Colors.grey.shade500,
                                         ),
-                                        const SizedBox(width: 5),
-                                        Expanded(
-                                          child: Text(
-                                            _formatDate(
-                                              transaction.transactionDate,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: Colors.grey.shade500,
-                                              fontSize: 11,
-                                            ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          _formatDate(
+                                            transaction.transactionDate,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            color: Colors.grey.shade500,
+                                            fontSize: 9.5,
                                           ),
                                         ),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: statusBackgroundColor,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _formatText(status),
-                                            style: TextStyle(
-                                              color: statusTextColor,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 9,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.secondaryColor,
-                                        borderRadius: BorderRadius.circular(9),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  languagesController.tr(
-                                                    "BEFORE",
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade500,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 3),
-                                                Text(
-                                                  "$currencyCode ${_formatAmount(_toDouble(transaction.balanceBefore).abs())}",
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: const Color(
-                                                      0xFF344054,
-                                                    ),
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
+                                        if (hasReference) ...[
+                                          const SizedBox(width: 7),
                                           Container(
-                                            width: 1,
-                                            height: 27,
-                                            color: Colors.grey.shade300,
-                                          ),
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Text(
-                                                  languagesController.tr(
-                                                    "AFTER",
-                                                  ),
-                                                  style: TextStyle(
-                                                    color: Colors.grey.shade500,
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 3),
-                                                Text(
-                                                  "$currencyCode ${_formatAmount(_toDouble(transaction.balanceAfter).abs())}",
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  textAlign: TextAlign.center,
-                                                  style: TextStyle(
-                                                    color: const Color(
-                                                      0xFF344054,
-                                                    ),
-                                                    fontSize: 11,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                                ),
-                                              ],
+                                            height: 3,
+                                            width: 3,
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey.shade400,
+                                              shape: BoxShape.circle,
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (transaction.reference != null &&
-                                        transaction.reference
-                                            .toString()
-                                            .trim()
-                                            .isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            "${languagesController.tr("REFERENCE")}: ",
-                                            style: TextStyle(
-                                              color: Colors.grey.shade500,
-                                              fontSize: 10,
-                                            ),
-                                          ),
+                                          const SizedBox(width: 7),
                                           Expanded(
                                             child: Text(
                                               transaction.reference.toString(),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
-                                                color: const Color(0xFF667085),
-                                                fontSize: 10,
+                                                color: Colors.grey.shade500,
+                                                fontSize: 9.5,
                                                 fontWeight: FontWeight.w500,
                                               ),
                                             ),
                                           ),
-                                        ],
-                                      ),
-                                    ],
+                                        ] else
+                                          const Spacer(),
+                                      ],
+                                    ),
                                   ],
                                 ),
                               ),
@@ -880,13 +1071,13 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 Obx(
                   () => Container(
                     height: 56,
-                    width: screenWidth,
+                    width: double.maxFinite,
                     child: Row(
                       children: [
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor,
+                              color: Colors.red,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: AppColors.primarycolor2,
@@ -943,7 +1134,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                         Expanded(
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.primaryColor,
+                              color: Colors.green,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
                                 color: AppColors.primaryColor.withOpacity(0.75),

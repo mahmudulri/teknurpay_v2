@@ -194,7 +194,7 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
     final double amount = double.tryParse(value?.toString() ?? "0") ?? 0;
 
     if (amount > 0) {
-      return greenColor;
+      return Colors.green;
     }
 
     if (amount < 0) {
@@ -202,6 +202,20 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
     }
 
     return Colors.grey.shade700;
+  }
+
+  String _balanceText(dynamic value) {
+    final double amount = double.tryParse(value?.toString() ?? "0") ?? 0;
+
+    if (amount > 0) {
+      return languagesController.tr("HE_OWED");
+    }
+
+    if (amount < 0) {
+      return languagesController.tr("HE_OWE");
+    }
+
+    return "";
   }
 
   Color _transactionTypeColor(dynamic value) {
@@ -425,279 +439,6 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
     );
   }
 
-  void _showTransactionDetails(dynamic transaction) {
-    final String currencyCode = _text(
-      transaction?.currencyCode ?? transaction?.currency?.code,
-      fallback: "",
-    );
-
-    final String status = _text(transaction?.status, fallback: "Unknown");
-
-    final bool isPosted = status.toLowerCase() == "posted";
-
-    final Color transactionColor = _transactionTypeColor(
-      transaction?.transactionType,
-    );
-
-    Get.dialog(
-      Dialog(
-        insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 22),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: Container(
-          width: double.infinity,
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.82,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.listbuilderboxColor,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 15, 8, 12),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 45,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: transactionColor.withOpacity(0.10),
-                        borderRadius: BorderRadius.circular(13),
-                      ),
-                      child: Icon(
-                        _transactionTypeIcon(transaction?.transactionType),
-                        color: transactionColor,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 11),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _formatTransactionType(
-                              transaction?.transactionType,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Color(0xFF1D2733),
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            _text(
-                              transaction?.counterparty?.name,
-                              fallback: "Unknown Counterparty",
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.grey.shade500,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: Get.back,
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.black54,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Divider(height: 1, color: Colors.grey.shade200),
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 13,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: transactionColor.withOpacity(0.07),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Text(
-                              "Amount",
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const Spacer(),
-                            Text(
-                              _money(transaction?.amount, currencyCode),
-                              style: TextStyle(
-                                color: _balanceColor(
-                                  transaction?.balanceEffect,
-                                ),
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 13),
-                      _transactionDialogRow(
-                        title: "Transaction ID",
-                        value: _text(transaction?.id),
-                      ),
-                      _transactionDialogRow(
-                        title: "Status",
-                        value: status,
-                        valueColor: isPosted ? greenColor : orangeColor,
-                      ),
-                      _transactionDialogRow(
-                        title: "Reference",
-                        value: _text(transaction?.reference),
-                      ),
-                      _transactionDialogRow(
-                        title: "Category",
-                        value: _formatTransactionType(transaction?.category),
-                      ),
-                      _transactionDialogRow(
-                        title: "Account",
-                        value: _text(transaction?.counterpartyAccount?.name),
-                      ),
-                      _transactionDialogRow(
-                        title: "Counterparty",
-                        value: _text(transaction?.counterparty?.name),
-                      ),
-                      _transactionDialogRow(
-                        title: "Currency",
-                        value: currencyCode.isEmpty ? "--" : currencyCode,
-                      ),
-                      _transactionDialogRow(
-                        title: "Exchange Rate",
-                        value: _number(transaction?.exchangeRate),
-                      ),
-                      _transactionDialogRow(
-                        title: "Balance Effect",
-                        value: _money(transaction?.balanceEffect, currencyCode),
-                        valueColor: _balanceColor(transaction?.balanceEffect),
-                      ),
-                      _transactionDialogRow(
-                        title: "Before Balance",
-                        value: _money(transaction?.balanceBefore, currencyCode),
-                      ),
-                      _transactionDialogRow(
-                        title: "After Balance",
-                        value: _money(transaction?.balanceAfter, currencyCode),
-                      ),
-                      _transactionDialogRow(
-                        title: "Transaction Date",
-                        value: _formatDate(transaction?.transactionDate),
-                      ),
-                      _transactionDialogRow(
-                        title: "Posted At",
-                        value: _formatDate(transaction?.postedAt),
-                      ),
-                      _transactionDialogRow(
-                        title: "Created By",
-                        value: _text(transaction?.creator?.name),
-                      ),
-                      _transactionDialogRow(
-                        title: "Posted By",
-                        value: _text(transaction?.poster?.name),
-                      ),
-                      if (_text(
-                        transaction?.description,
-                        fallback: "",
-                      ).isNotEmpty) ...[
-                        const SizedBox(height: 4),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(11),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Description",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _text(transaction?.description),
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontSize: 12,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                      if (_text(
-                        transaction?.notes,
-                        fallback: "",
-                      ).isNotEmpty) ...[
-                        const SizedBox(height: 9),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(11),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Notes",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 11,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                _text(transaction?.notes),
-                                style: TextStyle(
-                                  color: Colors.grey.shade800,
-                                  fontSize: 12,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _dialogInfoRow({
     required IconData icon,
     required String title,
@@ -735,40 +476,6 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _transactionDialogRow({
-    required String title,
-    required String value,
-    Color? valueColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 11),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 110,
-            child: Text(
-              title,
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 11),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: TextStyle(
-                color: valueColor ?? Colors.grey.shade800,
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1199,11 +906,13 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
         balanceRelationColor = const Color(0xFF667085);
         balanceRelationIcon = Icons.check_circle_outline_rounded;
       } else if (youAreOwed) {
-        balanceRelationText = languagesController.tr("YOU_ARE_OWED");
+        balanceRelationText = languagesController.tr("YOU_OWE");
         balanceRelationColor = const Color(0xFF159455);
+
         balanceRelationIcon = Icons.south_west_rounded;
       } else {
-        balanceRelationText = languagesController.tr("YOU_OWE");
+        balanceRelationText = languagesController.tr("YOU_ARE_OWED");
+
         balanceRelationColor = const Color(0xFFD92D20);
         balanceRelationIcon = Icons.north_east_rounded;
       }
@@ -1591,7 +1300,16 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
           onTap: () {
             print(account.id.toString());
             Get.to(
-              () => AccountDetailsScreen(accountID: account.id.toString()),
+              () => AccountDetailsScreen(
+                accountID: account.id.toString(),
+                accountName: account.name.toString(),
+                partyName: account.counterparty.name.toString(),
+                partyPhone: account.counterparty.phone.toString(),
+                category: account.counterparty.type.toString(),
+                accountType: account.accountType.toString(),
+                balance: account.currentBalance.toString(),
+                currency: account.currencyCode.toString(),
+              ),
             );
           },
           child: Container(
@@ -1619,18 +1337,7 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
                     color: AppColors.secondaryColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Center(
-                    child: Text(
-                      currencyCode,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: AppColors.primaryColor,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  child: Center(child: Icon(Icons.account_circle_outlined)),
                 ),
                 const SizedBox(width: 11),
                 Expanded(
@@ -1657,15 +1364,6 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
                           fontSize: 11,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        accountType.toUpperCase(),
-                        style: const TextStyle(
-                          color: AppColors.primaryColor,
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
                     ],
                   ),
                 ),
@@ -1683,12 +1381,14 @@ class _ViewOfficeScreenState extends State<ViewOfficeScreen> {
                     ),
                     const SizedBox(height: 5),
                     Text(
-                      "Opening: ${_money(account.openingBalance, currencyCode)}",
+                      _balanceText(account.currentBalance),
                       style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 9,
+                        color: _balanceColor(account.currentBalance),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    const SizedBox(height: 5),
                   ],
                 ),
               ],

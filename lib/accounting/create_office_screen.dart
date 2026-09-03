@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:teknurpay/utils/colors.dart';
 import '../global_controller/languages_controller.dart';
 import '../widgets/accountextfield.dart';
 import '../widgets/drawer.dart';
@@ -436,9 +437,21 @@ class _CreateOfficeScreenState extends State<CreateOfficeScreen> {
                         height: 55,
                         width: screenWidth,
                         decoration: BoxDecoration(
-                          image: DecorationImage(
-                            image: AssetImage("assets/svg/abutton.webp"),
+                          color: AppColors.primaryColor,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppColors.primarycolor2,
+                            width: 1.3,
                           ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.primaryColor.withValues(
+                                alpha: 0.28,
+                              ),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                         ),
                         child: Center(
                           child: Text(

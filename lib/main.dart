@@ -55,8 +55,6 @@ Future<void> main() async {
   Get.put(Mypagecontroller(), permanent: true);
   Get.put(FontController(), permanent: true);
 
-  DependencyInjection.init();
-
   FirebaseNotificationService.instance.configure(
     refreshOrders: (Map<String, dynamic> data) async {
       /*
@@ -158,6 +156,9 @@ class _MyAppState extends State<MyApp> {
   void initState() {
     super.initState();
     initTimezone();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      DependencyInjection.init();
+    });
   }
 
   void initTimezone() {

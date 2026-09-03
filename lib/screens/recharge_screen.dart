@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -123,9 +122,33 @@ class _RechargeScreenState extends State<RechargeScreen> {
         scrollController.position.pixels >=
         scrollController.position.maxScrollExtent;
 
-    if (!reachedBottom) return;
+    if (!reachedBottom) {
+      return;
+    }
 
-    if (isOperatorLookupEnabled) {
+    final String phoneNumber = confirmPinController.numberController.text
+        .trim();
+
+    final int requiredLength = _maximumPhoneLength;
+
+    /// Lookup mode সত্যিকার অর্থে তখনই active,
+    /// যখন full phone number দেওয়া হয়েছে।
+    final bool isLookupModeActive =
+        isOperatorLookupEnabled &&
+        requiredLength > 0 &&
+        phoneNumber.length == requiredLength;
+
+    print("======================================");
+    print("🔽 Bottom reached");
+    print("Lookup enabled     : $isOperatorLookupEnabled");
+    print("Lookup mode active : $isLookupModeActive");
+    print("Phone length       : ${phoneNumber.length}/$requiredLength");
+    print("======================================");
+
+    /// Full number দিয়ে lookup result দেখালে
+    /// normal pagination করা হবে না।
+    if (isLookupModeActive) {
+      print("⛔ Pagination skipped because lookup mode is active");
       return;
     }
 
@@ -133,11 +156,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
         bundleController.allbundleslist.value.payload?.pagination.totalPages ??
         0;
 
+    print("📄 Current Page : ${bundleController.initialpage}");
+    print("📚 Total Pages  : $totalPages");
+
     if (bundleController.initialpage >= totalPages) {
+      print("✅ Last page reached");
       return;
     }
 
     bundleController.initialpage++;
+
+    print("🚀 Loading Next Page : ${bundleController.initialpage}/$totalPages");
 
     await bundleController.fetchallbundles();
   }
@@ -146,6 +175,15 @@ class _RechargeScreenState extends State<RechargeScreen> {
     if (!mounted) return;
 
     final String number = confirmPinController.numberController.text.trim();
+
+    // IMPORTANT:
+    // TextEditingController listener selection/cursor change হলেও fire করতে পারে.
+    // Long press / Paste menu open করলে text same থাকলে ignore করবো.
+    if (number == _lastProcessedNumber) {
+      return;
+    }
+
+    _lastProcessedNumber = number;
 
     final int requiredLength = _maximumPhoneLength;
 
@@ -180,7 +218,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
         if (prefixMatched) {
           matchedOriginalCompanyId = service.companyId?.toString();
-
           break;
         }
       }
@@ -196,7 +233,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
       inputNumber = number;
       originalCompanyId = matchedOriginalCompanyId;
 
-      // নতুন number typing শুরু হলে পুরোনো lookup result reset
       detectedCompanyId = null;
       isOperatorLookupConfirmed = false;
     });
@@ -208,7 +244,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
       return;
     }
 
-    // Number empty
     if (number.isEmpty) {
       setState(() {
         originalCompanyId = null;
@@ -224,16 +259,12 @@ class _RechargeScreenState extends State<RechargeScreen> {
       return;
     }
 
-    /*
-   * Full number না হওয়া পর্যন্ত lookup API call হবে না।
-   * শুধু prefix অনুযায়ী original operator দেখা যাবে।
-   */
+    // Full number না হওয়া পর্যন্ত lookup API call হবে না
     if (requiredLength <= 0 || number.length != requiredLength) {
       print(
         "Waiting for full number: "
         "${number.length}/$requiredLength",
       );
-
       return;
     }
 
@@ -243,6 +274,11 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
       final String requestedNumber = confirmPinController.numberController.text
           .trim();
+
+      // Text পরিবর্তন হয়ে গেলে old request ignore
+      if (requestedNumber != number) {
+        return;
+      }
 
       if (requestedNumber.length != requiredLength) {
         return;
@@ -259,7 +295,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
         final String latestNumber = confirmPinController.numberController.text
             .trim();
 
-        // API response আসার আগে number change হলে ignore
         if (latestNumber != requestedNumber) {
           return;
         }
@@ -274,8 +309,6 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
         setState(() {
           detectedCompanyId = lookupCompanyId;
-
-          // API response শেষ হওয়ার পরেই confirmed হবে
           isOperatorLookupConfirmed = lookupCompanyId != null;
         });
 
@@ -286,17 +319,8 @@ class _RechargeScreenState extends State<RechargeScreen> {
             originalCompanyId != detectedCompanyId;
 
         print("Full number lookup completed");
-
-        print(
-          "Original company id: "
-          "$originalCompanyId",
-        );
-
-        print(
-          "Detected company id: "
-          "$detectedCompanyId",
-        );
-
+        print("Original company id: $originalCompanyId");
+        print("Detected company id: $detectedCompanyId");
         print("Is ported number: $isPorted");
       } catch (e) {
         if (!mounted) return;
@@ -311,72 +335,95 @@ class _RechargeScreenState extends State<RechargeScreen> {
     });
   }
 
-  void _handleNormalNumber(String number) {
+  Future<void> _handleNormalNumber(String number) async {
     _lookupDebounce?.cancel();
 
-    if (number.isEmpty) {
+    final String cleanNumber = number.trim();
+
+    if (cleanNumber.isEmpty) {
       box.write("company_id", "");
 
-      selectedIndex = -1;
+      setState(() {
+        selectedIndex = -1;
+      });
 
       bundleController.initialpage = 1;
       bundleController.finalList.clear();
 
-      bundleController.fetchallbundles();
+      await bundleController.fetchallbundles();
 
-      return;
-    }
-
-    if (number.length != 3 && number.length != 4) {
       return;
     }
 
     final services =
         serviceController.allserviceslist.value.data?.services ?? [];
 
-    bool matchFound = false;
+    String? matchedCompanyId;
 
     for (final service in services) {
       final companyCodes = service.company?.companycodes ?? [];
 
       for (final code in companyCodes) {
-        final String reservedDigit = code.reservedDigit?.toString() ?? "";
+        final String reservedDigit =
+            code.reservedDigit?.toString().trim() ?? "";
 
-        print(
-          "Checking reservedDigit: "
-          "$reservedDigit",
-        );
+        if (reservedDigit.isEmpty) {
+          continue;
+        }
 
-        if (reservedDigit == number) {
-          box.write("company_id", service.companyId);
+        final String normalizedNumber = cleanNumber.startsWith("0")
+            ? cleanNumber.substring(1)
+            : cleanNumber;
 
-          bundleController.initialpage = 1;
-          bundleController.finalList.clear();
+        final String normalizedReservedDigit = reservedDigit.startsWith("0")
+            ? reservedDigit.substring(1)
+            : reservedDigit;
 
-          bundleController.fetchallbundles();
+        final bool matched =
+            cleanNumber.startsWith(reservedDigit) ||
+            normalizedNumber.startsWith(normalizedReservedDigit);
+
+        if (matched) {
+          matchedCompanyId = service.companyId?.toString();
 
           print(
-            "Matched company_id: "
-            "${service.companyId} "
-            "with input: $number",
+            "✅ Company matched: $matchedCompanyId "
+            "with reserved digit: $reservedDigit "
+            "for number: $cleanNumber",
           );
 
-          matchFound = true;
           break;
         }
       }
 
-      if (matchFound) {
+      if (matchedCompanyId != null) {
         break;
       }
     }
 
-    if (!matchFound) {
-      print(
-        "No company matched for input: "
-        "$number",
-      );
+    if (matchedCompanyId == null) {
+      print("❌ No company matched for number: $cleanNumber");
+      return;
     }
+
+    // একই company হলে প্রত্যেক digit change-এ API আবার call করবে না
+    final String currentCompanyId = box.read("company_id")?.toString() ?? "";
+
+    if (currentCompanyId == matchedCompanyId) {
+      print("ℹ️ Same company already selected: $matchedCompanyId");
+      return;
+    }
+
+    await box.write("company_id", matchedCompanyId);
+
+    bundleController.initialpage = 1;
+    bundleController.finalList.clear();
+
+    print("🚀 Calling normal bundle API");
+    print("Company ID: ${box.read("company_id")}");
+    print("Number: $cleanNumber");
+
+    await bundleController.fetchallbundles();
   }
 
   @override
@@ -423,10 +470,10 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   // তোমার existing build() method এখানে থাকবে।
 
+  String _lastProcessedNumber = "";
+
   @override
   Widget build(BuildContext context) {
-    print(box.read("enable_operator_lookup"));
-    print(widget.enableOperatorLookup);
     final Mypagecontroller mypagecontroller = Get.find();
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
@@ -593,6 +640,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                               _maximumPhoneLength &&
                                           detectedCompanyId != null &&
                                           currentCompanyId == detectedCompanyId;
+
                                       final bool isPorted =
                                           isOperatorLookupConfirmed &&
                                           inputNumber.length ==
@@ -604,6 +652,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
                                       final bool showPortedBadge =
                                           isDetectedOperator && isPorted;
+
                                       final bool isSelected =
                                           isOperatorLookupEnabled &&
                                               isOperatorLookupConfirmed &&
@@ -657,11 +706,13 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                                   height: 50,
                                                   width: 50,
                                                   decoration: BoxDecoration(
+                                                    // ONLY COLOR REVERSED
                                                     color: isSelected
-                                                        ? const Color(
+                                                        ? Colors.grey.shade300
+                                                        : const Color(
                                                             0xffFFFFFF,
-                                                          )
-                                                        : Colors.grey.shade300,
+                                                          ),
+
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                           8,

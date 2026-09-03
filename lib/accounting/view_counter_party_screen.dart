@@ -80,14 +80,14 @@ class _ViewCounterPartyScreenState extends State<ViewCounterPartyScreen> {
         double.tryParse(balance?.toString() ?? '0') ?? 0;
 
     if (parsedBalance < 0) {
-      return const Color(0xFFDC4146);
+      return const Color(0xFFD92D20);
     }
 
     if (parsedBalance > 0) {
-      return AppColors.primaryColor;
+      return AppColors.greenColor;
     }
 
-    return const Color(0xFF536170);
+    return const Color(0xFF667085);
   }
 
   Widget _buildHeaderIcon(String assetPath) {
@@ -410,11 +410,29 @@ class _ViewCounterPartyScreenState extends State<ViewCounterPartyScreen> {
   }
 
   Widget _buildAccountCard(dynamic data) {
-    final String balance = _displayValue(data.currentBalance, fallback: '0.00');
+    final double balanceValue =
+        double.tryParse(data.currentBalance?.toString() ?? '0') ?? 0.0;
+
+    final String balance = balanceValue.toStringAsFixed(2);
 
     final String currency = _displayValue(data.currencyCode);
 
     final Color balanceColor = _getBalanceColor(data.currentBalance);
+
+    final bool isBalanceSettled = balanceValue == 0;
+    final bool heOwes = balanceValue < 0;
+
+    final String balanceRelationText = isBalanceSettled
+        ? languagesController.tr("BALANCE_SETTLED")
+        : heOwes
+        ? languagesController.tr("HE_OWE")
+        : languagesController.tr("HE_OWED");
+
+    final IconData balanceRelationIcon = isBalanceSettled
+        ? Icons.check_circle_outline_rounded
+        : heOwes
+        ? Icons.south_west_rounded
+        : Icons.north_east_rounded;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -474,13 +492,30 @@ class _ViewCounterPartyScreenState extends State<ViewCounterPartyScreen> {
                           color: balanceColor,
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        languagesController.tr("BALANCE"),
-                        style: TextStyle(
-                          fontSize: 10.5,
-                          color: const Color(0xFF8A96A3),
-                        ),
+                      const SizedBox(height: 3),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            balanceRelationIcon,
+                            size: 12,
+                            color: balanceColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              balanceRelationText,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.end,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w500,
+                                color: balanceColor,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
