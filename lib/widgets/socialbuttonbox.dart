@@ -21,9 +21,7 @@ void showSocialPopup(BuildContext context) {
     context: context,
     builder: (BuildContext ctx) {
       return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(25),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
         backgroundColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
@@ -65,12 +63,6 @@ void showSocialPopup(BuildContext context) {
                     color: Colors.purple,
                     url: "https://instagram.com/username",
                   ),
-                  _socialButton(
-                    icon: FontAwesomeIcons.whatsapp, // works fine
-                    label: "WhatsApp",
-                    color: Colors.green,
-                    url: "https://wa.me/989032926310",
-                  ),
                 ],
               ),
 
@@ -103,16 +95,11 @@ Widget _socialButton({
     child: ElevatedButton.icon(
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
       ),
       icon: Icon(icon, color: Colors.white, size: 20),
-      label: Text(
-        label,
-        style: const TextStyle(color: Colors.white),
-      ),
+      label: Text(label, style: const TextStyle(color: Colors.white)),
       onPressed: () => _launchUrl(url),
     ),
   );

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../helpers/api_headers.dart';
 import '../models/branch_model.dart';
 
 import '../utils/api_endpoints.dart';
@@ -14,10 +15,7 @@ class BranchApi {
       ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.branch,
     );
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       // print(response.body.toString());

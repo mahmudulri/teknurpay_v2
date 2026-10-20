@@ -1,14 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:teknurpay/controllers/drawer_controller.dart';
-import 'package:teknurpay/pages/homepages.dart';
 import 'package:teknurpay/widgets/bottomsheet.dart';
-import 'package:teknurpay/widgets/drawer.dart';
 import 'package:lottie/lottie.dart';
 import 'package:teknurpay/controllers/bundle_controller.dart';
 import 'package:teknurpay/controllers/confirm_pin_controller.dart';
@@ -18,13 +13,10 @@ import 'package:teknurpay/global_controller/languages_controller.dart';
 import 'package:teknurpay/global_controller/page_controller.dart';
 import 'package:teknurpay/helpers/price.dart';
 import 'package:teknurpay/utils/colors.dart';
-
-import '../global_controller/font_controller.dart';
 import '../widgets/custom_text.dart';
-import 'country_selection.dart';
 
 class SocialBundles extends StatefulWidget {
-  SocialBundles({super.key});
+  const SocialBundles({super.key});
 
   @override
   State<SocialBundles> createState() => _SocialBundlesState();
@@ -32,721 +24,352 @@ class SocialBundles extends StatefulWidget {
 
 class _SocialBundlesState extends State<SocialBundles> {
   final serviceController = Get.find<ServiceController>();
-
   final bundleController = Get.find<BundleController>();
-  LanguagesController languagesController = Get.put(LanguagesController());
+  final languagesController = Get.put(LanguagesController());
   final confirmPinController = Get.find<ConfirmPinController>();
-
-  // final confirmPinController = Get.find<ConfirmPinController>();
-
   final ScrollController scrollController = ScrollController();
-
-  String search = "";
-  String inputNumber = "";
-
-  int selectedIndex = -1;
-  int duration_selectedIndex = -1;
   final box = GetStorage();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     confirmPinController.numberController.clear();
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
-        statusBarColor: Colors.white, // Status bar background color
-        statusBarIconBrightness: Brightness.dark, // For Android
-        statusBarBrightness: Brightness.light, // For iOS
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white,
+        statusBarIconBrightness: Brightness.dark,
+        statusBarBrightness: Brightness.light,
       ),
     );
 
     bundleController.finalList.clear();
     bundleController.initialpage = 1;
-    scrollController.addListener(refresh);
-    // Use addPostFrameCallback to ensure this runs after the initial build
+    scrollController.addListener(_loadNextPageWhenNeeded);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       serviceController.fetchservices();
       bundleController.fetchallbundles();
     });
   }
 
-  Future<void> refresh() async {
-    final int totalPages =
-        bundleController.allbundleslist.value.payload?.pagination!.totalPages ??
-        0;
-    final int currentPage = bundleController.initialpage;
+  @override
+  void dispose() {
+    scrollController.removeListener(_loadNextPageWhenNeeded);
+    scrollController.dispose();
+    super.dispose();
+  }
 
-    // Prevent loading more pages if we've reached the last page
-    if (currentPage >= totalPages) {
-      print(
-        "End..........................................End.....................",
-      );
+  // Infinite-scroll pagination, formerly mixed into the RefreshIndicator callback.
+  void _loadNextPageWhenNeeded() {
+    if (!scrollController.hasClients || bundleController.isLoading.value) {
       return;
     }
 
-    // Check if the scroll position is at the bottom
-    if (scrollController.position.pixels ==
-        scrollController.position.maxScrollExtent) {
-      bundleController.initialpage++;
-
-      // Prevent fetching if the next page exceeds total pages
-      if (bundleController.initialpage <= totalPages) {
-        print("Load More...................");
-        bundleController.fetchallbundles();
-      } else {
-        bundleController.initialpage =
-            totalPages; // Reset to the last valid page
-        print("Already on the last page");
-      }
+    final int totalPages =
+        bundleController.allbundleslist.value.payload?.pagination?.totalPages ??
+        0;
+    if (totalPages <= 0 || bundleController.initialpage >= totalPages) {
+      return;
     }
+    if (scrollController.position.extentAfter > 0) return;
+
+    bundleController.initialpage++;
+    bundleController.fetchallbundles();
   }
 
-  List countryCode = ["+93", "+880", "+91"];
+  // Pull-down refresh loads the first page again.
+  Future<void> _refreshBundles() async {
+    bundleController.initialpage = 1;
+    bundleController.finalList.clear();
+    await Future<void>.sync(() => bundleController.fetchallbundles());
+  }
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  void _showBundleDialog(int index) {
+    final data = bundleController.finalList[index];
+    // ID / NUMBER selector is available only for IMO bundles.
+    final String companyCode =
+        (data.service?.company?.companyCode?.toString() ?? '')
+            .trim()
+            .toUpperCase();
+    final bool isImo = companyCode == 'IMO';
+    print(companyCode);
+    box.write('bundleID', data.id.toString());
 
-  MyDrawerController drawerController = Get.put(MyDrawerController());
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        contentPadding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(17)),
+        content: SocialdialogBox(
+          isImo: isImo,
+          companyname: data.service!.company!.companyName.toString(),
+          title: data.bundleTitle,
+          validity: data.validityType,
+          buyingprice: data.buyingPrice,
+          sellingprice: data.sellingPrice,
+          imagelink: data.service!.company!.companyLogo.toString(),
+        ),
+      ),
+    );
+  }
+
+  // Compact reusable price row for the right-hand column of a bundle card.
+  // The label and amount are width-constrained so large values cannot overflow.
+  Widget _buildCompactPriceRow({
+    required String labelKey,
+    required String price,
+    required String currency,
+    required Color color,
+  }) {
+    return SizedBox(
+      height: 19,
+      child: Row(
+        children: [
+          SizedBox(
+            width: 39,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Obx(
+                () => KText(
+                  text: languagesController.tr(labelKey),
+                  fontWeight: FontWeight.w700,
+                  fontSize: 11.5,
+                  color: color,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: FittedBox(
+              alignment: Alignment.centerRight,
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PriceTextView(
+                    price: price,
+                    textStyle: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    currency,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      color: color,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBundleItem(int index, double screenWidth) {
+    final data = bundleController.finalList[index];
+    final currency = box.read('currency_code')?.toString() ?? '';
+    final priceColumnWidth = (screenWidth * 0.365)
+        .clamp(108.0, 160.0)
+        .toDouble();
+
+    return GestureDetector(
+      onTap: () => _showBundleDialog(index),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                spreadRadius: 2,
+                blurRadius: 2,
+                offset: const Offset(0, 0),
+              ),
+            ],
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 44,
+                height: 44,
+                child: Image.network(
+                  data.service!.company!.companyLogo.toString(),
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.image_not_supported_outlined,
+                    size: 24,
+                    color: Colors.grey,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 9),
+              Expanded(
+                child: Text(
+                  data.bundleTitle.toString(),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.5,
+                    height: 1.25,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(height: 35, width: 1, color: const Color(0xFFE9EDF2)),
+              const SizedBox(width: 8),
+              // SALE and BUY sit vertically on the right, on the same line
+              // as the logo/title. This keeps each bundle card compact.
+              SizedBox(
+                width: priceColumnWidth,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildCompactPriceRow(
+                      labelKey: 'SALE',
+                      price: data.sellingPrice.toString(),
+                      currency: currency,
+                      color: Colors.green,
+                    ),
+                    const SizedBox(height: 5),
+                    _buildCompactPriceRow(
+                      labelKey: 'BUY',
+                      price: data.buyingPrice.toString(),
+                      currency: currency,
+                      color: Colors.red,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Single RefreshIndicator and ListView for loading and loaded states.
+  Widget _buildBundleList(double screenWidth) {
+    return RefreshIndicator(
+      onRefresh: _refreshBundles,
+      child: ListView.separated(
+        controller: scrollController,
+        padding: EdgeInsets.zero,
+        physics: const AlwaysScrollableScrollPhysics(),
+        itemCount: bundleController.finalList.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 2),
+        itemBuilder: (context, index) => _buildBundleItem(index, screenWidth),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final Mypagecontroller mypagecontroller = Get.find();
-    var screenHeight = MediaQuery.of(context).size.height;
-    var screenWidth = MediaQuery.of(context).size.width;
+    final double screenWidth = MediaQuery.of(context).size.width;
+
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         key: _scaffoldKey,
-        body: Container(
-          height: screenHeight,
-          width: screenWidth,
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 15, right: 15, top: 10),
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 0),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            mypagecontroller.goBack();
-                          },
-                          child: Container(
-                            height: 40,
-                            width: 40,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Image.asset(
-                              "assets/icons/backicon.png",
-                              height: 40,
-                            ),
-                          ),
-                        ),
-                        Spacer(),
-                        Obx(
-                          () => KText(
-                            text:
-                                "${languagesController.tr("COMMUNICATION_PACKAGES")}",
-                            fontWeight: FontWeight.bold,
-                            fontSize: screenWidth * 0.045,
-                            color: Colors.black,
-                          ),
-                        ),
-                        Spacer(),
-                        GestureDetector(
-                          onTap: () {
-                            CustomFullScreenSheet.show(context);
-                          },
-                          child: Image.asset(
-                            "assets/icons/drawericon.png",
-                            height: 40,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: Container(
-                    width: screenWidth,
-
-                    child: Padding(
-                      padding: EdgeInsets.only(top: 10, left: 10, right: 10),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Obx(
-                              () =>
-                                  bundleController.isLoading.value == false &&
-                                      bundleController.finalList.isNotEmpty
-                                  ? RefreshIndicator(
-                                      onRefresh: refresh,
-                                      child: ListView.separated(
-                                        separatorBuilder: (context, index) {
-                                          return SizedBox(height: 2);
-                                        },
-                                        padding: EdgeInsets.all(0),
-                                        shrinkWrap: false,
-                                        physics:
-                                            AlwaysScrollableScrollPhysics(),
-                                        controller: scrollController,
-                                        itemCount:
-                                            bundleController.finalList.length,
-                                        itemBuilder: (context, index) {
-                                          final data =
-                                              bundleController.finalList[index];
-                                          return GestureDetector(
-                                            onTap: () {
-                                              box.write(
-                                                "bundleID",
-                                                data.id.toString(),
-                                              );
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return AlertDialog(
-                                                    contentPadding:
-                                                        EdgeInsets.all(0),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            17,
-                                                          ),
-                                                    ),
-                                                    content: SocialdialogBox(
-                                                      companyname: data
-                                                          .service!
-                                                          .company!
-                                                          .companyName
-                                                          .toString(),
-                                                      title: data.bundleTitle,
-                                                      validity:
-                                                          data.validityType,
-                                                      buyingprice:
-                                                          data.buyingPrice,
-                                                      sellingprice:
-                                                          data.sellingPrice,
-                                                      imagelink: data
-                                                          .service!
-                                                          .company!
-                                                          .companyLogo
-                                                          .toString(),
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 5,
-                                                vertical: 3,
-                                              ),
-                                              child: Container(
-                                                width: screenWidth,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.3),
-                                                      spreadRadius: 2,
-                                                      blurRadius: 2,
-                                                      offset: Offset(0, 0),
-                                                    ),
-                                                  ],
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 8,
-                                                  ),
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Image.network(
-                                                        data
-                                                            .service!
-                                                            .company!
-                                                            .companyLogo
-                                                            .toString(),
-                                                        height: 50,
-                                                        width: 50,
-                                                        fit: BoxFit.contain,
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Expanded(
-                                                        flex: 3,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              data.bundleTitle
-                                                                  .toString(),
-                                                              maxLines: 2,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 14,
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: [
-                                                                Obx(
-                                                                  () => KText(
-                                                                    text: languagesController
-                                                                        .tr(
-                                                                          "SALE",
-                                                                        ),
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .035,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  " : ",
-                                                                  style: TextStyle(
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                PriceTextView(
-                                                                  price: data
-                                                                      .sellingPrice
-                                                                      .toString(),
-                                                                  textStyle: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .035,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 3,
-                                                                ),
-                                                                Text(
-                                                                  "${box.read("currency_code")}",
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .028,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            Obx(
-                                                              () => KText(
-                                                                text:
-                                                                    languagesController
-                                                                        .tr(
-                                                                          "BUY",
-                                                                        ),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize:
-                                                                    screenWidth *
-                                                                    .035,
-                                                                color:
-                                                                    Colors.red,
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .end,
-                                                              children: [
-                                                                Flexible(
-                                                                  child: PriceTextView(
-                                                                    price: data
-                                                                        .buyingPrice
-                                                                        .toString(),
-                                                                    textStyle: TextStyle(
-                                                                      color: Colors
-                                                                          .red,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      fontSize:
-                                                                          screenWidth *
-                                                                          .035,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 2,
-                                                                ),
-                                                                Text(
-                                                                  "${box.read("currency_code")}",
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .028,
-                                                                    color: Colors
-                                                                        .red,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    )
-                                  : bundleController.finalList.isEmpty
-                                  ? Center(
-                                      child: CircularProgressIndicator(
-                                        color: Colors.grey,
-                                      ),
-                                    )
-                                  : RefreshIndicator(
-                                      onRefresh: refresh,
-                                      child: ListView.separated(
-                                        separatorBuilder: (context, index) {
-                                          return SizedBox(height: 2);
-                                        },
-                                        padding: EdgeInsets.all(0),
-                                        shrinkWrap: false,
-                                        physics:
-                                            AlwaysScrollableScrollPhysics(),
-                                        controller: scrollController,
-                                        itemCount:
-                                            bundleController.finalList.length,
-                                        itemBuilder: (context, index) {
-                                          final data =
-                                              bundleController.finalList[index];
-                                          return GestureDetector(
-                                            onTap: () {
-                                              box.write(
-                                                "bundleID",
-                                                data.id.toString(),
-                                              );
-                                              showDialog(
-                                                context: context,
-                                                builder: (context) {
-                                                  return AlertDialog(
-                                                    contentPadding:
-                                                        EdgeInsets.all(0),
-                                                    shape: RoundedRectangleBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            17,
-                                                          ),
-                                                    ),
-                                                    content: SocialdialogBox(
-                                                      companyname: data
-                                                          .service!
-                                                          .company!
-                                                          .companyName
-                                                          .toString(),
-                                                      title: data.bundleTitle,
-                                                      validity:
-                                                          data.validityType,
-                                                      buyingprice:
-                                                          data.buyingPrice,
-                                                      sellingprice:
-                                                          data.sellingPrice,
-                                                      imagelink: data
-                                                          .service!
-                                                          .company!
-                                                          .companyLogo
-                                                          .toString(),
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 5,
-                                                vertical: 3,
-                                              ),
-                                              child: Container(
-                                                width: screenWidth,
-                                                decoration: BoxDecoration(
-                                                  color: Colors.white,
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.3),
-                                                      spreadRadius: 2,
-                                                      blurRadius: 2,
-                                                      offset: Offset(0, 0),
-                                                    ),
-                                                  ],
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                ),
-                                                child: Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 8,
-                                                    vertical: 8,
-                                                  ),
-                                                  child: Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .center,
-                                                    children: [
-                                                      Image.network(
-                                                        data
-                                                            .service!
-                                                            .company!
-                                                            .companyLogo
-                                                            .toString(),
-                                                        height: 50,
-                                                        width: 50,
-                                                        fit: BoxFit.contain,
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Expanded(
-                                                        flex: 3,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .start,
-                                                          children: [
-                                                            Text(
-                                                              data.bundleTitle
-                                                                  .toString(),
-                                                              maxLines: 2,
-                                                              overflow:
-                                                                  TextOverflow
-                                                                      .ellipsis,
-                                                              style: TextStyle(
-                                                                color: Colors
-                                                                    .black,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
-                                                                fontSize: 14,
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              children: [
-                                                                Obx(
-                                                                  () => KText(
-                                                                    text: languagesController
-                                                                        .tr(
-                                                                          "SALE",
-                                                                        ),
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w600,
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .035,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                Text(
-                                                                  " : ",
-                                                                  style: TextStyle(
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                PriceTextView(
-                                                                  price: data
-                                                                      .sellingPrice
-                                                                      .toString(),
-                                                                  textStyle: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .035,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 3,
-                                                                ),
-                                                                Text(
-                                                                  "${box.read("currency_code")}",
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .028,
-                                                                    color: Colors
-                                                                        .green,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                      SizedBox(width: 8),
-                                                      Expanded(
-                                                        flex: 2,
-                                                        child: Column(
-                                                          mainAxisSize:
-                                                              MainAxisSize.min,
-                                                          crossAxisAlignment:
-                                                              CrossAxisAlignment
-                                                                  .end,
-                                                          children: [
-                                                            Obx(
-                                                              () => KText(
-                                                                text:
-                                                                    languagesController
-                                                                        .tr(
-                                                                          "BUY",
-                                                                        ),
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .w600,
-                                                                fontSize:
-                                                                    screenWidth *
-                                                                    .035,
-                                                                color:
-                                                                    Colors.red,
-                                                              ),
-                                                            ),
-                                                            SizedBox(height: 4),
-                                                            Row(
-                                                              mainAxisSize:
-                                                                  MainAxisSize
-                                                                      .min,
-                                                              mainAxisAlignment:
-                                                                  MainAxisAlignment
-                                                                      .end,
-                                                              children: [
-                                                                Flexible(
-                                                                  child: PriceTextView(
-                                                                    price: data
-                                                                        .buyingPrice
-                                                                        .toString(),
-                                                                    textStyle: TextStyle(
-                                                                      color: Colors
-                                                                          .red,
-                                                                      fontWeight:
-                                                                          FontWeight
-                                                                              .bold,
-                                                                      fontSize:
-                                                                          screenWidth *
-                                                                          .035,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                SizedBox(
-                                                                  width: 2,
-                                                                ),
-                                                                Text(
-                                                                  "${box.read("currency_code")}",
-                                                                  style: TextStyle(
-                                                                    fontSize:
-                                                                        screenWidth *
-                                                                        .028,
-                                                                    color: Colors
-                                                                        .red,
-                                                                  ),
-                                                                ),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          Obx(
-                            () => bundleController.isLoading.value == true
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      CircularProgressIndicator(
-                                        color: Colors.white,
-                                      ),
-                                    ],
-                                  )
-                                : SizedBox(),
-                          ),
-                        ],
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 15, right: 15, top: 10),
+              child: Row(
+                children: [
+                  GestureDetector(
+                    onTap: mypagecontroller.goBack,
+                    child: SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: Image.asset(
+                        'assets/icons/backicon.png',
+                        height: 40,
+                        fit: BoxFit.contain,
                       ),
                     ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Obx(
+                      () => Text(
+                        languagesController.tr('COMMUNICATION_PACKAGES'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: (screenWidth * 0.045)
+                              .clamp(13.0, 17.0)
+                              .toDouble(),
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () => CustomFullScreenSheet.show(context),
+                    child: SizedBox(
+                      height: 40,
+                      width: 40,
+                      child: Image.asset(
+                        'assets/icons/drawericon.png',
+                        height: 40,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+                child: Obx(() {
+                  if (bundleController.isLoading.value &&
+                      bundleController.finalList.isEmpty) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.grey),
+                    );
+                  }
+                  return _buildBundleList(screenWidth);
+                }),
+              ),
+            ),
+            Obx(
+              () =>
+                  bundleController.isLoading.value &&
+                      bundleController.finalList.isNotEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.all(8),
+                      child: CircularProgressIndicator(
+                        color: AppColors.primaryColor,
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
         ),
       ),
     );
@@ -762,8 +385,11 @@ class SocialdialogBox extends StatefulWidget {
     this.sellingprice,
     this.imagelink,
     this.companyname,
+    this.isImo = false,
   });
 
+  // Only IMO bundles require choosing between ID and NUMBER.
+  final bool isImo;
   String? companyname;
   String? title;
   String? validity;
@@ -789,11 +415,163 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
   LanguagesController languagesController = Get.put(LanguagesController());
 
   @override
+  void initState() {
+    super.initState();
+
+    // Always start with no account type selected. For IMO, the user must
+    // select ID or NUMBER; other companies never send an account-type key.
+    confirmPinController.rechargebleAccountType.value = '';
+    confirmPinController.numberController.clear();
+    confirmPinController.pinController.clear();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    // Avoid passing the account-type field in other recharge flows.
+    confirmPinController.rechargebleAccountType.value = '';
+    super.dispose();
+  }
+
+  // Reusable BUY/SALE row with ellipsis and scale-down for large prices.
+  Widget _buildDialogPriceRow({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String amount,
+    required Color amountColor,
+  }) {
+    final currency = box.read('currency_code')?.toString() ?? '';
+
+    return Row(
+      children: [
+        Icon(icon, color: iconColor, size: 18),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 2,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+        const SizedBox(width: 6),
+        Expanded(
+          flex: 3,
+          child: SizedBox(
+            height: 23,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    amount,
+                    maxLines: 1,
+                    style: TextStyle(
+                      color: amountColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    currency,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Clean, text-only account-type buttons (no icons).
+  Widget _buildAccountTypeOption(String type, bool isSelected) {
+    final bool isId = type == 'ID';
+    final Color accentColor = isId
+        ? AppColors.primaryColor
+        : const Color(0xFF079A87);
+    final Color lightColor = isId
+        ? const Color(0xFFEEF4FF)
+        : const Color(0xFFEAF9F5);
+
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          if (!widget.isImo) return;
+          if (confirmPinController.rechargebleAccountType.value != type) {
+            confirmPinController.numberController.clear();
+          }
+          // Send exactly ID or NUMBER, never the company code IMO.
+          confirmPinController.rechargebleAccountType.value = type;
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeInOut,
+          height: 48,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? null : lightColor,
+            gradient: isSelected
+                ? LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      accentColor,
+                      Color.lerp(accentColor, Colors.black, 0.16)!,
+                    ],
+                  )
+                : null,
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(
+              color: isSelected ? accentColor : accentColor.withOpacity(0.20),
+              width: isSelected ? 1.6 : 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(isSelected ? 0.20 : 0.04),
+                blurRadius: isSelected ? 10 : 4,
+                offset: Offset(0, isSelected ? 4 : 2),
+              ),
+            ],
+          ),
+          child: Text(
+            type,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.35,
+              color: isSelected ? Colors.white : accentColor,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
     return Container(
-      height: 520,
+      height: (screenHeight * 0.80).clamp(0.0, 600.0).toDouble(),
       width: screenWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -858,6 +636,9 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                             // Company Name
                             Text(
                               widget.companyname.toString(),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -878,23 +659,33 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    languagesController.tr("BUNDLE_TITLE"),
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.9),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
+                                  Flexible(
+                                    flex: 2,
+                                    child: Text(
+                                      languagesController.tr('BUNDLE_TITLE'),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: Colors.white.withOpacity(0.9),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
                                   ),
-                                  Text(
-                                    widget.title.toString(),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      widget.title.toString(),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.end,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -904,88 +695,30 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
 
                             // Pricing Info
                             Container(
-                              padding: EdgeInsets.all(16),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Column(
                                 children: [
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.shopping_bag_outlined,
-                                        color: Color(0xff1890FF),
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        languagesController.tr("BUY"),
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      Text(
-                                        widget.buyingprice.toString(),
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        box.read("currency_code"),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                                  _buildDialogPriceRow(
+                                    icon: Icons.shopping_bag_outlined,
+                                    iconColor: const Color(0xff1890FF),
+                                    label: languagesController.tr('BUY'),
+                                    amount: widget.buyingprice.toString(),
+                                    amountColor: Colors.black,
                                   ),
                                   Divider(
                                     height: 5,
                                     color: Colors.grey.shade200,
                                   ),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.sell_outlined,
-                                        color: Colors.green,
-                                        size: 18,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        languagesController.tr("SALE"),
-                                        style: TextStyle(
-                                          color: Colors.grey.shade600,
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      Spacer(),
-                                      Text(
-                                        widget.sellingprice.toString(),
-                                        style: TextStyle(
-                                          color: Colors.green,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        box.read("currency_code"),
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey.shade500,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
+                                  _buildDialogPriceRow(
+                                    icon: Icons.sell_outlined,
+                                    iconColor: Colors.green,
+                                    label: languagesController.tr('SALE'),
+                                    amount: widget.sellingprice.toString(),
+                                    amountColor: Colors.green,
                                   ),
                                 ],
                               ),
@@ -997,58 +730,117 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
 
                     SizedBox(height: 10),
 
-                    // ID Input Field
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: Colors.grey.shade200,
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
-                            blurRadius: 10,
-                            offset: Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 4,
-                        ),
-                        child: Row(
+                    // Only IMO needs the ID / NUMBER selector.
+                    if (widget.isImo) ...[
+                      Obx(() {
+                        final selectedType =
+                            confirmPinController.rechargebleAccountType.value;
+                        return Row(
                           children: [
-                            Icon(
-                              Icons.phone_android,
-                              color: Color(0xff1890FF),
-                              size: 22,
+                            _buildAccountTypeOption('ID', selectedType == 'ID'),
+                            const SizedBox(width: 12),
+                            _buildAccountTypeOption(
+                              'NUMBER',
+                              selectedType == 'NUMBER',
                             ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: TextField(
-                                controller:
-                                    confirmPinController.numberController,
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  hintText: languagesController.tr("ENTER_ID"),
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey.shade400,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                          ],
+                        );
+                      }),
+                      const SizedBox(height: 12),
+                    ],
+
+                    // IMO: input hidden until an option is chosen.
+                    // Other companies: show the original Enter ID field.
+                    Obx(() {
+                      final selectedType =
+                          confirmPinController.rechargebleAccountType.value;
+
+                      if (widget.isImo && selectedType.isEmpty) {
+                        return const SizedBox.shrink();
+                      }
+
+                      final isNumber = widget.isImo && selectedType == 'NUMBER';
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Colors.grey.shade200,
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
+                              offset: Offset(0, 4),
                             ),
                           ],
                         ),
-                      ),
-                    ),
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 4,
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.phone_android,
+                                color: Color(0xff1890FF),
+                                size: 22,
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  // Rebuilds the input when changing ID / NUMBER,
+                                  // including its keyboard configuration.
+                                  key: ValueKey('account_input_$selectedType'),
+                                  controller:
+                                      confirmPinController.numberController,
+                                  keyboardType: isNumber
+                                      ? TextInputType.phone
+                                      : TextInputType.text,
+                                  // Allow international numbers like +88017...,
+                                  // with '+' only at the start of the number.
+                                  inputFormatters: isNumber
+                                      ? [
+                                          TextInputFormatter.withFunction(
+                                            (oldValue, newValue) =>
+                                                RegExp(
+                                                  r'^\+?[0-9]*$',
+                                                ).hasMatch(newValue.text)
+                                                ? newValue
+                                                : oldValue,
+                                          ),
+                                        ]
+                                      : null,
+                                  decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: widget.isImo
+                                        ? (isNumber
+                                              ? languagesController.tr(
+                                                  "ENTER_NUMBER",
+                                                )
+                                              : languagesController.tr(
+                                                  "ENTER_ID",
+                                                ))
+                                        : languagesController.tr('ENTER_ID'),
+                                    hintStyle: TextStyle(
+                                      color: Colors.grey.shade400,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }),
 
                     SizedBox(height: 5),
 
@@ -1112,12 +904,36 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                           flex: 3,
                           child: GestureDetector(
                             onTap: () {
-                              if (confirmPinController
-                                  .numberController
-                                  .text
+                              final selectedType = confirmPinController
+                                  .rechargebleAccountType
+                                  .value;
+
+                              if (widget.isImo &&
+                                  selectedType != 'ID' &&
+                                  selectedType != 'NUMBER') {
+                                Fluttertoast.showToast(
+                                  msg: 'Please select ID or NUMBER',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.TOP,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.black,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0,
+                                );
+                                return;
+                              }
+
+                              if (confirmPinController.numberController.text
+                                  .trim()
                                   .isEmpty) {
                                 Fluttertoast.showToast(
-                                  msg: languagesController.tr("ENTER_ID"),
+                                  msg: widget.isImo
+                                      ? (selectedType == 'ID'
+                                            ? languagesController.tr("ENTER_ID")
+                                            : languagesController.tr(
+                                                "ENTER_NUMBER",
+                                              ))
+                                      : languagesController.tr('ENTER_ID'),
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.TOP,
                                   timeInSecForIosWeb: 1,
@@ -1144,7 +960,16 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                                 return;
                               }
 
-                              print("ready for recharge...");
+                              // Only IMO sends the selected account type.
+                              // ID     => rechargeble_account_type: ID
+                              // NUMBER => rechargeble_account_type: NUMBER
+                              // Other companies omit the account-type key.
+                              confirmPinController
+                                  .rechargebleAccountType
+                                  .value = widget.isImo
+                                  ? selectedType
+                                  : '';
+
                               confirmPinController.placeOrder(context);
                             },
                             child: Container(
@@ -1174,12 +999,17 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                                     size: 20,
                                   ),
                                   SizedBox(width: 8),
-                                  Text(
-                                    languagesController.tr("CONFIRMATION"),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                  Flexible(
+                                    child: Text(
+                                      languagesController.tr('CONFIRMATION'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1213,12 +1043,17 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                                     size: 20,
                                   ),
                                   SizedBox(width: 6),
-                                  Text(
-                                    languagesController.tr("CANCEL"),
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
+                                  Flexible(
+                                    child: Text(
+                                      languagesController.tr('CANCEL'),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        color: Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ),
                                 ],

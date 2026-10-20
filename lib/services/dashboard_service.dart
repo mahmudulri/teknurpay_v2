@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import '../controllers/dashboard_controller.dart';
+import '../helpers/api_headers.dart';
 import '../models/dashboard_data_model.dart';
 import '../utils/api_endpoints.dart';
 
@@ -17,10 +18,7 @@ class DashboardApi {
       ApiEndPoints.baseUrl + ApiEndPoints.otherendpoints.dashboard,
     );
 
-    final response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     final decoded = json.decode(response.body);
     // print("STATUS: ${response.statusCode}");

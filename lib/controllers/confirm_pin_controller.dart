@@ -1,37 +1,48 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:teknurpay/global_controller/languages_controller.dart';
-
 import 'package:teknurpay/utils/api_endpoints.dart';
 
 class ConfirmPinController extends GetxController {
   TextEditingController numberController = TextEditingController();
-
-  LanguagesController languagesController = Get.put(LanguagesController());
-  final box = GetStorage();
-
   TextEditingController pinController = TextEditingController();
 
-  RxBool isLoading = false.obs;
+  LanguagesController languagesController = Get.put(LanguagesController());
 
+  final box = GetStorage();
+
+  RxBool isLoading = false.obs;
   RxBool loadsuccess = false.obs;
 
+  // IMO account type: ID / NUMBER / empty
+  RxString rechargebleAccountType = ''.obs;
+
   Future<void> placeOrder(BuildContext context) async {
+    if (isLoading.value) return;
+
     try {
       isLoading.value = true;
+      loadsuccess.value = false;
 
-      var url = Uri.parse("${ApiEndPoints.baseUrl}place_order");
-      Map body = {
+      final url = Uri.parse("${ApiEndPoints.baseUrl}place_order");
+
+      final String selectedAccountType = rechargebleAccountType.value;
+
+      // Build request body
+      Map<String, dynamic> body = {
         'bundle_id': box.read("bundleID"),
-        'rechargeble_account': numberController.text,
+        'rechargeble_account': numberController.text.trim(),
         'pin': pinController.text,
+
+        // Only include account type when ID or NUMBER is selected
+        if (selectedAccountType == 'ID' || selectedAccountType == 'NUMBER')
+          'rechargeble_account_type': selectedAccountType,
       };
 
-      http.Response response = await http.post(
+      final http.Response response = await http.post(
         url,
         body: jsonEncode(body),
         headers: {
@@ -40,39 +51,64 @@ class ConfirmPinController extends GetxController {
           'Authorization': 'Bearer ${box.read("userToken")}',
         },
       );
-      print("checkurl" + url.toString());
-      print(body.toString());
+
+      debugPrint("Place Order URL: $url");
+      debugPrint("Place Order Status: ${response.statusCode}");
 
       final orderResults = jsonDecode(response.body);
+
       if (response.statusCode == 201 && orderResults["success"] == true) {
-        // loadsuccess.value = false;
-        isLoading.value = false;
+        // Recharge successful
+        loadsuccess.value = true;
+
         pinController.clear();
         numberController.clear();
+
         box.remove("bundleID");
 
-        showSuccessDialog(context);
-      } else {
-        showErrorDialog(context, orderResults["message"]);
-        pinController.clear();
+        // Reset account type after successful recharge
+        rechargebleAccountType.value = '';
+
         isLoading.value = false;
-        // loadsuccess.value = false;
+
+        if (context.mounted) {
+          showSuccessDialog(context);
+        }
+      } else {
+        // Recharge failed
+        loadsuccess.value = false;
+
+        pinController.clear();
+
+        isLoading.value = false;
+
+        // Keep selected account type for retry
+        if (context.mounted) {
+          showErrorDialog(
+            context,
+            orderResults["message"]?.toString() ?? "Something went wrong",
+          );
+        }
       }
     } catch (e) {
-      showErrorDialog(context, e.toString());
+      loadsuccess.value = false;
+
+      pinController.clear();
+
       isLoading.value = false;
+
+      if (context.mounted) {
+        showErrorDialog(context, e.toString());
+      }
     }
   }
 
-  // void handleFailure(String message) {
-  //   pinController.clear();
-  //   loadsuccess.value = false;
-  // }
-
   void showSuccessDialog(BuildContext context) {
     var screenWidth = MediaQuery.of(context).size.width;
+
     pinController.clear();
-    numberController.clear;
+    numberController.clear();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -104,7 +140,7 @@ class ConfirmPinController extends GetxController {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context); // Close success dialog
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -124,7 +160,9 @@ class ConfirmPinController extends GetxController {
 
   void showErrorDialog(BuildContext context, String errorMessage) {
     var screenWidth = MediaQuery.of(context).size.width;
+
     pinController.clear();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -165,7 +203,7 @@ class ConfirmPinController extends GetxController {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context); // Close error dialog
+                    Navigator.pop(context);
                   },
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
                   child: Text("Close", style: TextStyle(color: Colors.white)),

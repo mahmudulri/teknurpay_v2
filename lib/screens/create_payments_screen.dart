@@ -17,6 +17,7 @@ import '../controllers/sign_in_controller.dart';
 import '../global_controller/font_controller.dart';
 import '../global_controller/languages_controller.dart';
 import '../global_controller/page_controller.dart';
+import '../models/payment_method_model.dart';
 import '../utils/colors.dart';
 import '../widgets/authtextfield.dart';
 import '../widgets/bottomsheet.dart';
@@ -84,8 +85,9 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
     paymentMethodController.fetchmethods();
     currencyController.fetchCurrencyList();
     paymentTypeController.fetchtypes();
-    selectedcurrency.value = box.read("currency_code");
-    addPaymentController.currencyID.value = box.read("countryID");
+    selectedcurrency.value = (box.read("currency_code") ?? "").toString();
+    addPaymentController.currencyID.value = (box.read("countryID") ?? "")
+        .toString();
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         statusBarColor: Colors.white, // Status bar background color
@@ -103,6 +105,330 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
   var selectedMethod = "".obs;
   var selectedType = "".obs;
   var selectedcurrency = "".obs;
+
+  void showPaymentMethodBottomSheet() {
+    final RxString selectedFilter = "All".obs;
+
+    final RxString temporarySelectedId =
+        addPaymentController.payment_method_id.value.obs;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.35),
+      builder: (BuildContext sheetContext) {
+        final screenHeight = MediaQuery.of(sheetContext).size.height;
+        final screenWidth = MediaQuery.of(sheetContext).size.width;
+
+        return SafeArea(
+          child: Container(
+            height: screenHeight * 0.78,
+            width: screenWidth,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
+              ),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+
+                // Drag indicator
+                Container(
+                  width: 46,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Sheet title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(width: 38),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            const Text(
+                              "Select Payment Method",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xff102A43),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Choose where you sent the payment",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.pop(sheetContext);
+                        },
+                        child: const SizedBox(
+                          width: 38,
+                          height: 38,
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.black87,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                Expanded(
+                  child: Obx(() {
+                    if (paymentMethodController.isLoading.value) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final List<PaymentMethod> allMethods =
+                        paymentMethodController
+                            .allmethods
+                            .value
+                            .data
+                            ?.paymentMethods ??
+                        <PaymentMethod>[];
+
+                    if (allMethods.isEmpty) {
+                      return Center(
+                        child: Text(
+                          "No payment methods found",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      );
+                    }
+
+                    // Build unique method-name filters from the API.
+                    final List<String> methodNames = [];
+
+                    for (final method in allMethods) {
+                      final name = method.methodName?.trim() ?? "";
+
+                      if (name.isNotEmpty && !methodNames.contains(name)) {
+                        methodNames.add(name);
+                      }
+                    }
+
+                    final List<String> filters = ["All", ...methodNames];
+
+                    // "All" is selected by default.
+                    final List<PaymentMethod> filteredMethods =
+                        selectedFilter.value == "All"
+                        ? allMethods
+                        : allMethods.where((element) {
+                            return element.methodName?.trim() ==
+                                selectedFilter.value;
+                          }).toList();
+
+                    return Column(
+                      children: [
+                        // Payment-method name filters
+                        SizedBox(
+                          height: 46,
+                          child: ListView.separated(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            scrollDirection: Axis.horizontal,
+                            itemCount: filters.length,
+                            separatorBuilder: (context, index) {
+                              return const SizedBox(width: 10);
+                            },
+                            itemBuilder: (context, index) {
+                              final filter = filters[index];
+                              final bool isSelected =
+                                  selectedFilter.value == filter;
+
+                              return GestureDetector(
+                                onTap: () {
+                                  selectedFilter.value = filter;
+                                },
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                    vertical: 9,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? AppColors.primaryColor
+                                        : Colors.white,
+                                    borderRadius: BorderRadius.circular(25),
+                                    border: Border.all(
+                                      color: isSelected
+                                          ? AppColors.primaryColor
+                                          : Colors.grey.shade400,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      filter,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Colors.grey.shade700,
+                                        fontSize: 13,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Filtered payment-method list
+                        Expanded(
+                          child: filteredMethods.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    "No payment method found",
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 4,
+                                  ),
+                                  itemCount: filteredMethods.length,
+                                  separatorBuilder: (context, index) {
+                                    return const SizedBox(height: 10);
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final PaymentMethod data =
+                                        filteredMethods[index];
+
+                                    return Obx(() {
+                                      final bool isSelected =
+                                          temporarySelectedId.value ==
+                                          data.id?.toString();
+
+                                      return PaymentMethodSelectionCard(
+                                        paymentMethod: data,
+                                        isSelected: isSelected,
+                                        onTap: () {
+                                          temporarySelectedId.value =
+                                              data.id?.toString() ?? "";
+                                        },
+                                      );
+                                    });
+                                  },
+                                ),
+                        ),
+
+                        // Continue button
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+                          child: Obx(() {
+                            final bool canContinue =
+                                temporarySelectedId.value.isNotEmpty;
+
+                            return GestureDetector(
+                              onTap: !canContinue
+                                  ? null
+                                  : () {
+                                      PaymentMethod? selectedPaymentMethod;
+
+                                      for (final method in allMethods) {
+                                        if (method.id?.toString() ==
+                                            temporarySelectedId.value) {
+                                          selectedPaymentMethod = method;
+                                          break;
+                                        }
+                                      }
+
+                                      if (selectedPaymentMethod == null) {
+                                        return;
+                                      }
+
+                                      addPaymentController
+                                              .payment_method_id
+                                              .value =
+                                          selectedPaymentMethod.id
+                                              ?.toString() ??
+                                          "";
+
+                                      selectedMethod.value =
+                                          selectedPaymentMethod.methodName ??
+                                          "";
+
+                                      Navigator.pop(sheetContext);
+                                    },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 180),
+                                width: double.infinity,
+                                height: 52,
+                                decoration: BoxDecoration(
+                                  color: canContinue
+                                      ? AppColors.primaryColor
+                                      : Colors.grey.shade300,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    "Continue",
+                                    style: TextStyle(
+                                      color: canContinue
+                                          ? Colors.white
+                                          : Colors.grey.shade500,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -200,101 +526,53 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                           color: Colors.grey.shade300,
                         ),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.only(left: 10, right: 10),
-                        child: GestureDetector(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
                           onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  backgroundColor: Colors.white,
-                                  content: Container(
-                                    height: 450,
-                                    width: screenWidth,
-                                    color: Colors.white,
-                                    child: Obx(
-                                      () =>
-                                          paymentMethodController
-                                                  .isLoading
-                                                  .value ==
-                                              false
-                                          ? ListView.builder(
-                                              itemCount: paymentMethodController
-                                                  .allmethods
-                                                  .value
-                                                  .data!
-                                                  .paymentMethods!
-                                                  .length,
-                                              itemBuilder: (context, index) {
-                                                final data =
-                                                    paymentMethodController
-                                                        .allmethods
-                                                        .value
-                                                        .data!
-                                                        .paymentMethods![index];
-                                                return GestureDetector(
-                                                  onTap: () {
-                                                    addPaymentController
-                                                        .payment_method_id
-                                                        .value = data.id
-                                                        .toString();
-                                                    selectedMethod.value = data
-                                                        .methodName
-                                                        .toString();
-
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: PaymentMethodBox(
-                                                    methodName: data.methodName,
-                                                    bankName: data.bankName,
-                                                    holderName:
-                                                        data.accountHolderName,
-                                                    cardNumber: data.cardNumber,
-                                                    accountNumber:
-                                                        data.accountNumber,
-                                                    sebaNumber:
-                                                        data.shebaNumber,
-                                                    details:
-                                                        data.accountDetails,
-                                                    imagelink:
-                                                        data.accountImage,
-                                                  ),
-                                                );
-                                              },
+                            showPaymentMethodBottomSheet();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Obx(
+                                    () => KText(
+                                      text: selectedMethod.value.isEmpty
+                                          ? languagesController.tr(
+                                              "PAYMENT_METHOD",
                                             )
-                                          : Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
+                                          : selectedMethod.value,
+                                      fontSize: screenHeight * 0.020,
+                                      color: selectedMethod.value.isEmpty
+                                          ? Colors.grey.shade500
+                                          : Colors.grey.shade700,
                                     ),
                                   ),
-                                );
-                              },
-                            );
-                          },
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Obx(
-                                  () => KText(
-                                    text: selectedMethod.toString(),
-                                    fontSize: screenHeight * 0.020,
-                                    color: Colors.grey.shade600,
+                                ),
+                                Obx(
+                                  () => Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primaryColor.withOpacity(
+                                        0.10,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      selectedMethod.value.isEmpty
+                                          ? Icons.keyboard_arrow_down_rounded
+                                          : Icons.edit_outlined,
+                                      color: AppColors.primaryColor,
+                                      size: 20,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              CircleAvatar(
-                                backgroundColor: AppColors.primaryColor
-                                    .withOpacity(0.7),
-                                radius: 15,
-                                child: Icon(
-                                  FontAwesomeIcons.chevronDown,
-                                  color: Colors.white,
-                                  size: 17,
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -493,7 +771,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                               .primaryColor
                                               .withOpacity(0.7),
                                           radius: 15,
-                                          child: Icon(
+                                          child: FaIcon(
                                             FontAwesomeIcons.chevronDown,
                                             color: Colors.white,
                                             size: 17,
@@ -714,7 +992,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                 backgroundColor: AppColors.primaryColor
                                     .withOpacity(0.7),
                                 radius: 15,
-                                child: Icon(
+                                child: FaIcon(
                                   FontAwesomeIcons.chevronDown,
                                   color: Colors.white,
                                   size: 17,
@@ -874,427 +1152,336 @@ Widget buildImageUploaderBox(
   );
 }
 
-class PaymentMethodBox extends StatelessWidget {
-  String? methodName;
-  String? bankName;
-  String? holderName;
-  String? cardNumber;
-  String? accountNumber;
-  String? sebaNumber;
-  String? details;
-  String? imagelink;
+class PaymentMethodSelectionCard extends StatelessWidget {
+  final PaymentMethod paymentMethod;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-  PaymentMethodBox({
+  const PaymentMethodSelectionCard({
     super.key,
-    this.methodName,
-    this.bankName,
-    this.holderName,
-    this.cardNumber,
-    this.accountNumber,
-    this.sebaNumber,
-    this.details,
-    this.imagelink,
+    required this.paymentMethod,
+    required this.isSelected,
+    required this.onTap,
   });
+
+  bool _hasValue(String? value) {
+    if (value == null) {
+      return false;
+    }
+
+    final text = value.trim();
+
+    return text.isNotEmpty && text.toLowerCase() != "null" && text != ".";
+  }
+
+  String _getPrimaryNumber() {
+    if (_hasValue(paymentMethod.accountNumber)) {
+      return paymentMethod.accountNumber!.trim();
+    }
+
+    if (_hasValue(paymentMethod.cardNumber)) {
+      return paymentMethod.cardNumber!.trim();
+    }
+
+    if (_hasValue(paymentMethod.accountHolderName)) {
+      return paymentMethod.accountHolderName!.trim();
+    }
+
+    return "";
+  }
+
+  bool _shouldShowShebaWarning() {
+    if (!_hasValue(paymentMethod.shebaNumber)) {
+      return false;
+    }
+
+    final sheba = paymentMethod.shebaNumber!.trim();
+
+    if (sheba == paymentMethod.accountNumber?.trim()) {
+      return false;
+    }
+
+    if (sheba == paymentMethod.cardNumber?.trim()) {
+      return false;
+    }
+
+    return true;
+  }
+
+  bool _hasUsableImage() {
+    final image = paymentMethod.accountImage?.trim() ?? "";
+
+    if (image.isEmpty || !image.startsWith("http")) {
+      return false;
+    }
+
+    final uri = Uri.tryParse(image);
+
+    if (uri == null || uri.pathSegments.isEmpty) {
+      return false;
+    }
+
+    final lastSegment = uri.pathSegments.last.trim();
+
+    return lastSegment.contains(".");
+  }
+
+  Future<void> _copyValue(String value) async {
+    await Clipboard.setData(ClipboardData(text: value));
+
+    Fluttertoast.showToast(
+      msg: "Copied",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.black87,
+      textColor: Colors.white,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    var screenHeight = MediaQuery.of(context).size.height;
-    var screenWidth = MediaQuery.of(context).size.width;
-    return Visibility(
-      visible: cardNumber != null,
-      child: Container(
-        margin: EdgeInsets.only(bottom: 16),
-        height: 350,
-        width: screenWidth,
+    final String primaryNumber = _getPrimaryNumber();
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.primaryColor : Colors.grey.shade300,
+            width: isSelected ? 1.6 : 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 30,
-              offset: Offset(0, 10),
+              color: Colors.black.withOpacity(0.035),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xff1e3c72), Color(0xff2a5298), Color(0xff4A90E2)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Payment image / fallback icon
+            Container(
+              width: 62,
+              height: 62,
+              decoration: BoxDecoration(
+                color: AppColors.primaryColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: _hasUsableImage()
+                  ? Image.network(
+                      paymentMethod.accountImage!,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) {
+                          return child;
+                        }
+
+                        return Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.primaryColor,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.account_balance_wallet_outlined,
+                          color: AppColors.primaryColor,
+                          size: 30,
+                        );
+                      },
+                    )
+                  : Icon(
+                      Icons.account_balance_wallet_outlined,
+                      color: AppColors.primaryColor,
+                      size: 30,
+                    ),
             ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            children: [
-              // Decorative circles
-              Positioned(
-                top: -30,
-                right: -30,
-                child: Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.1),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom: -40,
-                left: -40,
-                child: Container(
-                  width: 150,
-                  height: 150,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white.withOpacity(0.08),
-                  ),
-                ),
-              ),
 
-              // Content
-              Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Method Name
-                    Row(
-                      children: [
-                        Icon(Icons.payment, color: Colors.white, size: 18),
-                        SizedBox(width: 8),
-                        Expanded(
+            const SizedBox(width: 12),
+
+            // Payment-method details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          paymentMethod.methodName ?? "",
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Color(0xff102A43),
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      if (_hasValue(paymentMethod.bankName))
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 115),
+                          margin: const EdgeInsets.only(left: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryColor.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           child: Text(
-                            methodName.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        if (imagelink != null &&
-                            imagelink.toString().isNotEmpty) ...[
-                          SizedBox(width: 5),
-                          Container(
-                            width: 50,
-                            height: 40,
-
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Image.network(
-                              imagelink.toString(),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.broken_image,
-                                  size: 30,
-                                  color: Colors.grey[400],
-                                );
-                              },
-                              loadingBuilder:
-                                  (context, child, loadingProgress) {
-                                    if (loadingProgress == null) return child;
-                                    return Center(
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              Color(0xff4A90E2),
-                                            ),
-                                      ),
-                                    );
-                                  },
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Card Number
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Obx(
-                                  () => Text(
-                                    languagesController.tr("CARD_NUMBER") +
-                                        ": ",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    cardNumber.toString(),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(text: cardNumber.toString()),
-                              );
-                              Get.snackbar(
-                                'Copied',
-                                'Card number copied',
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.white,
-                                colorText: Color(0xff4A90E2),
-                                duration: Duration(seconds: 2),
-                                margin: EdgeInsets.all(16),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.copy,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Account Number
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Obx(
-                                  () => Text(
-                                    languagesController.tr("ACCOUNT_NUMBER") +
-                                        ": ",
-                                    style: TextStyle(
-                                      color: Colors.white.withOpacity(0.8),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: Text(
-                                    accountNumber.toString(),
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: BoxConstraints(),
-                            onPressed: () {
-                              Clipboard.setData(
-                                ClipboardData(text: accountNumber.toString()),
-                              );
-                              Get.snackbar(
-                                'Copied',
-                                'Account number copied',
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.white,
-                                colorText: Color(0xff4A90E2),
-                                duration: Duration(seconds: 2),
-                                margin: EdgeInsets.all(16),
-                              );
-                            },
-                            icon: Icon(
-                              Icons.copy,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Holder Name & Bank Name in Row
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Obx(
-                                () => Text(
-                                  languagesController.tr("HOLDER_NAME") + ": ",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  holderName.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Bank Name
-                    Row(
-                      children: [
-                        Obx(
-                          () => Text(
-                            languagesController.tr("BANK_NAME") + ": ",
+                            paymentMethod.bankName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
                               fontSize: 10,
+                              color: AppColors.primaryColor,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
+                    ],
+                  ),
+
+                  if (_hasValue(paymentMethod.accountHolderName)) ...[
+                    const SizedBox(height: 5),
+                    Text(
+                      paymentMethod.accountHolderName!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+
+                  if (primaryNumber.isNotEmpty) ...[
+                    const SizedBox(height: 7),
+                    Row(
+                      children: [
                         Expanded(
                           child: Text(
-                            bankName.toString(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                            primaryNumber,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // SEBA Number
-                    Visibility(
-                      visible: sebaNumber != null,
-                      child: Row(
-                        children: [
-                          Obx(
-                            () => Text(
-                              languagesController.tr("SEBA_NUMBER") + ": ",
-                              style: TextStyle(
-                                color: Colors.white.withOpacity(0.7),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w500,
-                              ),
+                        GestureDetector(
+                          onTap: () {
+                            _copyValue(primaryNumber);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: Icon(
+                              Icons.copy_rounded,
+                              color: AppColors.primaryColor,
+                              size: 18,
                             ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              sebaNumber.toString(),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 5),
-
-                    // Details & Image in Row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Obx(
-                                () => Text(
-                                  languagesController.tr("DETAILS") + ": ",
-                                  style: TextStyle(
-                                    color: Colors.white.withOpacity(0.7),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                details.toString(),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
                           ),
                         ),
                       ],
                     ),
                   ],
+
+                  if (_shouldShowShebaWarning()) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xfffff5df),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber_rounded,
+                            color: Color(0xffE5A11B),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              paymentMethod.shebaNumber!,
+                              style: const TextStyle(
+                                color: Color(0xff8A6817),
+                                fontSize: 11,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else if (_hasValue(paymentMethod.accountDetails)) ...[
+                    const SizedBox(height: 7),
+                    Text(
+                      paymentMethod.accountDetails!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 11,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // Selection indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primaryColor : Colors.white,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? AppColors.primaryColor
+                      : Colors.grey.shade400,
+                  width: 1.4,
                 ),
               ),
-            ],
-          ),
+              child: isSelected
+                  ? const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 22,
+                    )
+                  : null,
+            ),
+          ],
         ),
       ),
     );

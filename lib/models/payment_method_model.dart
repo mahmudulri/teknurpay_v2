@@ -21,21 +21,30 @@ class PaymentMethodModel {
     this.payload,
   });
 
-  factory PaymentMethodModel.fromJson(Map<String, dynamic> json) =>
-      PaymentMethodModel(
-        success: json["success"],
-        code: json["code"],
-        message: json["message"],
-        data: Data.fromJson(json["data"]),
-        payload: List<dynamic>.from(json["payload"].map((x) => x)),
-      );
+  factory PaymentMethodModel.fromJson(Map<String, dynamic> json) {
+    return PaymentMethodModel(
+      success: json["success"] is bool ? json["success"] : null,
+      code: json["code"] is int
+          ? json["code"]
+          : int.tryParse(json["code"]?.toString() ?? ""),
+      message: json["message"]?.toString(),
+
+      data: json["data"] is Map
+          ? Data.fromJson(Map<String, dynamic>.from(json["data"]))
+          : null,
+
+      payload: json["payload"] is List
+          ? List<dynamic>.from(json["payload"])
+          : <dynamic>[],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "success": success,
     "code": code,
     "message": message,
-    "data": data!.toJson(),
-    "payload": List<dynamic>.from(payload!.map((x) => x)),
+    "data": data?.toJson(),
+    "payload": payload ?? [],
   };
 }
 
@@ -44,16 +53,20 @@ class Data {
 
   Data({this.paymentMethods});
 
-  factory Data.fromJson(Map<String, dynamic> json) => Data(
-    paymentMethods: List<PaymentMethod>.from(
-      json["payment_methods"].map((x) => PaymentMethod.fromJson(x)),
-    ),
-  );
+  factory Data.fromJson(Map<String, dynamic> json) {
+    return Data(
+      paymentMethods: json["payment_methods"] is List
+          ? List<PaymentMethod>.from(
+              json["payment_methods"].map(
+                (x) => PaymentMethod.fromJson(Map<String, dynamic>.from(x)),
+              ),
+            )
+          : <PaymentMethod>[],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
-    "payment_methods": List<dynamic>.from(
-      paymentMethods!.map((x) => x.toJson()),
-    ),
+    "payment_methods": paymentMethods?.map((x) => x.toJson()).toList() ?? [],
   };
 }
 
@@ -64,10 +77,14 @@ class PaymentMethod {
   final String? accountHolderName;
   final String? cardNumber;
   final String? accountNumber;
-  final dynamic shebaNumber;
+  final String? shebaNumber;
   final String? notes;
   final String? accountDetails;
   final String? accountImage;
+  final String? status;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final dynamic performedBy;
 
   PaymentMethod({
     this.id,
@@ -80,26 +97,49 @@ class PaymentMethod {
     this.notes,
     this.accountDetails,
     this.accountImage,
+    this.status,
+    this.createdAt,
+    this.updatedAt,
+    this.performedBy,
   });
 
-  factory PaymentMethod.fromJson(Map<String, dynamic> json) => PaymentMethod(
-    id: json["id"] == null ? null : json["id"],
-    methodName: json["method_name"] == null ? null : json["method_name"],
-    bankName: json["bank_name"] == null ? null : json["bank_name"],
-    accountHolderName: json["account_holder_name"] == null
-        ? null
-        : json["account_holder_name"],
-    cardNumber: json["card_number"] == null ? null : json["card_number"],
-    accountNumber: json["account_number"] == null
-        ? null
-        : json["account_number"],
-    shebaNumber: json["sheba_number"] == null ? null : json["sheba_number"],
-    notes: json["notes"] == null ? null : json["notes"],
-    accountDetails: json["account_details"] == null
-        ? null
-        : json["account_details"],
-    accountImage: json["account_image"] == null ? null : json["account_image"],
-  );
+  factory PaymentMethod.fromJson(Map<String, dynamic> json) {
+    return PaymentMethod(
+      id: json["id"] is int
+          ? json["id"]
+          : int.tryParse(json["id"]?.toString() ?? ""),
+
+      methodName: json["method_name"]?.toString(),
+
+      bankName: json["bank_name"]?.toString(),
+
+      accountHolderName: json["account_holder_name"]?.toString(),
+
+      cardNumber: json["card_number"]?.toString(),
+
+      accountNumber: json["account_number"]?.toString(),
+
+      shebaNumber: json["sheba_number"]?.toString(),
+
+      notes: json["notes"]?.toString(),
+
+      accountDetails: json["account_details"]?.toString(),
+
+      accountImage: json["account_image"]?.toString(),
+
+      status: json["status"]?.toString(),
+
+      createdAt: json["created_at"] == null
+          ? null
+          : DateTime.tryParse(json["created_at"].toString()),
+
+      updatedAt: json["updated_at"] == null
+          ? null
+          : DateTime.tryParse(json["updated_at"].toString()),
+
+      performedBy: json["performed_by"],
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     "id": id,
@@ -112,5 +152,9 @@ class PaymentMethod {
     "notes": notes,
     "account_details": accountDetails,
     "account_image": accountImage,
+    "status": status,
+    "created_at": createdAt?.toIso8601String(),
+    "updated_at": updatedAt?.toIso8601String(),
+    "performed_by": performedBy,
   };
 }

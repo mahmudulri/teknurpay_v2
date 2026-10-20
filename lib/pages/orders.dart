@@ -246,7 +246,7 @@ class _OrdersState extends State<Orders> {
                                   padding: EdgeInsets.symmetric(horizontal: 8),
                                   child: DropdownButtonHideUnderline(
                                     child: DropdownButton<String>(
-                                      icon: Icon(
+                                      icon: FaIcon(
                                         FontAwesomeIcons.chevronDown,
                                         color: Colors.grey,
                                       ),

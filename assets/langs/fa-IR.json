@@ -468,5 +468,6 @@
     "FILTER": "فیلتر",
     "SELECT_BALANCE_STATUS": "وضعیت موجودی را انتخاب کنید",
     "RECEIVABLE": "دریافتنی",
-    "BALANCE_STATUS": "وضعیت موجودی"
+    "BALANCE_STATUS": "وضعیت موجودی",
+    "ENTER_NUMBER": "شماره را وارد کنید"
 }

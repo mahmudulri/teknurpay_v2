@@ -4,6 +4,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:teknurpay/models/bundle_model.dart';
 
+import '../helpers/api_headers.dart';
 import '../utils/api_endpoints.dart';
 
 class BundlesApi {
@@ -24,15 +25,9 @@ class BundlesApi {
       },
     );
 
-    print("Normal bundles URL: $url");
+    // print("Normal bundles URL: $url");
 
-    final http.Response response = await http.get(
-      url,
-      headers: {
-        "Authorization": "Bearer ${box.read("userToken")}",
-        "Accept": "application/json",
-      },
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       return BundleModel.fromJson(json.decode(response.body));
@@ -62,15 +57,9 @@ class BundlesApi {
       },
     );
 
-    print("Lookup bundles URL: $url");
+    // print("Lookup bundles URL: $url");
 
-    final http.Response response = await http.get(
-      url,
-      headers: {
-        "Authorization": "Bearer ${box.read("userToken")}",
-        "Accept": "application/json",
-      },
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       return BundleModel.fromJson(json.decode(response.body));

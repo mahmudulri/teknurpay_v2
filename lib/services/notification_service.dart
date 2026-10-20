@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../helpers/api_headers.dart';
 import '../models/notifications_model.dart';
 import '../utils/api_endpoints.dart';
 
@@ -42,7 +43,7 @@ class NotificationApi {
 
     print("Mark notification read API: $url");
 
-    final response = await http.post(url, headers: _headers);
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     print("Mark notification read status: ${response.statusCode}");
     print("Mark notification read response: ${response.body}");

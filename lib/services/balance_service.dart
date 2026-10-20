@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../helpers/api_headers.dart';
 import '../models/balance_model.dart';
 import '../models/branch_model.dart';
 
@@ -16,10 +17,7 @@ class BalanceApi {
           "offices/${officeID}?include=accounts.transactions&include_summary=1",
     );
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       // print(response.body.toString());

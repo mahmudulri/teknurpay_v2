@@ -516,7 +516,7 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                       border: InputBorder.none,
                                       contentPadding: EdgeInsets.zero,
                                     ),
-                                    icon: Icon(
+                                    icon: FaIcon(
                                       FontAwesomeIcons.chevronDown,
                                       color: Colors.grey,
                                       size: 20,
@@ -871,7 +871,7 @@ class _HawalaScreenState extends State<HawalaScreen> {
                                   backgroundColor: AppColors.primaryColor
                                       .withOpacity(0.7),
                                   radius: 15,
-                                  child: Icon(
+                                  child: FaIcon(
                                     FontAwesomeIcons.chevronDown,
                                     color: Colors.white,
                                     size: 17,

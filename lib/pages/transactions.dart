@@ -128,6 +128,324 @@ class _TransactionsState extends State<Transactions> {
   }
 
   final Mypagecontroller mypagecontroller = Get.find();
+
+  String _label(String key, String fallback) {
+    final value = languagesController.tr(key);
+    return value == key || value.trim().isEmpty ? fallback : value;
+  }
+
+  String _money(dynamic value) {
+    final amount = double.tryParse(value?.toString() ?? '') ?? 0;
+    return NumberFormat('#,##0.00', 'en_US').format(amount);
+  }
+
+  String _currency(dynamic transaction) {
+    final fromTransaction = transaction.currency?.code?.toString();
+    if (fromTransaction != null && fromTransaction.isNotEmpty)
+      return fromTransaction;
+    final fromCode = transaction.currencyCode?.toString();
+    if (fromCode != null && fromCode.isNotEmpty) return fromCode;
+    return box.read('currency_code')?.toString() ?? '';
+  }
+
+  String _resellerName(dynamic transaction) {
+    final name = transaction.reseller?.resellerName?.toString();
+    if (name != null && name.trim().isNotEmpty) return name;
+    final contact = transaction.reseller?.contactName?.toString();
+    if (contact != null && contact.trim().isNotEmpty) return contact;
+    final userName = transaction.reseller?.user?.name?.toString();
+    return userName == null || userName.trim().isEmpty ? '—' : userName;
+  }
+
+  bool _isDebit(dynamic transaction) =>
+      transaction.status?.toString().toLowerCase() == 'debit';
+
+  Widget _detailRow(
+    IconData icon,
+    String title,
+    String value, {
+    Color? valueColor,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            height: 38,
+            width: 38,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1F8FA),
+              borderRadius: BorderRadius.circular(11),
+            ),
+            child: Icon(icon, color: const Color(0xFF159CAD), size: 19),
+          ),
+          const SizedBox(width: 11),
+          Expanded(
+            flex: 4,
+            child: Text(
+              title,
+              style: const TextStyle(
+                color: Color(0xFF94A0A9),
+                fontSize: 13.5,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 5,
+            child: Text(
+              value,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                color: valueColor ?? const Color(0xFF0D2E50),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTransactionDetails(dynamic transaction) {
+    final debit = _isDebit(transaction);
+    final accent = debit ? const Color(0xFFD94B61) : const Color(0xFF149A65);
+    final pale = debit ? const Color(0xFFFFF0F2) : const Color(0xFFEDFAF3);
+    final type = debit ? _label('DEBIT', 'Debit') : _label('CREDIT', 'Credit');
+    final DateTime? date = transaction.createdAt;
+    final name = _resellerName(transaction);
+    showDialog<void>(
+      context: context,
+      barrierColor: Colors.black54,
+      builder: (dialogContext) => Dialog(
+        insetPadding: const EdgeInsets.symmetric(horizontal: 22, vertical: 24),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
+        clipBehavior: Clip.antiAlias,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(16, 24, 16, 23),
+                color: pale,
+                child: Column(
+                  children: [
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                      child: Icon(
+                        debit
+                            ? Icons.arrow_upward_rounded
+                            : Icons.arrow_downward_rounded,
+                        color: accent,
+                        size: 34,
+                      ),
+                    ),
+                    const SizedBox(height: 17),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        '${_money(transaction.amount)} ${_currency(transaction)}',
+                        style: TextStyle(
+                          color: accent,
+                          fontSize: 27,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 11),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 13,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withOpacity(0.09),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        type,
+                        style: TextStyle(
+                          color: accent,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(19, 10, 19, 19),
+                child: Column(
+                  children: [
+                    _detailRow(
+                      Icons.person_outline_rounded,
+                      _label('NAME', 'Name'),
+                      name,
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF0F2F4)),
+                    _detailRow(
+                      Icons.calendar_today_outlined,
+                      _label('DATE', 'Date'),
+                      date == null
+                          ? '—'
+                          : DateFormat('dd MMM yyyy').format(date.toLocal()),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF0F2F4)),
+                    _detailRow(
+                      Icons.access_time_rounded,
+                      _label('TIME', 'Time'),
+                      date == null
+                          ? '—'
+                          : DateFormat('hh:mm a').format(date.toLocal()),
+                    ),
+                    const Divider(height: 1, color: Color(0xFFF0F2F4)),
+                    _detailRow(
+                      Icons.swap_horiz_rounded,
+                      _label('TRANSACTION_TYPE', 'Transaction Type'),
+                      type,
+                      valueColor: accent,
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFFF1F8FA),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(13),
+                          ),
+                        ),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        child: Text(
+                          _label('CLOSE', 'Close'),
+                          style: const TextStyle(
+                            color: Color(0xFF0D2E50),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _transactionItem(dynamic transaction) {
+    final debit = _isDebit(transaction);
+    final accent = debit ? const Color(0xFFD94B61) : const Color(0xFF149A65);
+    final pale = debit ? const Color(0xFFFFF0F2) : const Color(0xFFEDFAF3);
+    final type = debit ? _label('DEBIT', 'Debit') : _label('CREDIT', 'Credit');
+    final DateTime? date = transaction.createdAt;
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(13),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(13),
+        onTap: () => _showTransactionDetails(transaction),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+          decoration: BoxDecoration(
+            border: Border.all(color: const Color(0xFFEBEFF2)),
+            borderRadius: BorderRadius.circular(13),
+          ),
+          child: Row(
+            children: [
+              Container(
+                height: 43,
+                width: 43,
+                decoration: BoxDecoration(
+                  color: pale,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  debit
+                      ? Icons.arrow_upward_rounded
+                      : Icons.arrow_downward_rounded,
+                  color: accent,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 11),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _resellerName(transaction),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF0D2E50),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      date == null
+                          ? '—'
+                          : DateFormat(
+                              'dd MMM yyyy • hh:mm a',
+                            ).format(date.toLocal()),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF98A4AD),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 7),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '${_money(transaction.amount)} ${_currency(transaction)}',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w800,
+                      color: accent,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${_label('AMOUNT', 'Amount')} ($type)',
+                    style: const TextStyle(
+                      color: Color(0xFF98A4AD),
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
@@ -225,7 +543,7 @@ class _TransactionsState extends State<Transactions> {
                                 },
                                 child: CircleAvatar(
                                   backgroundColor: Colors.transparent,
-                                  child: Icon(
+                                  child: FaIcon(
                                     isFilterOpen
                                         ? FontAwesomeIcons.chevronUp
                                         : FontAwesomeIcons.chevronDown,
@@ -844,322 +1162,47 @@ class _TransactionsState extends State<Transactions> {
                       ),
                     ),
 
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Obx(() {
                       if (transactionController.isLoading.value) {
-                        return const Center(child: CircularProgressIndicator());
+                        return const Padding(
+                          padding: EdgeInsets.all(35),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
                       }
-
                       final transactions = transactionController
                           .alltransactionlist
                           .value
                           .data
                           ?.resellerBalanceTransactions;
-
                       if (transactions == null || transactions.isEmpty) {
-                        return Center(
-                          child: Text(
-                            languagesController.tr("NO_DATA_FOUND"),
-
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 40),
+                          child: Center(
+                            child: Text(
+                              languagesController.tr('NO_DATA_FOUND'),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 15,
+                              ),
+                            ),
                           ),
                         );
                       }
-
-                      // If data exists but you don't want to show a list
-                      return const SizedBox();
-                    }),
-
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: Container(
-                        height: 600,
-                        // color: Colors.cyan,
-                        child: Obx(
-                          () => transactionController.isLoading.value == false
-                              ? ListView.separated(
-                                  padding: EdgeInsets.all(0),
-                                  separatorBuilder: (context, index) {
-                                    return SizedBox(height: 5);
-                                  },
-                                  physics: BouncingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: transactionController
-                                      .alltransactionlist
-                                      .value
-                                      .data!
-                                      .resellerBalanceTransactions
-                                      .length,
-                                  itemBuilder: (context, index) {
-                                    final data = transactionController
-                                        .alltransactionlist
-                                        .value
-                                        .data!
-                                        .resellerBalanceTransactions[index];
-                                    return Container(
-                                      height: 115,
-                                      width: screenWidth,
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(
-                                          width: 1,
-                                          color:
-                                              data.status.toString() == "debit"
-                                              ? Colors.red.withOpacity(0.4)
-                                              : Colors.green.withOpacity(0.4),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Expanded(
-                                            flex: 1,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    data.status.toString() ==
-                                                        "debit"
-                                                    ? Colors.red.withOpacity(
-                                                        0.12,
-                                                      )
-                                                    : Colors.green.withOpacity(
-                                                        0.12,
-                                                      ),
-                                                borderRadius: BorderRadius.only(
-                                                  topRight: Radius.circular(10),
-                                                  topLeft: Radius.circular(10),
-                                                ),
-                                              ),
-                                              child: Padding(
-                                                padding: EdgeInsets.symmetric(
-                                                  horizontal: 10,
-                                                ),
-                                                child: Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    KText(
-                                                      text: data
-                                                          .reseller!
-                                                          .resellerName
-                                                          .toString(),
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                      fontSize:
-                                                          screenHeight * 0.020,
-                                                    ),
-                                                    Text(
-                                                      DateFormat(
-                                                        "dd-MM-yyyy",
-                                                      ).format(
-                                                        DateTime.parse(
-                                                          data.createdAt
-                                                              .toString(),
-                                                        ),
-                                                      ),
-                                                      style: TextStyle(
-                                                        color: Colors.black,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize:
-                                                            screenHeight *
-                                                            0.020,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(height: 3),
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.only(
-                                                bottomLeft: Radius.circular(10),
-                                                bottomRight: Radius.circular(
-                                                  10,
-                                                ),
-                                              ),
-                                            ),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      KText(
-                                                        text: languagesController
-                                                            .tr(
-                                                              "TRANSACTION_TYPE",
-                                                            ),
-                                                        color: Colors
-                                                            .grey
-                                                            .shade700,
-                                                        fontWeight:
-                                                            FontWeight.w400,
-                                                        fontSize:
-                                                            screenHeight *
-                                                            0.020,
-                                                      ),
-                                                      Obx(
-                                                        () => Container(
-                                                          decoration: BoxDecoration(
-                                                            color:
-                                                                data.status
-                                                                        .toString() ==
-                                                                    "debit"
-                                                                ? Colors.red
-                                                                      .withOpacity(
-                                                                        0.12,
-                                                                      )
-                                                                : Colors.green
-                                                                      .withOpacity(
-                                                                        0.12,
-                                                                      ),
-                                                            borderRadius:
-                                                                BorderRadius.circular(
-                                                                  6,
-                                                                ),
-                                                          ),
-                                                          child: Padding(
-                                                            padding:
-                                                                EdgeInsets.symmetric(
-                                                                  horizontal:
-                                                                      10,
-                                                                  vertical: 6,
-                                                                ),
-                                                            child: KText(
-                                                              text:
-                                                                  data.status
-                                                                          .toString() ==
-                                                                      "debit"
-                                                                  ? languagesController
-                                                                        .tr(
-                                                                          "DEBIT",
-                                                                        )
-                                                                  : languagesController
-                                                                        .tr(
-                                                                          "CREDIT",
-                                                                        ),
-                                                              color:
-                                                                  data.status
-                                                                          .toString() ==
-                                                                      "debit"
-                                                                  ? Colors.red
-                                                                  : Colors
-                                                                        .green,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.020,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                SizedBox(height: 3),
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      Obx(
-                                                        () => KText(
-                                                          text:
-                                                              languagesController
-                                                                  .tr("AMOUNT"),
-                                                          color: Colors
-                                                              .grey
-                                                              .shade700,
-                                                          fontWeight:
-                                                              FontWeight.w400,
-                                                          fontSize:
-                                                              screenHeight *
-                                                              0.020,
-                                                        ),
-                                                      ),
-                                                      Row(
-                                                        children: [
-                                                          Text(
-                                                            NumberFormat.currency(
-                                                              locale: 'en_US',
-                                                              symbol: '',
-                                                              decimalDigits: 2,
-                                                            ).format(
-                                                              double.parse(
-                                                                data.amount
-                                                                    .toString(),
-                                                              ),
-                                                            ),
-                                                            style: TextStyle(
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.015,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w700,
-                                                              color:
-                                                                  data.status
-                                                                          .toString() ==
-                                                                      "debit"
-                                                                  ? Colors.black
-                                                                  : Colors
-                                                                        .black,
-                                                            ),
-                                                          ),
-                                                          SizedBox(width: 5),
-                                                          Text(
-                                                            "${box.read("currency_code")} ",
-                                                            style: TextStyle(
-                                                              fontSize:
-                                                                  screenHeight *
-                                                                  0.015,
-                                                              color:
-                                                                  data.status
-                                                                          .toString() ==
-                                                                      "debit"
-                                                                  ? Colors.black
-                                                                  : Colors
-                                                                        .black,
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .w600,
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                )
-                              : Center(child: SizedBox()),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 15),
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.only(bottom: 24),
+                          itemCount: transactions.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(height: 8),
+                          itemBuilder: (context, index) =>
+                              _transactionItem(transactions[index]),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                   ],
                 ),
               ),

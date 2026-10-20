@@ -140,19 +140,22 @@ class Service {
 class Company {
   final int? id;
   final String? companyName;
+  final String? companyCode;
   final String? companyLogo;
 
-  Company({this.id, this.companyName, this.companyLogo});
+  Company({this.id, this.companyName, this.companyCode, this.companyLogo});
 
   factory Company.fromJson(Map<String, dynamic> json) => Company(
     id: json["id"] == null ? null : json["id"],
     companyName: json["company_name"] == null ? null : json["company_name"],
+    companyCode: json["company_code"] == null ? null : json["company_code"],
     companyLogo: json["company_logo"] == null ? null : json["company_logo"],
   );
 
   Map<String, dynamic> toJson() => {
     "id": id,
     "company_name": companyName,
+    "company_code": companyCode,
     "company_logo": companyLogo,
   };
 }

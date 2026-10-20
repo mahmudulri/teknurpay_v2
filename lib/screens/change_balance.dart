@@ -296,7 +296,7 @@ class _ChangeBalanceState extends State<ChangeBalance> {
                                           color: Colors.grey.shade600,
                                         ),
                                       ),
-                                      Icon(
+                                      FaIcon(
                                         FontAwesomeIcons.chevronDown,
                                         color: Colors.grey.shade600,
                                         size: screenHeight * 0.020,

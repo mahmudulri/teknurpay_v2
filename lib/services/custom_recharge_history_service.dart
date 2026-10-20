@@ -7,6 +7,7 @@ import 'package:teknurpay/models/custom_history_model.dart';
 
 import '../controllers/order_list_controller.dart';
 
+import '../helpers/api_headers.dart';
 import '../models/sub_reseller_model.dart';
 import '../utils/api_endpoints.dart';
 
@@ -16,12 +17,9 @@ class CustomRechargeHistoryApi {
     final url = Uri.parse(
       "${ApiEndPoints.baseUrl}orders?page=${pageNo}&order_type=custom_recharge",
     );
-    print("order Url : " + url.toString());
+    // print("order Url : " + url.toString());
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       // print(response.body.toString());

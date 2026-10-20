@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+import '../helpers/api_headers.dart';
 import '../models/help_model.dart';
 import '../models/service_model.dart';
 import '../utils/api_endpoints.dart';
@@ -9,14 +10,9 @@ class HelpServiceApi {
   final box = GetStorage();
   Future<HelpModel> fetchhelpdata() async {
     final url = Uri.parse("${ApiEndPoints.baseUrl}help-articles");
-    print(url);
+    // print(url);
 
-    var response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer ${box.read("userToken")}',
-      },
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       // print(response.body.toString());

@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import '../controllers/dashboard_controller.dart';
+import '../helpers/api_headers.dart';
 import '../models/transaction_model.dart';
 import '../utils/api_endpoints.dart';
 
@@ -19,10 +20,7 @@ class TransactionApi {
           "?page=$pageNo&items_per_page=300&search=${box.read("transactiontype")}${box.read("category")}${box.read("purpose")}${box.read("startdate")}${box.read("enddate")}",
     );
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
     // print(url);
 
     final decoded = json.decode(response.body);

@@ -47,10 +47,7 @@ class ProductButton extends StatelessWidget {
               // SizedBox(
               //   width: 10,
               // ),
-              Icon(
-                Icons.menu,
-                color: Colors.white,
-              ),
+              Icon(Icons.menu, color: Colors.white),
               KText(
                 text: languagesController.tr("VIEW_PRODUCTS"),
                 fontSize: 16,
@@ -73,7 +70,7 @@ class ProductButton extends StatelessWidget {
                 // ),
                 child: Padding(
                   padding: EdgeInsets.all(10.0),
-                  child: Icon(
+                  child: FaIcon(
                     box.read("language") != "Fa"
                         ? FontAwesomeIcons.arrowRight
                         : FontAwesomeIcons.arrowLeft,

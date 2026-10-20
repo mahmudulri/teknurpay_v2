@@ -4,6 +4,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../helpers/api_headers.dart';
 import '../models/country_list_model.dart';
 import '../utils/api_endpoints.dart';
 
@@ -11,12 +12,9 @@ class CountryListApi {
   final box = GetStorage();
   Future<CountryListModel> fetchCountryList() async {
     final url = Uri.parse(ApiEndPoints.publicUrl + "countries");
-    print(url);
+    // print(url);
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
     final decodedBody = json.decode(response.body);
 
     if (response.statusCode == 200) {

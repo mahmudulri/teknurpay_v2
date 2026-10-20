@@ -639,7 +639,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   }
 
   Widget _dropdownIcon() {
-    return Icon(
+    return FaIcon(
       FontAwesomeIcons.chevronDown,
       color: AppColors.primaryColor,
       size: 14,
@@ -1186,7 +1186,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             onTap: () {
               whatsapp();
             },
-            child: const Icon(FontAwesomeIcons.whatsapp, size: 40),
+            child: const FaIcon(FontAwesomeIcons.whatsapp, size: 40),
           ),
 
           const SizedBox(width: 50),
@@ -1204,7 +1204,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
             onTap: () {
               _makePhoneCall(phoneNumber);
             },
-            child: const Icon(FontAwesomeIcons.phone, size: 28),
+            child: const FaIcon(FontAwesomeIcons.phone, size: 28),
           ),
         ],
       ),

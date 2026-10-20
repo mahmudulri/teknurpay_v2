@@ -468,5 +468,6 @@
     "FILTER": "فلټر",
     "SELECT_BALANCE_STATUS": "د بیلانس حالت وټاکئ",
     "RECEIVABLE": "د ترلاسه کولو وړ",
-    "BALANCE_STATUS": "د بیلانس حالت"
+    "BALANCE_STATUS": "د بیلانس حالت",
+    "ENTER_NUMBER": "شمېره دننه کړئ"
 }

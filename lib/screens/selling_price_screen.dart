@@ -437,11 +437,7 @@ class _SellingPriceScreenState extends State<SellingPriceScreen> {
                                                                     fontSize:
                                                                         18,
                                                                     fontFamily:
-                                                                        box
-                                                                                .read(
-                                                                                  "language",
-                                                                                )
-                                                                                .toString() ==
+                                                                        box.read("language").toString() ==
                                                                             "Fa"
                                                                         ? Get.find<
                                                                                 FontController
@@ -562,7 +558,7 @@ class _SellingPriceScreenState extends State<SellingPriceScreen> {
                                                                       ),
                                                                     ),
                                                                   ),
-                                                                  Icon(
+                                                                  FaIcon(
                                                                     FontAwesomeIcons
                                                                         .chevronDown,
                                                                     size:
@@ -671,7 +667,7 @@ class _SellingPriceScreenState extends State<SellingPriceScreen> {
                                                                       Colors
                                                                           .white,
                                                                   child: Center(
-                                                                    child: Icon(
+                                                                    child: FaIcon(
                                                                       FontAwesomeIcons
                                                                           .chevronDown,
                                                                       size: 14,

@@ -468,5 +468,6 @@
     "FILTER": "Filtre",
     "SELECT_BALANCE_STATUS": "Bakiye Durumunu Seçin",
     "RECEIVABLE": "Alacak",
-    "BALANCE_STATUS": "Bakiye Durumu"
+    "BALANCE_STATUS": "Bakiye Durumu",
+    "ENTER_NUMBER": "Numara Girin"
 }

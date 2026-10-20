@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 
+import '../helpers/api_headers.dart';
 import '../models/account_model.dart';
 import '../models/branch_model.dart';
 
@@ -15,10 +16,7 @@ class AccountlistApi {
       ApiEndPoints.baseUrl + "offices/${id}?include=accounts",
     );
 
-    var response = await http.get(
-      url,
-      headers: {'Authorization': 'Bearer ${box.read("userToken")}'},
-    );
+    final response = await http.get(url, headers: ApiHeaders.authenticated());
 
     if (response.statusCode == 200) {
       // print(response.body.toString());

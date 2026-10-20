@@ -39,7 +39,7 @@ class FirebaseNotificationService {
   NotificationCallback? onRefreshPayments;
   NotificationCallback? onRefreshHawala;
 
-  static const String _channelId = 'jahanpay_realtime_notifications';
+  static const String _channelId = 'teknurpay_realtime_notifications';
 
   static const String _channelName = 'TeknurPay Notifications';
 

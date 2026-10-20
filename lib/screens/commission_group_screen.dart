@@ -495,7 +495,7 @@ class _CreateGroupBoxState extends State<CreateGroupBox> {
                         },
                       );
                     },
-                    child: Icon(
+                    child: FaIcon(
                       FontAwesomeIcons.chevronDown,
                       size: screenHeight * 0.018,
                       color: Colors.grey,
