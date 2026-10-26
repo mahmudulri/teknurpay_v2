@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "أدخل الرقم",
     "ENTER_WITH_COUNTRY_CODE": "أدخل مع رمز الدولة",
     "ID": "المعرف",
-    "NUMBER": "الرقم"
+    "NUMBER": "الرقم",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "اختر الجهة التي أرسلت إليها الدفع",
+    "NO_PAYMENT_METHOD_FOUND": "لم يتم العثور على طريقة دفع",
+    "CONTINUE": "متابعة"
 }

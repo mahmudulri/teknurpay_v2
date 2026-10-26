@@ -8,7 +8,9 @@ import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
+import '../global_controller/page_controller.dart';
 import '../utils/api_endpoints.dart';
+import 'payments_controller.dart';
 
 class AddPaymentController extends GetxController {
   var photoLink = ''.obs;
@@ -56,6 +58,8 @@ class AddPaymentController extends GetxController {
   }
 
   Future<void> addNow() async {
+    if (isLoading.value) return;
+
     try {
       isLoading.value = true;
       paymentDate.value = selectedDate.value;
@@ -66,25 +70,27 @@ class AddPaymentController extends GetxController {
       };
 
       Map<String, String> body = {
-        'payment_method_id': payment_method_id.toString(),
+        'payment_method_id': payment_method_id.value,
         'amount': amountController.text,
-        'currency_id': currencyID.toString(),
-        'payment_date': toEnglishDigits(paymentDate.toString()),
+        'currency_id': currencyID.value,
+        'payment_date': toEnglishDigits(paymentDate.value),
         'tracking_code': trackingCodeController.text,
         'notes': noteController.text,
       };
 
-      // ✅ Only include payment_type_id if it's not empty
+      // Optional payment type
       if (payment_type_id.value.isNotEmpty) {
         body['payment_type_id'] = payment_type_id.value;
       }
 
       var url = Uri.parse("${ApiEndPoints.baseUrl}reseller-payments");
+
       var request = http.MultipartRequest('POST', url);
+
       request.headers.addAll(headers);
       request.fields.addAll(body);
 
-      // ✅ Add images only if selected
+      // Payment Image
       if (paymentImagePath.value.isNotEmpty) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -95,6 +101,7 @@ class AddPaymentController extends GetxController {
         );
       }
 
+      // Extra Image 1
       if (extraImage1Path.value.isNotEmpty) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -105,6 +112,7 @@ class AddPaymentController extends GetxController {
         );
       }
 
+      // Extra Image 2
       if (extraImage2Path.value.isNotEmpty) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -116,16 +124,33 @@ class AddPaymentController extends GetxController {
       }
 
       var responseStream = await request.send();
+
       var responseBody = await http.Response.fromStream(responseStream);
 
       print("Status: ${responseStream.statusCode}");
       print("Response: ${responseBody.body}");
 
       if (responseStream.statusCode == 201) {
+        // Clear text fields
         amountController.clear();
         trackingCodeController.clear();
         noteController.clear();
 
+        // Clear selected values
+        currencyID.value = '';
+        payment_method_id.value = '';
+        payment_type_id.value = '';
+
+        // Clear images
+        paymentImagePath.value = '';
+        extraImage1Path.value = '';
+        extraImage2Path.value = '';
+
+        paymentImageFile = null;
+        extraImage1File = null;
+        extraImage2File = null;
+
+        // Show success message
         Fluttertoast.showToast(
           msg: "Successfully Created",
           toastLength: Toast.LENGTH_SHORT,
@@ -136,17 +161,14 @@ class AddPaymentController extends GetxController {
           fontSize: 16.0,
         );
 
-        // Clear fields
-        currencyID.value = '';
-        paymentImagePath.value = '';
-        extraImage1Path.value = '';
-        extraImage2Path.value = '';
-        paymentImageFile = null;
-        extraImage1File = null;
-        extraImage2File = null;
-        isLoading.value = false;
+        // Refresh payments list before navigating back
+        final paymentsController = Get.find<PaymentsController>();
+        paymentsController.fetchpayments();
+
+        // Navigate back using existing page controller
+        final mypagecontroller = Get.find<Mypagecontroller>();
+        mypagecontroller.goBack();
       } else {
-        isLoading.value = false;
         Get.snackbar(
           "Wrong",
           "Something error",
@@ -155,8 +177,16 @@ class AddPaymentController extends GetxController {
         );
       }
     } catch (e) {
-      isLoading.value = false;
       print("Exception: ${e.toString()}");
+
+      Get.snackbar(
+        "Error",
+        "Something went wrong. Please try again.",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 }

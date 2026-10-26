@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "شماره را وارد کنید",
     "ENTER_WITH_COUNTRY_CODE": "با کد کشور وارد کنید",
     "ID": "شناسه",
-    "NUMBER": "شماره"
+    "NUMBER": "شماره",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "انتخاب کنید پرداخت را به کجا ارسال کرده‌اید",
+    "NO_PAYMENT_METHOD_FOUND": "هیچ روش پرداختی یافت نشد",
+    "CONTINUE": "ادامه"
 }

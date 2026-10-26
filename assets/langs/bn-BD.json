@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "নম্বর লিখুন",
     "ENTER_WITH_COUNTRY_CODE": "দেশের কোডসহ লিখুন",
     "ID": "আইডি",
-    "NUMBER": "নম্বর"
+    "NUMBER": "নম্বর",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "আপনি কোথায় পেমেন্ট পাঠিয়েছেন তা নির্বাচন করুন",
+    "NO_PAYMENT_METHOD_FOUND": "কোনো পেমেন্ট পদ্ধতি পাওয়া যায়নি",
+    "CONTINUE": "এগিয়ে যান"
 }

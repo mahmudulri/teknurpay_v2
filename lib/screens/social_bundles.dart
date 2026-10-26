@@ -183,84 +183,174 @@ class _SocialBundlesState extends State<SocialBundles> {
     final priceColumnWidth = (screenWidth * 0.365)
         .clamp(108.0, 160.0)
         .toDouble();
+    final accent = AppColors.primaryColor;
 
-    return GestureDetector(
-      onTap: () => _showBundleDialog(index),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.3),
-                spreadRadius: 2,
-                blurRadius: 2,
-                offset: const Offset(0, 0),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: accent.withOpacity(0.10),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            PositionedDirectional(
+              start: 7,
+              end: 7,
+              top: 5,
+              bottom: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.16),
+                  borderRadius: BorderRadius.circular(15),
+                ),
               ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 44,
-                height: 44,
-                child: Image.network(
-                  data.service!.company!.companyLogo.toString(),
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.image_not_supported_outlined,
-                    size: 24,
-                    color: Colors.grey,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 2),
+              child: Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                clipBehavior: Clip.antiAlias,
+                child: InkWell(
+                  onTap: () => _showBundleDialog(index),
+                  child: Stack(
+                    children: [
+                      PositionedDirectional(
+                        end: -22,
+                        top: -39,
+                        child: IgnorePointer(
+                          child: Container(
+                            width: 110,
+                            height: 110,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: accent.withOpacity(0.14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accent.withOpacity(0.10),
+                                  blurRadius: 10,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      PositionedDirectional(
+                        start: -18,
+                        bottom: -28,
+                        child: IgnorePointer(
+                          child: Container(
+                            width: 65,
+                            height: 65,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: accent.withOpacity(0.22),
+                                width: 12,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: accent.withOpacity(0.12)),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white,
+                                border: Border.all(
+                                  color: accent.withOpacity(0.16),
+                                ),
+                              ),
+                              padding: const EdgeInsets.all(5),
+                              child: ClipOval(
+                                child: Image.network(
+                                  data.service!.company!.companyLogo.toString(),
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.image_not_supported_outlined,
+                                    size: 22,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 9),
+                            Expanded(
+                              child: Text(
+                                data.bundleTitle.toString(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                  height: 1.25,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              height: 35,
+                              width: 1,
+                              color: const Color(0xFFE9EDF2),
+                            ),
+                            const SizedBox(width: 8),
+                            // SALE and BUY sit vertically on the right, on the same line
+                            // as the logo/title. This keeps each bundle card compact.
+                            SizedBox(
+                              width: priceColumnWidth,
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  _buildCompactPriceRow(
+                                    labelKey: 'SALE',
+                                    price: data.sellingPrice.toString(),
+                                    currency: currency,
+                                    color: Colors.green,
+                                  ),
+                                  const SizedBox(height: 5),
+                                  _buildCompactPriceRow(
+                                    labelKey: 'BUY',
+                                    price: data.buyingPrice.toString(),
+                                    currency: currency,
+                                    color: Colors.red,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-              const SizedBox(width: 9),
-              Expanded(
-                child: Text(
-                  data.bundleTitle.toString(),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.5,
-                    height: 1.25,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(height: 35, width: 1, color: const Color(0xFFE9EDF2)),
-              const SizedBox(width: 8),
-              // SALE and BUY sit vertically on the right, on the same line
-              // as the logo/title. This keeps each bundle card compact.
-              SizedBox(
-                width: priceColumnWidth,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _buildCompactPriceRow(
-                      labelKey: 'SALE',
-                      price: data.sellingPrice.toString(),
-                      currency: currency,
-                      color: Colors.green,
-                    ),
-                    const SizedBox(height: 5),
-                    _buildCompactPriceRow(
-                      labelKey: 'BUY',
-                      price: data.buyingPrice.toString(),
-                      currency: currency,
-                      color: Colors.red,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -275,7 +365,7 @@ class _SocialBundlesState extends State<SocialBundles> {
         padding: EdgeInsets.zero,
         physics: const AlwaysScrollableScrollPhysics(),
         itemCount: bundleController.finalList.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 2),
+        separatorBuilder: (_, __) => const SizedBox(height: 1),
         itemBuilder: (context, index) => _buildBundleItem(index, screenWidth),
       ),
     );
@@ -592,8 +682,17 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
   Widget build(BuildContext context) {
     var screenHeight = MediaQuery.of(context).size.height;
     var screenWidth = MediaQuery.of(context).size.width;
+    final mediaQuery = MediaQuery.of(context);
+    final availableHeight =
+        (screenHeight -
+                mediaQuery.viewInsets.bottom -
+                mediaQuery.padding.top -
+                mediaQuery.padding.bottom -
+                48)
+            .clamp(0.0, (screenHeight * 0.80).clamp(0.0, 600.0))
+            .toDouble();
     return Container(
-      height: (screenHeight * 0.80).clamp(0.0, 600.0).toDouble(),
+      constraints: BoxConstraints(maxHeight: availableHeight),
       width: screenWidth,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
@@ -614,532 +713,545 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
         () => confirmPinController.isLoading.value == false
             ? ClipRRect(
                 borderRadius: BorderRadius.circular(24),
-                child: ListView(
+                child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryColor,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryColor,
 
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Color(0xff1890FF).withOpacity(0.3),
-                            blurRadius: 15,
-                            offset: Offset(0, 8),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Color(0xff1890FF).withOpacity(0.3),
+                              blurRadius: 15,
+                              offset: Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(20),
+                          child: Column(
+                            children: [
+                              // Company Logo
+                              Container(
+                                padding: EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Image.network(
+                                  widget.imagelink.toString(),
+                                  height: 60,
+                                ),
+                              ),
+                              SizedBox(height: 8),
+
+                              // Company Name
+                              Text(
+                                widget.companyname.toString(),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                              SizedBox(height: 5),
+
+                              // Bundle Title
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Flexible(
+                                      flex: 2,
+                                      child: Text(
+                                        languagesController.tr('BUNDLE_TITLE'),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        widget.title.toString(),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.end,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 5),
+
+                              // Buy and Sale appear side by side in one row.
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildDialogPriceRow(
+                                        icon: Icons.shopping_bag_outlined,
+                                        iconColor: const Color(0xff1890FF),
+                                        label: languagesController.tr('BUY'),
+                                        amount: widget.buyingprice.toString(),
+                                        amountColor: Colors.black,
+                                      ),
+                                    ),
+                                    Container(
+                                      margin: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      height: 24,
+                                      width: 1,
+                                      color: Colors.grey.shade200,
+                                    ),
+                                    Expanded(
+                                      child: _buildDialogPriceRow(
+                                        icon: Icons.sell_outlined,
+                                        iconColor: Colors.green,
+                                        label: languagesController.tr('SALE'),
+                                        amount: widget.sellingprice.toString(),
+                                        amountColor: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Column(
+
+                      SizedBox(height: 8),
+
+                      // Only IMO needs the ID / NUMBER selector.
+                      if (widget.isImo) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Obx(
+                            () => Text(
+                              languagesController.tr('SELECT_ACCOUNT_TYPE'),
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Obx(() {
+                          final selectedType =
+                              confirmPinController.rechargebleAccountType.value;
+                          return Row(
+                            children: [
+                              _buildAccountTypeOption(
+                                'ID',
+                                selectedType == 'ID',
+                              ),
+                              const SizedBox(width: 12),
+                              _buildAccountTypeOption(
+                                'NUMBER',
+                                selectedType == 'NUMBER',
+                              ),
+                            ],
+                          );
+                        }),
+                        const SizedBox(height: 5),
+                      ],
+
+                      // IMO: input hidden until an option is chosen.
+                      // Other companies: show the original Enter ID field.
+                      Obx(() {
+                        final selectedType =
+                            confirmPinController.rechargebleAccountType.value;
+
+                        if (widget.isImo && selectedType.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final isNumber =
+                            widget.isImo && selectedType == 'NUMBER';
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            // Company Logo
+                            if (isNumber)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 4,
+                                  right: 4,
+                                  bottom: 8,
+                                ),
+                                child: Text(
+                                  "${languagesController.tr('ENTER_WITH_COUNTRY_CODE')} (+93, +98, +90)",
+                                  style: TextStyle(
+                                    color: Colors.grey.shade700,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
                             Container(
-                              padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.grey.shade200,
+                                  width: 1.5,
+                                ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
+                                    color: Colors.black.withOpacity(0.04),
                                     blurRadius: 10,
                                     offset: Offset(0, 4),
                                   ),
                                 ],
                               ),
-                              child: Image.network(
-                                widget.imagelink.toString(),
-                                height: 60,
-                              ),
-                            ),
-                            SizedBox(height: 8),
-
-                            // Company Name
-                            Text(
-                              widget.companyname.toString(),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-
-                            // Bundle Title
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Flexible(
-                                    flex: 2,
-                                    child: Text(
-                                      languagesController.tr('BUNDLE_TITLE'),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: Colors.white.withOpacity(0.9),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 4,
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.phone_android,
+                                      color: Color(0xff1890FF),
+                                      size: 22,
+                                    ),
+                                    SizedBox(width: 12),
+                                    Expanded(
+                                      child: TextField(
+                                        // Rebuilds the input when changing ID / NUMBER,
+                                        // including its keyboard configuration.
+                                        key: ValueKey(
+                                          'account_input_$selectedType',
+                                        ),
+                                        controller: confirmPinController
+                                            .numberController,
+                                        keyboardType: isNumber
+                                            ? TextInputType.phone
+                                            : TextInputType.text,
+                                        // Keep '+' visible and non-removable for NUMBER.
+                                        // The shared controller contains '+930...' directly.
+                                        inputFormatters: isNumber
+                                            ? [
+                                                const _InternationalNumberFormatter(),
+                                              ]
+                                            : null,
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: widget.isImo
+                                              ? (isNumber
+                                                    ? languagesController.tr(
+                                                        "ENTER_NUMBER",
+                                                      )
+                                                    : languagesController.tr(
+                                                        "ENTER_ID",
+                                                      ))
+                                              : languagesController.tr(
+                                                  'ENTER_ID',
+                                                ),
+                                          hintStyle: TextStyle(
+                                            color: Colors.grey.shade400,
+                                            fontSize: 15,
+                                          ),
+                                        ),
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Text(
-                                      widget.title.toString(),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.end,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            SizedBox(height: 5),
-
-                            // Buy and Sale appear side by side in one row.
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 12,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildDialogPriceRow(
-                                      icon: Icons.shopping_bag_outlined,
-                                      iconColor: const Color(0xff1890FF),
-                                      label: languagesController.tr('BUY'),
-                                      amount: widget.buyingprice.toString(),
-                                      amountColor: Colors.black,
-                                    ),
-                                  ),
-                                  Container(
-                                    margin: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                    ),
-                                    height: 24,
-                                    width: 1,
-                                    color: Colors.grey.shade200,
-                                  ),
-                                  Expanded(
-                                    child: _buildDialogPriceRow(
-                                      icon: Icons.sell_outlined,
-                                      iconColor: Colors.green,
-                                      label: languagesController.tr('SALE'),
-                                      amount: widget.sellingprice.toString(),
-                                      amountColor: Colors.green,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    SizedBox(height: 8),
-
-                    // Only IMO needs the ID / NUMBER selector.
-                    if (widget.isImo) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Obx(
-                          () => Text(
-                            languagesController.tr('SELECT_ACCOUNT_TYPE'),
-                            style: TextStyle(
-                              color: Colors.grey.shade600,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Obx(() {
-                        final selectedType =
-                            confirmPinController.rechargebleAccountType.value;
-                        return Row(
-                          children: [
-                            _buildAccountTypeOption('ID', selectedType == 'ID'),
-                            const SizedBox(width: 12),
-                            _buildAccountTypeOption(
-                              'NUMBER',
-                              selectedType == 'NUMBER',
                             ),
                           ],
                         );
                       }),
-                      const SizedBox(height: 5),
-                    ],
 
-                    // IMO: input hidden until an option is chosen.
-                    // Other companies: show the original Enter ID field.
-                    Obx(() {
-                      final selectedType =
-                          confirmPinController.rechargebleAccountType.value;
+                      SizedBox(height: 5),
 
-                      if (widget.isImo && selectedType.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
-
-                      final isNumber = widget.isImo && selectedType == 'NUMBER';
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isNumber)
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                left: 4,
-                                right: 4,
-                                bottom: 8,
-                              ),
-                              child: Text(
-                                "${languagesController.tr('ENTER_WITH_COUNTRY_CODE')} (+93, +98, +90)",
-                                style: TextStyle(
-                                  color: Colors.grey.shade700,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                      // PIN Input
+                      Align(
+                        alignment: Alignment.center,
+                        child: Container(
+                          height: 50,
+                          width: 130,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            border: Border.all(
+                              width: 1.5,
+                              color: Colors.grey.shade200,
                             ),
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: Colors.grey.shade200,
-                                width: 1.5,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.04),
+                                blurRadius: 10,
+                                offset: Offset(0, 4),
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 4,
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.phone_android,
-                                    color: Color(0xff1890FF),
-                                    size: 22,
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextField(
+                                maxLength: 4,
+                                controller: confirmPinController.pinController,
+                                keyboardType: TextInputType.phone,
+                                textAlign: TextAlign.center,
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                  counterText: '',
+                                  hintText: languagesController.tr("PIN"),
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade400,
+                                    fontSize: 12,
                                   ),
-                                  SizedBox(width: 12),
-                                  Expanded(
-                                    child: TextField(
-                                      // Rebuilds the input when changing ID / NUMBER,
-                                      // including its keyboard configuration.
-                                      key: ValueKey(
-                                        'account_input_$selectedType',
-                                      ),
-                                      controller:
-                                          confirmPinController.numberController,
-                                      keyboardType: isNumber
-                                          ? TextInputType.phone
-                                          : TextInputType.text,
-                                      // Keep '+' visible and non-removable for NUMBER.
-                                      // The shared controller contains '+930...' directly.
-                                      inputFormatters: isNumber
-                                          ? [
-                                              const _InternationalNumberFormatter(),
-                                            ]
-                                          : null,
-                                      decoration: InputDecoration(
-                                        border: InputBorder.none,
-                                        hintText: widget.isImo
-                                            ? (isNumber
-                                                  ? languagesController.tr(
-                                                      "ENTER_NUMBER",
-                                                    )
-                                                  : languagesController.tr(
-                                                      "ENTER_ID",
-                                                    ))
-                                            : languagesController.tr(
-                                                'ENTER_ID',
-                                              ),
-                                        hintStyle: TextStyle(
-                                          color: Colors.grey.shade400,
-                                          fontSize: 15,
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: EdgeInsets.zero,
+                                ),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(height: 5),
+
+                      // Action Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: GestureDetector(
+                              onTap: () {
+                                final selectedType = confirmPinController
+                                    .rechargebleAccountType
+                                    .value;
+
+                                if (widget.isImo &&
+                                    selectedType != 'ID' &&
+                                    selectedType != 'NUMBER') {
+                                  Fluttertoast.showToast(
+                                    msg: 'Please select ID or NUMBER',
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.black,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0,
+                                  );
+                                  return;
+                                }
+
+                                final enteredNumber = confirmPinController
+                                    .numberController
+                                    .text
+                                    .trim();
+                                // A lone '+' is not a valid NUMBER.
+                                if (enteredNumber.isEmpty ||
+                                    (widget.isImo &&
+                                        selectedType == 'NUMBER' &&
+                                        enteredNumber
+                                            .replaceAll(RegExp(r'[^0-9]'), '')
+                                            .isEmpty)) {
+                                  Fluttertoast.showToast(
+                                    msg: widget.isImo
+                                        ? (selectedType == 'ID'
+                                              ? languagesController.tr(
+                                                  "ENTER_ID",
+                                                )
+                                              : languagesController.tr(
+                                                  "ENTER_NUMBER",
+                                                ))
+                                        : languagesController.tr('ENTER_ID'),
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.black,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0,
+                                  );
+                                  return;
+                                }
+
+                                if (confirmPinController
+                                    .pinController
+                                    .text
+                                    .isEmpty) {
+                                  Fluttertoast.showToast(
+                                    msg: languagesController.tr(
+                                      "ENTER_YOUR_PIN",
+                                    ),
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.TOP,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.black,
+                                    textColor: Colors.white,
+                                    fontSize: 16.0,
+                                  );
+                                  return;
+                                }
+
+                                // Only IMO sends the selected account type.
+                                // ID     => rechargeble_account_type: ID
+                                // NUMBER => rechargeble_account_type: NUMBER
+                                // Other companies omit the account-type key.
+                                confirmPinController
+                                    .rechargebleAccountType
+                                    .value = widget.isImo
+                                    ? selectedType
+                                    : '';
+
+                                confirmPinController.placeOrder(context);
+                              },
+                              child: Container(
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.green.shade400,
+                                      Colors.green.shade600,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.green.withOpacity(0.3),
+                                      blurRadius: 12,
+                                      offset: Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.white,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        languagesController.tr('CONFIRMATION'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
                                         ),
                                       ),
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w500,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    width: 1.5,
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.close,
+                                      color: Colors.grey.shade700,
+                                      size: 20,
+                                    ),
+                                    SizedBox(width: 6),
+                                    Flexible(
+                                      child: Text(
+                                        languagesController.tr('CANCEL'),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade700,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ],
-                      );
-                    }),
-
-                    SizedBox(height: 5),
-
-                    // PIN Input
-                    Align(
-                      alignment: Alignment.center,
-                      child: Container(
-                        height: 50,
-                        width: 130,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                            width: 1.5,
-                            color: Colors.grey.shade200,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TextField(
-                              maxLength: 4,
-                              controller: confirmPinController.pinController,
-                              keyboardType: TextInputType.phone,
-                              textAlign: TextAlign.center,
-                              obscureText: true,
-                              decoration: InputDecoration(
-                                counterText: '',
-                                hintText: languagesController.tr("PIN"),
-                                hintStyle: TextStyle(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 12,
-                                ),
-                                border: InputBorder.none,
-                                isDense: true,
-                                contentPadding: EdgeInsets.zero,
-                              ),
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-
-                    SizedBox(height: 5),
-
-                    // Action Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          flex: 3,
-                          child: GestureDetector(
-                            onTap: () {
-                              final selectedType = confirmPinController
-                                  .rechargebleAccountType
-                                  .value;
-
-                              if (widget.isImo &&
-                                  selectedType != 'ID' &&
-                                  selectedType != 'NUMBER') {
-                                Fluttertoast.showToast(
-                                  msg: 'Please select ID or NUMBER',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.TOP,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
-                                return;
-                              }
-
-                              final enteredNumber = confirmPinController
-                                  .numberController
-                                  .text
-                                  .trim();
-                              // A lone '+' is not a valid NUMBER.
-                              if (enteredNumber.isEmpty ||
-                                  (widget.isImo &&
-                                      selectedType == 'NUMBER' &&
-                                      enteredNumber
-                                          .replaceAll(RegExp(r'[^0-9]'), '')
-                                          .isEmpty)) {
-                                Fluttertoast.showToast(
-                                  msg: widget.isImo
-                                      ? (selectedType == 'ID'
-                                            ? languagesController.tr("ENTER_ID")
-                                            : languagesController.tr(
-                                                "ENTER_NUMBER",
-                                              ))
-                                      : languagesController.tr('ENTER_ID'),
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.TOP,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
-                                return;
-                              }
-
-                              if (confirmPinController
-                                  .pinController
-                                  .text
-                                  .isEmpty) {
-                                Fluttertoast.showToast(
-                                  msg: languagesController.tr("ENTER_YOUR_PIN"),
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.TOP,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.black,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
-                                return;
-                              }
-
-                              // Only IMO sends the selected account type.
-                              // ID     => rechargeble_account_type: ID
-                              // NUMBER => rechargeble_account_type: NUMBER
-                              // Other companies omit the account-type key.
-                              confirmPinController
-                                  .rechargebleAccountType
-                                  .value = widget.isImo
-                                  ? selectedType
-                                  : '';
-
-                              confirmPinController.placeOrder(context);
-                            },
-                            child: Container(
-                              height: 50,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.green.shade400,
-                                    Colors.green.shade600,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.green.withOpacity(0.3),
-                                    blurRadius: 12,
-                                    offset: Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.check_circle_outline,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Flexible(
-                                    child: Text(
-                                      languagesController.tr('CONFIRMATION'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        Expanded(
-                          flex: 2,
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: Colors.grey.shade100,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  width: 1.5,
-                                  color: Colors.grey.shade300,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.close,
-                                    color: Colors.grey.shade700,
-                                    size: 20,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Flexible(
-                                    child: Text(
-                                      languagesController.tr('CANCEL'),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               )
             : Center(
+                heightFactor: 1,
                 child: Container(
                   height: 250,
                   width: 250,

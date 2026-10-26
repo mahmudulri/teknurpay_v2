@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "Numara Girin",
     "ENTER_WITH_COUNTRY_CODE": "Ülke koduyla girin",
     "ID": "Kimlik",
-    "NUMBER": "Numara"
+    "NUMBER": "Numara",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "Ödemeyi nereye gönderdiğinizi seçin",
+    "NO_PAYMENT_METHOD_FOUND": "Ödeme yöntemi bulunamadı",
+    "CONTINUE": "Devam Et"
 }

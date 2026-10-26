@@ -96,7 +96,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
                             "PAYMENT_RECEIPT_REQUEST",
                           ),
                           fontWeight: FontWeight.bold,
-                          fontSize: screenWidth * 0.045,
+                          fontSize: screenWidth * 0.042,
                           color: Colors.black,
                         ),
                       ),

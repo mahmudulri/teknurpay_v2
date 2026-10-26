@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+
 import 'package:teknurpay/controllers/dashboard_controller.dart';
 import 'package:teknurpay/global_controller/languages_controller.dart';
 
@@ -15,76 +16,76 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final dashboardController = Get.find<DashboardController>();
-  final box = GetStorage();
-  LanguagesController languagesController = Get.put(LanguagesController());
+  final DashboardController dashboardController =
+      Get.find<DashboardController>();
 
-  checkData() async {
-    // Default language is now English
-    String languageShortName = box.read("language") ?? "En";
+  final GetStorage box = GetStorage();
 
-    // Find selected language details from the list
-    final matchedLang = languagesController.alllanguagedata.firstWhere(
-      (lang) => lang["name"] == languageShortName,
-      orElse: () => {"isoCode": "en", "direction": "ltr"},
-    );
+  final LanguagesController languagesController =
+      Get.isRegistered<LanguagesController>()
+      ? Get.find<LanguagesController>()
+      : Get.put(LanguagesController());
 
-    final isoCode = matchedLang["isoCode"] ?? "en";
-    final direction = matchedLang["direction"] ?? "ltr";
+  Future<void> checkData() async {
+    try {
+      // Restore previously selected language.
+      final savedLanguage = await languagesController.restoreSavedLanguage();
 
-    box.write("language", languageShortName);
-    box.write("direction", direction);
+      final String languageShortName = savedLanguage["name"] ?? "En";
 
-    languagesController.changeLanguage(languageShortName);
+      final String isoCode = savedLanguage["isoCode"] ?? "en";
 
-    Locale locale;
-    switch (isoCode) {
-      case "fa":
-        locale = Locale("fa", "IR");
-        break;
-      case "en":
-        locale = Locale("en", "US");
-        break;
-      case "ar":
-        locale = Locale("ar", "AE");
-        break;
-      case "ps":
-        locale = Locale("ps", "AF");
-        break;
-      case "tr":
-        locale = Locale("tr", "TR");
-        break;
-      case "bn":
-        locale = Locale("bn", "BD");
-        break;
-      default:
-        locale = Locale("en", "US");
-    }
+      final String region = savedLanguage["region"] ?? "US";
 
-    EasyLocalization.of(context)!.setLocale(locale);
+      final String direction = savedLanguage["direction"] ?? "ltr";
 
-    if (box.read('userToken') == null) {
-      Get.offAllNamed(welcomescreen);
-    } else {
-      dashboardController.fetchDashboardData();
-      Get.offAllNamed(basescreen);
+      debugPrint("🌐 Restored Language: $languageShortName");
+
+      debugPrint("🌐 Locale: $isoCode-$region");
+
+      debugPrint("🌐 Direction: $direction");
+
+      if (!mounted) return;
+
+      // Synchronize EasyLocalization.
+      final Locale locale = Locale(isoCode, region);
+
+      await context.setLocale(locale);
+
+      if (!mounted) return;
+
+      // Check authentication.
+      final userToken = box.read("userToken");
+
+      if (userToken == null || userToken.toString().trim().isEmpty) {
+        Get.offAllNamed(welcomescreen);
+      } else {
+        dashboardController.fetchDashboardData();
+
+        Get.offAllNamed(basescreen);
+      }
+    } catch (e) {
+      debugPrint("❌ Splash Screen Error: $e");
     }
   }
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Optional splash delay (UI-safe)
-      Future.delayed(const Duration(seconds: 2), () {
-        checkData();
-      });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
+      await checkData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Center(child: Image.asset("assets/icons/logo.png", height: 130)),
     );
   }

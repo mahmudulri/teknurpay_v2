@@ -119,8 +119,9 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
       backgroundColor: Colors.transparent,
       barrierColor: Colors.black.withOpacity(0.35),
       builder: (BuildContext sheetContext) {
-        final screenHeight = MediaQuery.of(sheetContext).size.height;
-        final screenWidth = MediaQuery.of(sheetContext).size.width;
+        final mediaQuery = MediaQuery.of(sheetContext);
+        final screenHeight = mediaQuery.size.height;
+        final screenWidth = mediaQuery.size.width;
 
         return SafeArea(
           child: Container(
@@ -129,68 +130,75 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
             decoration: const BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(28),
-                topRight: Radius.circular(28),
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
               ),
             ),
             child: Column(
               children: [
-                const SizedBox(height: 10),
+                const SizedBox(height: 9),
 
                 // Drag indicator
                 Container(
-                  width: 46,
-                  height: 5,
+                  width: 40,
+                  height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(50),
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 15),
 
-                // Sheet title
+                // Sheet title and subtitle
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(width: 38),
+                      const SizedBox(width: 32),
+
                       Expanded(
                         child: Column(
                           children: [
-                            const Text(
-                              "Select Payment Method",
+                            Text(
+                              languagesController.tr("SELECT_PAYMENT_METHOD"),
                               textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
                                 color: Color(0xff102A43),
                               ),
                             ),
+
                             const SizedBox(height: 4),
+
                             Text(
-                              "Choose where you sent the payment",
+                              languagesController.tr(
+                                "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT",
+                              ),
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 13,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w400,
                                 color: Colors.grey.shade600,
                               ),
                             ),
                           ],
                         ),
                       ),
+
                       GestureDetector(
                         onTap: () {
                           Navigator.pop(sheetContext);
                         },
                         child: const SizedBox(
-                          width: 38,
-                          height: 38,
+                          width: 32,
+                          height: 32,
                           child: Icon(
                             Icons.close,
                             color: Colors.black87,
-                            size: 28,
+                            size: 23,
                           ),
                         ),
                       ),
@@ -198,12 +206,14 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 15),
 
                 Expanded(
                   child: Obx(() {
                     if (paymentMethodController.isLoading.value) {
-                      return const Center(child: CircularProgressIndicator());
+                      return const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      );
                     }
 
                     final List<PaymentMethod> allMethods =
@@ -217,16 +227,16 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                     if (allMethods.isEmpty) {
                       return Center(
                         child: Text(
-                          "No payment methods found",
+                          languagesController.tr("NO_PAYMENT_METHOD_FOUND"),
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 12,
                             color: Colors.grey.shade600,
                           ),
                         ),
                       );
                     }
 
-                    // Build unique method-name filters from the API.
+                    // Unique payment method filters
                     final List<String> methodNames = [];
 
                     for (final method in allMethods) {
@@ -239,7 +249,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
 
                     final List<String> filters = ["All", ...methodNames];
 
-                    // "All" is selected by default.
+                    // Filter selected payment methods
                     final List<PaymentMethod> filteredMethods =
                         selectedFilter.value == "All"
                         ? allMethods
@@ -250,18 +260,19 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
 
                     return Column(
                       children: [
-                        // Payment-method name filters
+                        // Payment method filters
                         SizedBox(
-                          height: 46,
+                          height: 38,
                           child: ListView.separated(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             scrollDirection: Axis.horizontal,
                             itemCount: filters.length,
                             separatorBuilder: (context, index) {
-                              return const SizedBox(width: 10);
+                              return const SizedBox(width: 8);
                             },
                             itemBuilder: (context, index) {
                               final filter = filters[index];
+
                               final bool isSelected =
                                   selectedFilter.value == filter;
 
@@ -272,14 +283,14 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                 child: AnimatedContainer(
                                   duration: const Duration(milliseconds: 180),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 9,
+                                    horizontal: 15,
+                                    vertical: 7,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSelected
                                         ? AppColors.primaryColor
                                         : Colors.white,
-                                    borderRadius: BorderRadius.circular(25),
+                                    borderRadius: BorderRadius.circular(22),
                                     border: Border.all(
                                       color: isSelected
                                           ? AppColors.primaryColor
@@ -296,7 +307,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                         color: isSelected
                                             ? Colors.white
                                             : Colors.grey.shade700,
-                                        fontSize: 13,
+                                        fontSize: 11.5,
                                         fontWeight: isSelected
                                             ? FontWeight.w600
                                             : FontWeight.w500,
@@ -309,28 +320,30 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                           ),
                         ),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 12),
 
-                        // Filtered payment-method list
+                        // Filtered payment method list
                         Expanded(
                           child: filteredMethods.isEmpty
                               ? Center(
                                   child: Text(
-                                    "No payment method found",
+                                    languagesController.tr(
+                                      "NO_PAYMENT_METHOD_FOUND",
+                                    ),
                                     style: TextStyle(
                                       color: Colors.grey.shade600,
-                                      fontSize: 14,
+                                      fontSize: 12,
                                     ),
                                   ),
                                 )
                               : ListView.separated(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
+                                    horizontal: 14,
                                     vertical: 4,
                                   ),
                                   itemCount: filteredMethods.length,
                                   separatorBuilder: (context, index) {
-                                    return const SizedBox(height: 10);
+                                    return const SizedBox(height: 8);
                                   },
                                   itemBuilder: (context, index) {
                                     final PaymentMethod data =
@@ -341,13 +354,23 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                                           temporarySelectedId.value ==
                                           data.id?.toString();
 
-                                      return PaymentMethodSelectionCard(
-                                        paymentMethod: data,
-                                        isSelected: isSelected,
-                                        onTap: () {
-                                          temporarySelectedId.value =
-                                              data.id?.toString() ?? "";
-                                        },
+                                      // Reduce font scaling inside
+                                      // the existing payment card.
+                                      return MediaQuery(
+                                        data: mediaQuery.copyWith(
+                                          textScaler: TextScaler.linear(
+                                            mediaQuery.textScaler.scale(1.0) *
+                                                0.88,
+                                          ),
+                                        ),
+                                        child: PaymentMethodSelectionCard(
+                                          paymentMethod: data,
+                                          isSelected: isSelected,
+                                          onTap: () {
+                                            temporarySelectedId.value =
+                                                data.id?.toString() ?? "";
+                                          },
+                                        ),
                                       );
                                     });
                                   },
@@ -356,7 +379,7 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
 
                         // Continue button
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
+                          padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
                           child: Obx(() {
                             final bool canContinue =
                                 temporarySelectedId.value.isNotEmpty;
@@ -395,22 +418,22 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                               child: AnimatedContainer(
                                 duration: const Duration(milliseconds: 180),
                                 width: double.infinity,
-                                height: 52,
+                                height: 46,
                                 decoration: BoxDecoration(
                                   color: canContinue
                                       ? AppColors.primaryColor
                                       : Colors.grey.shade300,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: Center(
                                   child: Text(
-                                    "Continue",
+                                    languagesController.tr("CONTINUE"),
                                     style: TextStyle(
                                       color: canContinue
                                           ? Colors.white
                                           : Colors.grey.shade500,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
@@ -1039,40 +1062,57 @@ class _CreatePaymentsScreenState extends State<CreatePaymentsScreen> {
                     ),
                     SizedBox(height: 20),
                     Obx(
-                      () => DefaultButton1(
-                        height: 50,
-                        width: screenWidth,
-                        buttonName:
-                            addPaymentController.isLoading.value == false
-                            ? languagesController.tr("ADD_NOW")
-                            : languagesController.tr("PLEASE_WAIT"),
-                        onpressed: () {
-                          if (addPaymentController.payment_method_id.value ==
-                                  '' ||
-                              addPaymentController
-                                  .amountController
-                                  .text
-                                  .isEmpty ||
-                              addPaymentController.currencyID.value == '' ||
-                              addPaymentController.selectedDate.value ==
-                                  '' || // <-- FIXED
-                              addPaymentController
-                                  .trackingCodeController
-                                  .text
-                                  .isEmpty) {
-                            Fluttertoast.showToast(
-                              msg: "Please fill all required fields correctly",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.BOTTOM,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.black,
-                              textColor: Colors.white,
-                              fontSize: 16.0,
-                            );
-                          } else {
-                            addPaymentController.addNow();
-                          }
-                        },
+                      () => Opacity(
+                        opacity: addPaymentController.isLoading.value
+                            ? 0.45
+                            : 1.0,
+                        child: AbsorbPointer(
+                          absorbing: addPaymentController.isLoading.value,
+                          child: DefaultButton1(
+                            height: 50,
+                            width: screenWidth,
+                            buttonName: addPaymentController.isLoading.value
+                                ? languagesController.tr("PLEASE_WAIT")
+                                : languagesController.tr("ADD_NOW"),
+                            onpressed: () {
+                              if (addPaymentController.isLoading.value) return;
+
+                              if (addPaymentController
+                                      .payment_method_id
+                                      .value
+                                      .isEmpty ||
+                                  addPaymentController.amountController.text
+                                      .trim()
+                                      .isEmpty ||
+                                  addPaymentController
+                                      .currencyID
+                                      .value
+                                      .isEmpty ||
+                                  addPaymentController
+                                      .selectedDate
+                                      .value
+                                      .isEmpty ||
+                                  addPaymentController
+                                      .trackingCodeController
+                                      .text
+                                      .trim()
+                                      .isEmpty) {
+                                Fluttertoast.showToast(
+                                  msg:
+                                      "Please fill all required fields correctly",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.black,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0,
+                                );
+                              } else {
+                                addPaymentController.addNow();
+                              }
+                            },
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height: 20),

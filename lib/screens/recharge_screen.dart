@@ -108,67 +108,40 @@ class _RechargeScreenState extends State<RechargeScreen> {
     return int.tryParse(storedLength?.toString() ?? "") ?? 0;
   }
 
+  bool get _isFullLookupNumber {
+    final number = confirmPinController.numberController.text.trim();
+    return isOperatorLookupEnabled &&
+        _maximumPhoneLength > 0 &&
+        number.length == _maximumPhoneLength;
+  }
+
   Future<void> refresh() async {
-    if (bundleController.isLoading.value ||
-        bundleController.isLookupLoading.value) {
+    if (!scrollController.hasClients ||
+        scrollController.position.extentAfter > 200)
       return;
+    if (isOperatorLookupEnabled && inputNumber.isNotEmpty) {
+      if (!_isFullLookupNumber || !isOperatorLookupConfirmed) return;
+      await bundleController.loadNextPage(
+        phoneNumber: confirmPinController.numberController.text.trim(),
+      );
+    } else {
+      await bundleController.loadNextPage();
     }
+  }
 
-    if (!scrollController.hasClients) {
+  Future<void> _reloadBundles() async {
+    if (isOperatorLookupEnabled &&
+        inputNumber.isNotEmpty &&
+        !_isFullLookupNumber)
       return;
+    bundleController.initialpage = 1;
+    if (_isFullLookupNumber) {
+      await bundleController.fetchlookupbundles(
+        confirmPinController.numberController.text.trim(),
+      );
+    } else {
+      await bundleController.fetchallbundles();
     }
-
-    final bool reachedBottom =
-        scrollController.position.pixels >=
-        scrollController.position.maxScrollExtent;
-
-    if (!reachedBottom) {
-      return;
-    }
-
-    final String phoneNumber = confirmPinController.numberController.text
-        .trim();
-
-    final int requiredLength = _maximumPhoneLength;
-
-    /// Lookup mode সত্যিকার অর্থে তখনই active,
-    /// যখন full phone number দেওয়া হয়েছে।
-    final bool isLookupModeActive =
-        isOperatorLookupEnabled &&
-        requiredLength > 0 &&
-        phoneNumber.length == requiredLength;
-
-    print("======================================");
-    print("🔽 Bottom reached");
-    print("Lookup enabled     : $isOperatorLookupEnabled");
-    print("Lookup mode active : $isLookupModeActive");
-    print("Phone length       : ${phoneNumber.length}/$requiredLength");
-    print("======================================");
-
-    /// Full number দিয়ে lookup result দেখালে
-    /// normal pagination করা হবে না।
-    if (isLookupModeActive) {
-      print("⛔ Pagination skipped because lookup mode is active");
-      return;
-    }
-
-    final int totalPages =
-        bundleController.allbundleslist.value.payload?.pagination.totalPages ??
-        0;
-
-    print("📄 Current Page : ${bundleController.initialpage}");
-    print("📚 Total Pages  : $totalPages");
-
-    if (bundleController.initialpage >= totalPages) {
-      print("✅ Last page reached");
-      return;
-    }
-
-    bundleController.initialpage++;
-
-    print("🚀 Loading Next Page : ${bundleController.initialpage}/$totalPages");
-
-    await bundleController.fetchallbundles();
   }
 
   void _onTextChanged() {
@@ -184,6 +157,9 @@ class _RechargeScreenState extends State<RechargeScreen> {
     }
 
     _lastProcessedNumber = number;
+    if (isOperatorLookupEnabled) {
+      bundleController.invalidateRequests();
+    }
 
     final int requiredLength = _maximumPhoneLength;
 
@@ -255,6 +231,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
       bundleController.initialpage = 1;
       bundleController.finalList.clear();
 
+      box.write("company_id", "");
       bundleController.fetchallbundles();
       return;
     }
@@ -474,7 +451,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
 
   Widget _buildBundleList(double screenWidth) {
     return RefreshIndicator(
-      onRefresh: refresh,
+      onRefresh: _reloadBundles,
       child: ListView.builder(
         padding: EdgeInsets.all(0),
         physics: AlwaysScrollableScrollPhysics(),
@@ -1456,12 +1433,17 @@ class _RechargeScreenState extends State<RechargeScreen> {
                         ),
                       ),
                       Spacer(),
-                      KText(
-                        text:
-                            " ${box.read("countryName")} ${box.read("catName")}",
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth * 0.040,
-                        color: Colors.black,
+                      GestureDetector(
+                        onTap: () {
+                          print(box.read("language_iso"));
+                        },
+                        child: KText(
+                          text:
+                              " ${box.read("countryName")} ${box.read("catName")}",
+                          fontWeight: FontWeight.bold,
+                          fontSize: screenWidth * 0.040,
+                          color: Colors.black,
+                        ),
                       ),
                       Spacer(),
                       GestureDetector(
@@ -1778,29 +1760,7 @@ class _RechargeScreenState extends State<RechargeScreen> {
                                   duration[index]["Value"],
                                 );
 
-                                bundleController.initialpage = 1;
-                                bundleController.finalList.clear();
-
-                                if (isOperatorLookupEnabled) {
-                                  final String phoneNumber =
-                                      confirmPinController.numberController.text
-                                          .trim();
-
-                                  final int requiredLength =
-                                      _maximumPhoneLength;
-
-                                  if (phoneNumber.length == requiredLength) {
-                                    await bundleController.fetchlookupbundles(
-                                      phoneNumber,
-                                    );
-                                  } else {
-                                    print(
-                                      "Complete phone number required before filtering lookup bundles.",
-                                    );
-                                  }
-                                } else {
-                                  await bundleController.fetchallbundles();
-                                }
+                                await _reloadBundles();
                               },
                               child: Container(
                                 margin: EdgeInsets.only(right: 5),
@@ -1863,9 +1823,14 @@ class _RechargeScreenState extends State<RechargeScreen> {
                   child: Padding(
                     padding: EdgeInsets.all(0.0),
                     child: Obx(() {
+                      // Read both flags even when the list already has items.
+                      final normalLoading = bundleController.isLoading.value;
+                      final lookupLoading =
+                          bundleController.isLookupLoading.value;
+                      final isFetching = normalLoading || lookupLoading;
+
                       if (bundleController.finalList.isEmpty) {
-                        if (bundleController.isLoading.value ||
-                            bundleController.isLookupLoading.value) {
+                        if (isFetching) {
                           return const Center(
                             child: CircularProgressIndicator(),
                           );
@@ -1875,7 +1840,36 @@ class _RechargeScreenState extends State<RechargeScreen> {
                         );
                       }
 
-                      return _buildBundleList(screenWidth);
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _buildBundleList(screenWidth),
+                          if (isFetching)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: Center(
+                                  child: Material(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    elevation: 4,
+                                    shape: const CircleBorder(),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(14),
+                                      child: SizedBox(
+                                        width: 28,
+                                        height: 28,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      );
                     }),
                   ),
                 ),

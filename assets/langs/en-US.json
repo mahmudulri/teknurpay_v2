@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "Enter Number",
     "ENTER_WITH_COUNTRY_CODE": "Enter with country code",
     "ID": "ID",
-    "NUMBER": "Number"
+    "NUMBER": "Number",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "Choose where you sent the payment",
+    "NO_PAYMENT_METHOD_FOUND": "No payment method found",
+    "CONTINUE": "Continue"
 }

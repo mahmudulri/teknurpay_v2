@@ -472,5 +472,8 @@
     "ENTER_NUMBER": "شمېره دننه کړئ",
     "ENTER_WITH_COUNTRY_CODE": "د هېواد کوډ سره دننه کړئ",
     "ID": "پېژند",
-    "NUMBER": "شمېره"
+    "NUMBER": "شمېره",
+    "CHOOSE_WHERE_YOU_SENT_THE_PAYMENT": "وټاکئ چې تادیه مو چېرته لېږلې ده",
+    "NO_PAYMENT_METHOD_FOUND": "د تادیې هېڅ طریقه ونه موندل شوه",
+    "CONTINUE": "دوام"
 }

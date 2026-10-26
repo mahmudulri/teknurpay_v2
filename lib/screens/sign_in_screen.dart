@@ -387,25 +387,35 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                   SizedBox(height: 20),
                   Obx(
-                    () => DefaultButton1(
-                      buttonName: signInController.isLoading.value == false
-                          ? languagesController.tr("LOGIN")
-                          : languagesController.tr("PLEASE_WAIT"),
-                      height: 50,
+                    () => AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: signInController.isLoading.value ? 0.45 : 1.0,
+                      child: AbsorbPointer(
+                        absorbing: signInController.isLoading.value,
+                        child: DefaultButton1(
+                          height: 50,
+                          buttonName: signInController.isLoading.value
+                              ? languagesController.tr("PLEASE_WAIT")
+                              : languagesController.tr("LOGIN"),
 
-                      onpressed: () async {
-                        if (signInController.usernameController.text
-                                .trim()
-                                .isEmpty ||
-                            signInController.passwordController.text
-                                .trim()
-                                .isEmpty) {
-                          Get.snackbar("Oops!", "Fill the text fields");
-                          return;
-                        }
+                          onpressed: () async {
+                            // Prevent duplicate login requests
+                            if (signInController.isLoading.value) return;
 
-                        await signInController.signIn();
-                      },
+                            if (signInController.usernameController.text
+                                    .trim()
+                                    .isEmpty ||
+                                signInController.passwordController.text
+                                    .trim()
+                                    .isEmpty) {
+                              Get.snackbar("Oops!", "Fill the text fields");
+                              return;
+                            }
+
+                            await signInController.signIn();
+                          },
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 20),

@@ -1,70 +1,49 @@
 import 'dart:convert';
-
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:teknurpay/models/bundle_model.dart';
-
 import '../helpers/api_headers.dart';
 import '../utils/api_endpoints.dart';
 
 class BundlesApi {
   final GetStorage box = GetStorage();
 
-  /// Initial / normal bundle API
-  Future<BundleModel> fetchBundles(int pageNo) async {
-    final Uri url = Uri.parse("${ApiEndPoints.baseUrl}bundles").replace(
-      queryParameters: {
-        "page": pageNo.toString(),
-        "country_id": box.read("country_id")?.toString() ?? "",
-        "validity_type": box.read("validity_type")?.toString() ?? "",
-        "per_page": "15",
-        "company_id": box.read("company_id")?.toString() ?? "",
-        "service_category_id":
-            box.read("service_category_id")?.toString() ?? "",
-        "search_tag": box.read("search_tag")?.toString() ?? "",
-      },
-    );
+  Map<String, String> _filters(int pageNo) => {
+    'page': pageNo.toString(),
+    'per_page': '15',
+    'country_id': box.read('country_id')?.toString() ?? '',
+    'validity_type': box.read('validity_type')?.toString() ?? '',
+    'service_category_id': box.read('service_category_id')?.toString() ?? '',
+    'search_tag': box.read('search_tag')?.toString() ?? '',
+  };
 
-    // print("Normal bundles URL: $url");
+  Future<BundleModel> _fetch(Map<String, String> parameters) async {
+    final url = Uri.parse(
+      '${ApiEndPoints.baseUrl}bundles',
+    ).replace(queryParameters: parameters);
 
+    // print(url);
     final response = await http.get(url, headers: ApiHeaders.authenticated());
-
     if (response.statusCode == 200) {
       return BundleModel.fromJson(json.decode(response.body));
     }
-
-    throw Exception("Failed to fetch bundles: ${response.statusCode}");
+    throw Exception('Failed to fetch bundles: ${response.statusCode}');
   }
 
-  Future<BundleModel> fetchlookupBundles(String phoneNumber) async {
-    final String cleanPhoneNumber = phoneNumber
-        .trim()
-        .replaceAll(" ", "")
-        .replaceAll("-", "")
-        .replaceAll("(", "")
-        .replaceAll(")", "");
+  Future<BundleModel> fetchBundles(int pageNo) {
+    return _fetch({
+      ..._filters(pageNo),
+      'company_id': box.read('company_id')?.toString() ?? '',
+    });
+  }
 
-    if (cleanPhoneNumber.isEmpty) {
-      throw Exception("Phone number is required for operator lookup.");
+  Future<BundleModel> fetchlookupBundles(String phoneNumber, {int pageNo = 1}) {
+    final number = phoneNumber.trim().replaceAll(RegExp(r'[\s()\-]'), '');
+    if (number.isEmpty) {
+      throw Exception('Phone number is required for operator lookup.');
     }
-
-    final Uri url = Uri.parse("${ApiEndPoints.baseUrl}bundles").replace(
-      queryParameters: {
-        "country_id": box.read("country_id")?.toString() ?? "",
-        "service_category_id":
-            box.read("service_category_id")?.toString() ?? "",
-        "rechargeable_account": cleanPhoneNumber,
-      },
-    );
-
-    // print("Lookup bundles URL: $url");
-
-    final response = await http.get(url, headers: ApiHeaders.authenticated());
-
-    if (response.statusCode == 200) {
-      return BundleModel.fromJson(json.decode(response.body));
-    }
-
-    throw Exception("Failed to fetch lookup bundles: ${response.statusCode}");
+    // Let the lookup resolve the current operator, including ported numbers.
+    // A manually selected company_id must not override this resolution.
+    return _fetch({..._filters(pageNo), 'rechargeable_account': number});
   }
 }
