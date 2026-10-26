@@ -8,16 +8,17 @@ import 'package:teknurpay/pages/transactions.dart';
 import '../pages/homepages.dart';
 
 class Mypagecontroller extends GetxController {
-  RxList<Widget> pageStack = <Widget>[Homepages()].obs;
-  int lastSelectedIndex = 0;
-
-  final List<Widget> mainPages = [
+  // Reuse the exact same main-page Widget objects throughout navigation.
+  late final List<Widget> mainPages = [
     Homepages(),
     TransactionsType(),
     Orders(),
     Network(),
   ];
 
+  late final RxList<Widget> pageStack = <Widget>[mainPages[0]].obs;
+
+  int lastSelectedIndex = 0;
   Function(int)? updateIndexCallback;
 
   void setUpdateIndexCallback(Function(int) callback) {
@@ -26,36 +27,32 @@ class Mypagecontroller extends GetxController {
 
   void changePage(Widget page, {bool isMainPage = true}) {
     if (isMainPage) {
-      lastSelectedIndex = mainPages.indexWhere(
+      final index = mainPages.indexWhere(
         (element) => element.runtimeType == page.runtimeType,
       );
-      pageStack.value = [page]; // reset stack for main page change
+
+      if (index >= 0) {
+        lastSelectedIndex = index;
+        pageStack.assignAll([mainPages[index]]);
+      } else {
+        pageStack.assignAll([page]);
+      }
     } else {
       pageStack.add(page);
     }
 
-    if (updateIndexCallback != null) {
-      updateIndexCallback!(isMainPage ? lastSelectedIndex : -1);
-    }
+    updateIndexCallback?.call(isMainPage ? lastSelectedIndex : -1);
   }
 
-  // bool goBack() {
-  //   if (pageStack.length > 1) {
-  //     pageStack.removeLast();
-  //     return false; // don't exit
-  //   } else {
-  //     return true; // allow exit
-  //   }
-  // }
-
   void goBack() {
-    if (pageStack.length > 1) {
-      pageStack.removeLast();
-    }
+    if (pageStack.length <= 1) return;
+
+    pageStack.removeLast();
+    updateIndexCallback?.call(pageStack.length == 1 ? lastSelectedIndex : -1);
   }
 
   void goToMainPageByIndex(int index) {
-    lastSelectedIndex = index;
+    if (index < 0 || index >= mainPages.length) return;
     changePage(mainPages[index], isMainPage: true);
   }
 }

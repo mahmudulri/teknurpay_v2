@@ -1,8 +1,3 @@
-// To parse this JSON data, do
-//
-//     final dashboardDataModel = dashboardDataModelFromJson(jsonString);
-
-import 'package:meta/meta.dart';
 import 'dart:convert';
 
 DashboardDataModel dashboardDataModelFromJson(String str) =>

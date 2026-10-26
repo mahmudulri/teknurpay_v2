@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:in_app_update/in_app_update.dart';
 import 'package:teknurpay/controllers/notifications_controller.dart';
+import 'package:teknurpay/controllers/service_controller.dart';
 import 'package:teknurpay/pages/notification_details_page.dart';
 import 'package:teknurpay/screens/all_notifications_page.dart';
 import 'package:teknurpay/screens/financial_screen.dart';
@@ -28,7 +29,9 @@ import '../global_controller/font_controller.dart';
 import '../global_controller/page_controller.dart';
 import '../models/country_list_model.dart';
 import '../screens/country_selection.dart';
+import '../screens/recharge_screen.dart';
 import '../screens/service_screen.dart';
+import '../screens/social_bundles.dart';
 import '../utils/colors.dart';
 import '../widgets/bottomsheet.dart';
 import 'package:intl/intl.dart';
@@ -118,15 +121,33 @@ class _HomepagesState extends State<Homepages> {
   final ScrollController scrollController = ScrollController();
 
   Timer? _timer;
+  bool _isRefreshing = false;
 
-  @override
-  void initState() {
-    super.initState();
-    _checkforUpdate();
-    notificationController.fetchData();
+  // Manually refresh both APIs only when the user pulls down.
+  Future<void> _refreshHomePage() async {
+    if (_isRefreshing || !mounted) return;
 
-    _timer = Timer.periodic(Duration(seconds: 3), (Timer timer) {
-      var sliderItems =
+    setState(() => _isRefreshing = true);
+    try {
+      await Future.wait([
+        Future.sync(() => dashboardController.fetchDashboardData()),
+        Future.sync(() => categorisListController.fetchcategories()),
+      ]);
+    } catch (error) {
+      debugPrint('HomePage refresh failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
+  }
+
+  void _startSliderTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted || !_pageController.hasClients) return;
+
+      final sliderItems =
           dashboardController
               .alldashboardData
               .value
@@ -134,20 +155,26 @@ class _HomepagesState extends State<Homepages> {
               ?.advertisementSliders ??
           [];
 
-      if (sliderItems.isEmpty) return;
+      if (sliderItems.length <= 1) return;
 
-      if (currentIndex.value < sliderItems.length - 1) {
-        currentIndex.value++;
-      } else {
-        currentIndex.value = 0;
-      }
+      final nextIndex = (currentIndex.value + 1) % sliderItems.length;
+      currentIndex.value = nextIndex;
 
       _pageController.animateToPage(
-        currentIndex.value,
-        duration: Duration(milliseconds: 400),
+        nextIndex,
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _checkforUpdate();
+    notificationController.fetchData();
+
+    _startSliderTimer();
 
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
@@ -160,13 +187,19 @@ class _HomepagesState extends State<Homepages> {
 
     countrylistController.fetchCountryData();
     dashboardController.fetchDashboardData();
-    categorisListController.fetchcategories();
+
+    final cachedCategories =
+        categorisListController.allcategorieslist.value.data?.servicecategories;
+    if (cachedCategories == null && !categorisListController.isLoading.value) {
+      categorisListController.fetchcategories();
+    }
   }
 
   Future<void> _checkforUpdate() async {
     print("checking");
     await InAppUpdate.checkForUpdate()
         .then((info) {
+          if (!mounted) return;
           setState(() {
             if (info.updateAvailability == UpdateAvailability.updateAvailable) {
               print("update available");
@@ -214,7 +247,9 @@ class _HomepagesState extends State<Homepages> {
     String formattedDate = DateFormat("dd MMM yyyy").format(DateTime.now());
 
     return Obx(() {
-      if (dashboardController.isLoading.value) {
+      if (dashboardController.isLoading.value &&
+          !(_isRefreshing &&
+              dashboardController.alldashboardData.value.data != null)) {
         return Scaffold(
           body: Center(child: CircularProgressIndicator(color: Colors.grey)),
         );
@@ -335,456 +370,199 @@ class _HomepagesState extends State<Homepages> {
           child: Scaffold(
             backgroundColor: Colors.white,
             key: _scaffoldKey,
-            body: Container(
-              height: screenHeight,
-              width: screenWidth,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 15, right: 15, top: 10),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 0),
-                        child: Row(
-                          children: [
-                            Obx(() {
-                              final profileImageUrl = dashboardController
-                                  .alldashboardData
-                                  .value
-                                  .data
-                                  ?.userInfo
-                                  ?.profileImageUrl;
+            body: RefreshIndicator(
+              color: AppColors.primaryColor,
+              onRefresh: _refreshHomePage,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(left: 15, right: 15, top: 10),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                          child: Row(
+                            children: [
+                              Obx(() {
+                                final profileImageUrl = dashboardController
+                                    .alldashboardData
+                                    .value
+                                    .data
+                                    ?.userInfo
+                                    ?.profileImageUrl;
 
-                              if (dashboardController.isLoading.value ||
-                                  profileImageUrl == null ||
-                                  profileImageUrl.isEmpty) {
+                                if (dashboardController.isLoading.value ||
+                                    profileImageUrl == null ||
+                                    profileImageUrl.isEmpty) {
+                                  return Container(
+                                    height: 45,
+                                    width: 45,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.white,
+                                    ),
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Colors.grey,
+                                      size: 30,
+                                    ),
+                                  );
+                                }
+
                                 return Container(
                                   height: 45,
                                   width: 45,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
-                                    color: Colors.white,
-                                  ),
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.grey,
-                                    size: 30,
+                                    image: DecorationImage(
+                                      image: NetworkImage(profileImageUrl),
+                                      fit: BoxFit.cover,
+                                    ),
                                   ),
                                 );
-                              }
+                              }),
+                              SizedBox(width: 10),
+                              Obx(
+                                () =>
+                                    dashboardController.isLoading.value == false
+                                    ? Column(
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              KText(
+                                                text: dashboardController
+                                                    .alldashboardData
+                                                    .value
+                                                    .data!
+                                                    .userInfo!
+                                                    .resellerName
+                                                    .toString(),
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
 
-                              return Container(
-                                height: 45,
-                                width: 45,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  image: DecorationImage(
-                                    image: NetworkImage(profileImageUrl),
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              );
-                            }),
-                            SizedBox(width: 10),
-                            Obx(
-                              () => dashboardController.isLoading.value == false
-                                  ? Column(
-                                      children: [
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            KText(
-                                              text: dashboardController
-                                                  .alldashboardData
-                                                  .value
-                                                  .data!
-                                                  .userInfo!
-                                                  .resellerName
-                                                  .toString(),
-                                              color: Colors.black,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-
-                                            // only for reseller...................
-                                            Visibility(
-                                              visible:
+                                              // only for reseller...................
+                                              Visibility(
+                                                visible:
+                                                    dashboardController
+                                                            .alldashboardData
+                                                            .value
+                                                            .data
+                                                            ?.resellerGroup !=
+                                                        null &&
+                                                    dashboardController
+                                                            .alldashboardData
+                                                            .value
+                                                            .data!
+                                                            .resellerGroup !=
+                                                        "null",
+                                                child: Text(
                                                   dashboardController
                                                           .alldashboardData
                                                           .value
                                                           .data
-                                                          ?.resellerGroup !=
-                                                      null &&
-                                                  dashboardController
-                                                          .alldashboardData
-                                                          .value
-                                                          .data!
-                                                          .resellerGroup !=
-                                                      "null",
+                                                          ?.resellerGroup ??
+                                                      '',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      )
+                                    : SizedBox(),
+                              ),
+                              Spacer(),
+                              Obx(() {
+                                final unreadCount =
+                                    notificationController.unreadlength.value;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    showNotificationPopup(context);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Stack(
+                                      clipBehavior: Clip.none,
+                                      children: [
+                                        const Icon(
+                                          Icons.notifications_outlined,
+                                          color: Colors.black,
+                                          size: 29,
+                                        ),
+
+                                        if (unreadCount > 0)
+                                          Positioned(
+                                            right: -7,
+                                            top: -7,
+                                            child: Container(
+                                              constraints: const BoxConstraints(
+                                                minWidth: 19,
+                                                minHeight: 19,
+                                              ),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 5,
+                                                    vertical: 2,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.red,
+                                                borderRadius:
+                                                    BorderRadius.circular(20),
+                                                border: Border.all(
+                                                  color: Colors.white,
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              alignment: Alignment.center,
                                               child: Text(
-                                                dashboardController
-                                                        .alldashboardData
-                                                        .value
-                                                        .data
-                                                        ?.resellerGroup ??
-                                                    '',
-                                                style: TextStyle(
-                                                  color: Colors.black,
+                                                unreadCount > 99
+                                                    ? '99+'
+                                                    : unreadCount.toString(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 10,
                                                   fontWeight: FontWeight.bold,
-                                                  fontSize: 12,
                                                 ),
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          ),
                                       ],
-                                    )
-                                  : SizedBox(),
-                            ),
-                            Spacer(),
-                            Obx(() {
-                              final unreadCount =
-                                  notificationController.unreadlength.value;
-
-                              return GestureDetector(
+                                    ),
+                                  ),
+                                );
+                              }),
+                              SizedBox(width: 8),
+                              GestureDetector(
                                 onTap: () {
-                                  showNotificationPopup(context);
+                                  AccountingPinPad.show(context);
                                 },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Stack(
-                                    clipBehavior: Clip.none,
-                                    children: [
-                                      const Icon(
-                                        Icons.notifications_outlined,
-                                        color: Colors.black,
-                                        size: 29,
-                                      ),
-
-                                      if (unreadCount > 0)
-                                        Positioned(
-                                          right: -7,
-                                          top: -7,
-                                          child: Container(
-                                            constraints: const BoxConstraints(
-                                              minWidth: 19,
-                                              minHeight: 19,
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 5,
-                                              vertical: 2,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              borderRadius:
-                                                  BorderRadius.circular(20),
-                                              border: Border.all(
-                                                color: Colors.white,
-                                                width: 1.5,
-                                              ),
-                                            ),
-                                            alignment: Alignment.center,
-                                            child: Text(
-                                              unreadCount > 99
-                                                  ? '99+'
-                                                  : unreadCount.toString(),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
+                                child: Icon(
+                                  Icons.account_balance,
+                                  color: AppColors.primaryColor,
+                                  size: 25,
                                 ),
-                              );
-                            }),
-                            SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                AccountingPinPad.show(context);
-                              },
-                              child: Icon(
-                                Icons.account_balance,
-                                color: AppColors.primaryColor,
-                                size: 25,
                               ),
-                            ),
-                            SizedBox(width: 15),
-                            GestureDetector(
-                              onTap: () {
-                                CustomFullScreenSheet.show(context);
-                                // print(box.read("userToken"));
-                              },
-                              child: Image.asset(
-                                "assets/icons/drawericon.png",
-                                height: 32,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 15),
-                    height: 140,
-                    width: screenWidth,
-                    child: Obx(() {
-                      var sliderItems =
-                          dashboardController
-                              .alldashboardData
-                              .value
-                              .data!
-                              .advertisementSliders ??
-                          [];
-
-                      if (sliderItems.isEmpty) {
-                        return Container(
-                          alignment: Alignment.center,
-                          child: const Text(""),
-                        );
-                      }
-
-                      return PageView.builder(
-                        controller: _pageController,
-                        itemCount: sliderItems.length,
-                        onPageChanged: (index) {
-                          currentIndex.value = index;
-
-                          // reset timer
-                          _timer?.cancel();
-                          _timer = Timer.periodic(Duration(seconds: 3), (
-                            Timer timer,
-                          ) {
-                            var sliderItems =
-                                dashboardController
-                                    .alldashboardData
-                                    .value
-                                    .data
-                                    ?.advertisementSliders ??
-                                [];
-
-                            if (sliderItems.isEmpty) return;
-
-                            if (currentIndex.value < sliderItems.length - 1) {
-                              currentIndex.value++;
-                            } else {
-                              currentIndex.value = 0;
-                            }
-
-                            _pageController.animateToPage(
-                              currentIndex.value,
-                              duration: Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            );
-                          });
-                        },
-                        itemBuilder: (context, index) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              sliderItems[index].adSliderImageUrl ?? "",
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    color: Colors.grey[300],
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                    ),
-                                  ),
-                            ),
-                          );
-                        },
-                      );
-                    }),
-                  ),
-
-                  // Dot indicator below the container
-                  SizedBox(height: 8),
-                  Obx(() {
-                    var sliderItems =
-                        dashboardController
-                            .alldashboardData
-                            .value
-                            .data!
-                            .advertisementSliders ??
-                        [];
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(sliderItems.length, (index) {
-                        return Container(
-                          margin: EdgeInsets.symmetric(horizontal: 3),
-                          width: currentIndex.value == index ? 10 : 7,
-                          height: currentIndex.value == index ? 10 : 7,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: currentIndex.value == index
-                                ? Colors.blue
-                                : Colors.grey,
-                          ),
-                        );
-                      }),
-                    );
-                  }),
-
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 15),
-                    child: GestureDetector(
-                      onTap: () {
-                        mypagecontroller.changePage(
-                          FinancialScreen(),
-                          isMainPage: false,
-                        );
-                      },
-                      child: Container(
-                        width: screenWidth,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              spreadRadius: 2,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              spreadRadius: 1,
-                              blurRadius: 4,
-                              offset: Offset(0, -2),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  KText(
-                                    text: languagesController.tr(
-                                      "FINANCIAL_REPORT",
-                                    ),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                  KText(
-                                    text: languagesController.tr("SEE_ALL"),
-                                    color: AppColors.primarycolor2,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ],
-                              ),
-                              Container(
-                                width: screenWidth,
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    width: 1,
-                                    color: Colors.grey.shade300,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 10,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        height: 50,
-                                        width: 50,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.secondaryColor
-                                              .withOpacity(0.50),
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                        ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(7.0),
-                                          child: Image.asset(
-                                            "assets/icons/wallet.png",
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          KText(
-                                            text: languagesController.tr(
-                                              "BALANCE",
-                                            ),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                          ),
-                                          Text(
-                                            formattedDate,
-                                            style: TextStyle(
-                                              color: AppColors.fontColor,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      Spacer(),
-
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          Obx(
-                                            () =>
-                                                dashboardController
-                                                        .isLoading
-                                                        .value ==
-                                                    false
-                                                ? Text(
-                                                    NumberFormat.currency(
-                                                      locale: 'en_US',
-                                                      symbol: '',
-                                                      decimalDigits: 2,
-                                                    ).format(
-                                                      double.parse(
-                                                        dashboardController
-                                                            .userBalanceController
-                                                            .balance
-                                                            .toString(),
-                                                      ),
-                                                    ),
-                                                    style: TextStyle(
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      fontSize: 14,
-                                                    ),
-                                                  )
-                                                : SizedBox(),
-                                          ),
-                                          KText(
-                                            text: box.read("currency_code"),
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                              SizedBox(width: 15),
+                              GestureDetector(
+                                onTap: () {
+                                  CustomFullScreenSheet.show(context);
+                                  // print(box.read("userToken"));
+                                },
+                                child: Image.asset(
+                                  "assets/icons/drawericon.png",
+                                  height: 32,
                                 ),
                               ),
                             ],
@@ -792,214 +570,537 @@ class _HomepagesState extends State<Homepages> {
                         ),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: DefaultButton1(
-                      height: 50,
-                      buttonName: languagesController.tr(
-                        "AFGHANISTAN_RECHARGE",
-                      ),
-                      onpressed: () {
-                        Country? afghanistan;
+                    SizedBox(height: 10),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 15),
+                      height: 140,
+                      width: screenWidth,
+                      child: Obx(() {
+                        var sliderItems =
+                            dashboardController
+                                .alldashboardData
+                                .value
+                                .data!
+                                .advertisementSliders ??
+                            [];
 
-                        if (countryListController.finalCountryList.isNotEmpty) {
-                          try {
-                            afghanistan = countryListController.finalCountryList
-                                .firstWhere(
-                                  (country) =>
-                                      country.countryName
-                                          ?.trim()
-                                          .toLowerCase() ==
-                                      "afghanistan",
-                                );
-                          } catch (e) {
-                            afghanistan = null;
-                          }
-
-                          if (afghanistan != null) {
-                            print(
-                              "The ID for Afghanistan is: ${afghanistan.id}",
-                            );
-
-                            box.write("country_id", afghanistan.id);
-
-                            box.write(
-                              "countryName",
-                              afghanistan.countryName ?? "Afghanistan",
-                            );
-
-                            box.write(
-                              "maxlength",
-                              afghanistan.phoneNumberLength ?? "10",
-                            );
-
-                            box.write(
-                              "enable_operator_lookup",
-                              afghanistan.enableOperatorLookup,
-                            );
-
-                            box.write("validity_type", "");
-                            box.write("company_id", "");
-                            box.write("search_tag", "");
-                          } else {
-                            print("Afghanistan not found in the country list.");
-                          }
-                        } else {
-                          print("Country list is empty.");
+                        if (sliderItems.isEmpty) {
+                          return Container(
+                            alignment: Alignment.center,
+                            child: const Text(""),
+                          );
                         }
 
-                        mypagecontroller.changePage(
-                          CreditTransfer(),
-                          isMainPage: false,
+                        return PageView.builder(
+                          controller: _pageController,
+                          itemCount: sliderItems.length,
+                          onPageChanged: (index) {
+                            currentIndex.value = index;
+                            _startSliderTimer();
+                          },
+                          itemBuilder: (context, index) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.network(
+                                sliderItems[index].adSliderImageUrl ?? "",
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      color: Colors.grey[300],
+                                      child: const Icon(
+                                        Icons.image_not_supported,
+                                      ),
+                                    ),
+                              ),
+                            );
+                          },
                         );
-                      },
+                      }),
                     ),
-                  ),
-                  SizedBox(height: 10),
-                  Expanded(
-                    child: Container(
+
+                    // Dot indicator below the container
+                    SizedBox(height: 8),
+                    Obx(() {
+                      var sliderItems =
+                          dashboardController
+                              .alldashboardData
+                              .value
+                              .data!
+                              .advertisementSliders ??
+                          [];
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(sliderItems.length, (index) {
+                          return Container(
+                            margin: EdgeInsets.symmetric(horizontal: 3),
+                            width: currentIndex.value == index ? 10 : 7,
+                            height: currentIndex.value == index ? 10 : 7,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: currentIndex.value == index
+                                  ? Colors.blue
+                                  : Colors.grey,
+                            ),
+                          );
+                        }),
+                      );
+                    }),
+
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 15),
+                      child: GestureDetector(
+                        onTap: () {
+                          mypagecontroller.changePage(
+                            FinancialScreen(),
+                            isMainPage: false,
+                          );
+                        },
+                        child: Container(
+                          width: screenWidth,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                spreadRadius: 2,
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                spreadRadius: 1,
+                                blurRadius: 4,
+                                offset: Offset(0, -2),
+                              ),
+                            ],
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    KText(
+                                      text: languagesController.tr(
+                                        "FINANCIAL_REPORT",
+                                      ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
+                                    KText(
+                                      text: languagesController.tr("SEE_ALL"),
+                                      color: AppColors.primarycolor2,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  width: screenWidth,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      width: 1,
+                                      color: Colors.grey.shade300,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 10,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          height: 50,
+                                          width: 50,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.secondaryColor
+                                                .withOpacity(0.50),
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(7.0),
+                                            child: Image.asset(
+                                              "assets/icons/wallet.png",
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            KText(
+                                              text: languagesController.tr(
+                                                "BALANCE",
+                                              ),
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                            Text(
+                                              formattedDate,
+                                              style: TextStyle(
+                                                color: AppColors.fontColor,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Spacer(),
+
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Obx(
+                                              () =>
+                                                  dashboardController
+                                                          .isLoading
+                                                          .value ==
+                                                      false
+                                                  ? Text(
+                                                      NumberFormat.currency(
+                                                        locale: 'en_US',
+                                                        symbol: '',
+                                                        decimalDigits: 2,
+                                                      ).format(
+                                                        double.parse(
+                                                          dashboardController
+                                                              .userBalanceController
+                                                              .balance
+                                                              .toString(),
+                                                        ),
+                                                      ),
+                                                      style: TextStyle(
+                                                        color: Colors.black,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        fontSize: 14,
+                                                      ),
+                                                    )
+                                                  : SizedBox(),
+                                            ),
+                                            KText(
+                                              text: box.read("currency_code"),
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 12,
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      child: DefaultButton1(
+                        height: 50,
+                        buttonName: languagesController.tr(
+                          "AFGHANISTAN_RECHARGE",
+                        ),
+                        onpressed: () {
+                          Country? afghanistan;
+
+                          if (countryListController
+                              .finalCountryList
+                              .isNotEmpty) {
+                            try {
+                              afghanistan = countryListController
+                                  .finalCountryList
+                                  .firstWhere(
+                                    (country) =>
+                                        country.countryName
+                                            ?.trim()
+                                            .toLowerCase() ==
+                                        "afghanistan",
+                                  );
+                            } catch (e) {
+                              afghanistan = null;
+                            }
+
+                            if (afghanistan != null) {
+                              print(
+                                "The ID for Afghanistan is: ${afghanistan.id}",
+                              );
+
+                              box.write("country_id", afghanistan.id);
+
+                              box.write(
+                                "countryName",
+                                afghanistan.countryName ?? "Afghanistan",
+                              );
+
+                              box.write(
+                                "maxlength",
+                                afghanistan.phoneNumberLength ?? "10",
+                              );
+
+                              box.write(
+                                "enable_operator_lookup",
+                                afghanistan.enableOperatorLookup,
+                              );
+
+                              box.write("validity_type", "");
+                              box.write("company_id", "");
+                              box.write("search_tag", "");
+                            } else {
+                              print(
+                                "Afghanistan not found in the country list.",
+                              );
+                            }
+                          } else {
+                            print("Country list is empty.");
+                          }
+
+                          mypagecontroller.changePage(
+                            CreditTransfer(),
+                            isMainPage: false,
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Container(
                       width: screenWidth,
                       child: Obx(
-                        () => categorisListController.isLoading.value == false
+                        () =>
+                            (categorisListController.isLoading.value == false ||
+                                (_isRefreshing &&
+                                    categorisListController
+                                            .allcategorieslist
+                                            .value
+                                            .data
+                                            ?.servicecategories !=
+                                        null))
                             ? Padding(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 15,
                                 ),
                                 child: Column(
                                   children: [
-                                    Expanded(
-                                      child: GridView.builder(
-                                        physics: BouncingScrollPhysics(),
-                                        padding: EdgeInsets.zero,
-                                        shrinkWrap: true,
-                                        gridDelegate:
-                                            SliverGridDelegateWithFixedCrossAxisCount(
-                                              crossAxisCount:
-                                                  3, // Number of columns in the grid
-                                              crossAxisSpacing:
-                                                  7.0, // Spacing between columns
-                                              mainAxisSpacing:
-                                                  7.0, // Spacing between rows
-                                              childAspectRatio: 1.0,
-                                            ),
-                                        itemCount: categorisListController
+                                    GridView.builder(
+                                      physics:
+                                          const NeverScrollableScrollPhysics(),
+                                      padding: EdgeInsets.zero,
+                                      shrinkWrap: true,
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                            crossAxisCount:
+                                                3, // Number of columns in the grid
+                                            crossAxisSpacing:
+                                                7.0, // Spacing between columns
+                                            mainAxisSpacing:
+                                                7.0, // Spacing between rows
+                                            childAspectRatio: 1.0,
+                                          ),
+                                      itemCount: categorisListController
+                                          .allcategorieslist
+                                          .value
+                                          .data!
+                                          .servicecategories!
+                                          .length,
+                                      itemBuilder: (context, index) {
+                                        final data = categorisListController
                                             .allcategorieslist
                                             .value
                                             .data!
-                                            .servicecategories!
-                                            .length,
-                                        itemBuilder: (context, index) {
-                                          final data = categorisListController
-                                              .allcategorieslist
-                                              .value
-                                              .data!
-                                              .servicecategories![index];
-                                          final color =
-                                              mycolor[index % mycolor.length];
-                                          final icon =
-                                              icons[index % icons.length];
-                                          return GestureDetector(
-                                            onTap: () {
-                                              box.write(
-                                                "service_category_id",
+                                            .servicecategories![index];
+                                        final color =
+                                            mycolor[index % mycolor.length];
+                                        final icon =
+                                            icons[index % icons.length];
+                                        return GestureDetector(
+                                          onTap: () async {
+                                            final category =
                                                 categorisListController
                                                     .allcategorieslist
                                                     .value
                                                     .data!
-                                                    .servicecategories![index]
-                                                    .id,
+                                                    .servicecategories![index];
+
+                                            await box.write(
+                                              "service_category_id",
+                                              category.id,
+                                            );
+                                            await box.write(
+                                              "validity_type",
+                                              "",
+                                            );
+                                            await box.write("search_tag", "");
+                                            await box.write("company_id", "");
+                                            await box.write("country_id", "");
+                                            await box.write("countryName", "");
+                                            await box.write("maxlength", "");
+                                            await box.write(
+                                              "enable_operator_lookup",
+                                              false,
+                                            );
+
+                                            if (category
+                                                    .requiresCountrySelection ==
+                                                true) {
+                                              box.write(
+                                                "catName",
+                                                category.categoryName
+                                                    .toString(),
                                               );
+                                              mypagecontroller.changePage(
+                                                InternetPack(),
+                                                isMainPage: false,
+                                              );
+                                              return;
+                                            }
 
-                                              if (data.type.toString() ==
-                                                  "nonsocial") {
-                                                mypagecontroller.changePage(
-                                                  InternetPack(),
-                                                  isMainPage: false,
+                                            if (category.type
+                                                    ?.trim()
+                                                    .toLowerCase() !=
+                                                "nonsocial") {
+                                              mypagecontroller.changePage(
+                                                ServiceScreen(),
+                                                isMainPage: false,
+                                              );
+                                              return;
+                                            }
+
+                                            bool enableOperatorLookup = false;
+
+                                            final countries = category.services
+                                                ?.map(
+                                                  (service) =>
+                                                      service.company?.country,
+                                                )
+                                                .where(
+                                                  (country) =>
+                                                      country?.id != null,
+                                                )
+                                                .toList();
+
+                                            if (countries != null &&
+                                                countries.isNotEmpty) {
+                                              final countryIds = countries
+                                                  .map((country) => country!.id)
+                                                  .toSet();
+
+                                              if (countryIds.length == 1) {
+                                                final country =
+                                                    countries.first!;
+
+                                                enableOperatorLookup =
+                                                    country
+                                                        .enableOperatorLookup ??
+                                                    false;
+
+                                                await box.write(
+                                                  "country_id",
+                                                  country.id,
                                                 );
-                                              } else {
-                                                box.write("validity_type", "");
-
-                                                box.write("search_tag", "");
-                                                box.write(
-                                                  "service_category_id",
-                                                  categorisListController
-                                                      .allcategorieslist
-                                                      .value
-                                                      .data!
-                                                      .servicecategories![index]
-                                                      .id,
+                                                await box.write(
+                                                  "countryName",
+                                                  country.countryName ?? "",
                                                 );
-
-                                                box.write("country_id", "");
-                                                box.write("company_id", "");
-
-                                                // mypagecontroller.changePage(
-                                                //   SocialBundles(),
-                                                //   isMainPage: false,
-                                                // );
-
-                                                mypagecontroller.changePage(
-                                                  ServiceScreen(),
-                                                  isMainPage: false,
+                                                await box.write(
+                                                  "maxlength",
+                                                  country.phoneNumberLength ??
+                                                      "",
+                                                );
+                                                await box.write(
+                                                  "enable_operator_lookup",
+                                                  enableOperatorLookup,
                                                 );
                                               }
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: color,
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                            }
+
+                                            final serviceController =
+                                                Get.isRegistered<
+                                                  ServiceController
+                                                >()
+                                                ? Get.find<ServiceController>()
+                                                : Get.put(ServiceController());
+
+                                            final bundleController =
+                                                Get.isRegistered<
+                                                  BundleController
+                                                >()
+                                                ? Get.find<BundleController>()
+                                                : Get.put(BundleController());
+
+                                            serviceController.reserveDigit
+                                                .clear();
+                                            bundleController.resetBundles();
+
+                                            mypagecontroller.changePage(
+                                              RechargeScreen(
+                                                enableOperatorLookup:
+                                                    enableOperatorLookup,
                                               ),
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceEvenly,
-                                                children: [
-                                                  Text(
-                                                    data.categoryName
-                                                        .toString(),
-                                                    textAlign: TextAlign.center,
-                                                    style: TextStyle(
-                                                      color:
-                                                          Colors.grey.shade700,
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                      fontSize:
-                                                          screenHeight * 0.015,
-                                                      fontFamily:
-                                                          box
-                                                                  .read(
-                                                                    "language",
-                                                                  )
-                                                                  .toString() ==
-                                                              "Fa"
-                                                          ? Get.find<
-                                                                  FontController
-                                                                >()
-                                                                .currentFont
-                                                          : null,
-                                                    ),
-                                                  ),
-                                                  data.categoryImageUrl
-                                                              .toString() ==
-                                                          "null"
-                                                      ? Image.asset(
-                                                          icon,
-                                                          height: 50,
-                                                        )
-                                                      : Image.network(
-                                                          data.categoryImageUrl
-                                                              .toString(),
-                                                          height: 50,
-                                                        ),
-                                                ],
-                                              ),
+                                              isMainPage: false,
+                                            );
+                                          },
+
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
                                             ),
-                                          );
-                                        },
-                                      ),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                Text(
+                                                  data.categoryName.toString(),
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    color: Colors.grey.shade700,
+                                                    fontWeight: FontWeight.w800,
+                                                    fontSize:
+                                                        screenHeight * 0.015,
+                                                    fontFamily:
+                                                        box
+                                                                .read(
+                                                                  "language",
+                                                                )
+                                                                .toString() ==
+                                                            "Fa"
+                                                        ? Get.find<
+                                                                FontController
+                                                              >()
+                                                              .currentFont
+                                                        : null,
+                                                  ),
+                                                ),
+                                                data.categoryImageUrl
+                                                            .toString() ==
+                                                        "null"
+                                                    ? Image.asset(
+                                                        icon,
+                                                        height: 50,
+                                                      )
+                                                    : Image.network(
+                                                        data.categoryImageUrl
+                                                            .toString(),
+                                                        height: 50,
+                                                      ),
+                                              ],
+                                            ),
+                                          ),
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),
@@ -1007,8 +1108,8 @@ class _HomepagesState extends State<Homepages> {
                             : Center(child: CircularProgressIndicator()),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

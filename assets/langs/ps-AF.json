@@ -469,5 +469,8 @@
     "SELECT_BALANCE_STATUS": "د بیلانس حالت وټاکئ",
     "RECEIVABLE": "د ترلاسه کولو وړ",
     "BALANCE_STATUS": "د بیلانس حالت",
-    "ENTER_NUMBER": "شمېره دننه کړئ"
+    "ENTER_NUMBER": "شمېره دننه کړئ",
+    "ENTER_WITH_COUNTRY_CODE": "د هېواد کوډ سره دننه کړئ",
+    "ID": "پېژند",
+    "NUMBER": "شمېره"
 }

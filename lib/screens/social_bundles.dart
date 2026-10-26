@@ -376,6 +376,35 @@ class _SocialBundlesState extends State<SocialBundles> {
   }
 }
 
+// IMO NUMBER input: keep a single leading '+' in both the field and the
+// shared ConfirmPinController.numberController, even after editing or pasting.
+class _InternationalNumberFormatter extends TextInputFormatter {
+  const _InternationalNumberFormatter();
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final rawText = newValue.text;
+    final cursorPosition = newValue.selection.baseOffset
+        .clamp(0, rawText.length)
+        .toInt();
+    final digitsBeforeCursor = RegExp(
+      r'[0-9]',
+    ).allMatches(rawText.substring(0, cursorPosition)).length;
+    final digits = rawText.replaceAll(RegExp(r'[^0-9]'), '');
+    final formatted = '+$digits';
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(
+        offset: (digitsBeforeCursor + 1).clamp(1, formatted.length).toInt(),
+      ),
+    );
+  }
+}
+
 class SocialdialogBox extends StatefulWidget {
   SocialdialogBox({
     super.key,
@@ -433,7 +462,7 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
     super.dispose();
   }
 
-  // Reusable BUY/SALE row with ellipsis and scale-down for large prices.
+  // Each price fits in half of the dialog's horizontal price row.
   Widget _buildDialogPriceRow({
     required IconData icon,
     required Color iconColor,
@@ -443,59 +472,47 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
   }) {
     final currency = box.read('currency_code')?.toString() ?? '';
 
-    return Row(
-      children: [
-        Icon(icon, color: iconColor, size: 18),
-        const SizedBox(width: 8),
-        Expanded(
-          flex: 2,
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: Colors.grey.shade600,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          flex: 3,
-          child: SizedBox(
-            height: 23,
-            child: FittedBox(
-              fit: BoxFit.scaleDown,
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    amount,
-                    maxLines: 1,
-                    style: TextStyle(
-                      color: amountColor,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    currency,
-                    maxLines: 1,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
+    return SizedBox(
+      height: 24,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: iconColor, size: 16),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              maxLines: 1,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
               ),
             ),
-          ),
+            const SizedBox(width: 6),
+            Text(
+              amount,
+              maxLines: 1,
+              style: TextStyle(
+                color: amountColor,
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(width: 3),
+            Text(
+              currency,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.shade500,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -515,7 +532,12 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
         onTap: () {
           if (!widget.isImo) return;
           if (confirmPinController.rechargebleAccountType.value != type) {
-            confirmPinController.numberController.clear();
+            // NUMBER begins with '+'. ID remains a normal, empty text input.
+            final prefix = type == 'NUMBER' ? '+' : '';
+            confirmPinController.numberController.value = TextEditingValue(
+              text: prefix,
+              selection: TextSelection.collapsed(offset: prefix.length),
+            );
           }
           // Send exactly ID or NUMBER, never the company code IMO.
           confirmPinController.rechargebleAccountType.value = type;
@@ -551,7 +573,7 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
             ],
           ),
           child: Text(
-            type,
+            languagesController.tr(type),
             maxLines: 1,
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -693,32 +715,43 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                             ),
                             SizedBox(height: 5),
 
-                            // Pricing Info
+                            // Buy and Sale appear side by side in one row.
                             Container(
-                              padding: const EdgeInsets.all(16),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 12,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: Column(
+                              child: Row(
                                 children: [
-                                  _buildDialogPriceRow(
-                                    icon: Icons.shopping_bag_outlined,
-                                    iconColor: const Color(0xff1890FF),
-                                    label: languagesController.tr('BUY'),
-                                    amount: widget.buyingprice.toString(),
-                                    amountColor: Colors.black,
+                                  Expanded(
+                                    child: _buildDialogPriceRow(
+                                      icon: Icons.shopping_bag_outlined,
+                                      iconColor: const Color(0xff1890FF),
+                                      label: languagesController.tr('BUY'),
+                                      amount: widget.buyingprice.toString(),
+                                      amountColor: Colors.black,
+                                    ),
                                   ),
-                                  Divider(
-                                    height: 5,
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    height: 24,
+                                    width: 1,
                                     color: Colors.grey.shade200,
                                   ),
-                                  _buildDialogPriceRow(
-                                    icon: Icons.sell_outlined,
-                                    iconColor: Colors.green,
-                                    label: languagesController.tr('SALE'),
-                                    amount: widget.sellingprice.toString(),
-                                    amountColor: Colors.green,
+                                  Expanded(
+                                    child: _buildDialogPriceRow(
+                                      icon: Icons.sell_outlined,
+                                      iconColor: Colors.green,
+                                      label: languagesController.tr('SALE'),
+                                      amount: widget.sellingprice.toString(),
+                                      amountColor: Colors.green,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -728,10 +761,23 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                       ),
                     ),
 
-                    SizedBox(height: 10),
+                    SizedBox(height: 8),
 
                     // Only IMO needs the ID / NUMBER selector.
                     if (widget.isImo) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Obx(
+                          () => Text(
+                            languagesController.tr('SELECT_ACCOUNT_TYPE'),
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
                       Obx(() {
                         final selectedType =
                             confirmPinController.rechargebleAccountType.value;
@@ -746,7 +792,7 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                           ],
                         );
                       }),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 5),
                     ],
 
                     // IMO: input hidden until an option is chosen.
@@ -761,84 +807,103 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
 
                       final isNumber = widget.isImo && selectedType == 'NUMBER';
 
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.grey.shade200,
-                            width: 1.5,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 4,
-                          ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.phone_android,
-                                color: Color(0xff1890FF),
-                                size: 22,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isNumber)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 4,
+                                right: 4,
+                                bottom: 8,
                               ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: TextField(
-                                  // Rebuilds the input when changing ID / NUMBER,
-                                  // including its keyboard configuration.
-                                  key: ValueKey('account_input_$selectedType'),
-                                  controller:
-                                      confirmPinController.numberController,
-                                  keyboardType: isNumber
-                                      ? TextInputType.phone
-                                      : TextInputType.text,
-                                  // Allow international numbers like +88017...,
-                                  // with '+' only at the start of the number.
-                                  inputFormatters: isNumber
-                                      ? [
-                                          TextInputFormatter.withFunction(
-                                            (oldValue, newValue) =>
-                                                RegExp(
-                                                  r'^\+?[0-9]*$',
-                                                ).hasMatch(newValue.text)
-                                                ? newValue
-                                                : oldValue,
-                                          ),
-                                        ]
-                                      : null,
-                                  decoration: InputDecoration(
-                                    border: InputBorder.none,
-                                    hintText: widget.isImo
-                                        ? (isNumber
-                                              ? languagesController.tr(
-                                                  "ENTER_NUMBER",
-                                                )
-                                              : languagesController.tr(
-                                                  "ENTER_ID",
-                                                ))
-                                        : languagesController.tr('ENTER_ID'),
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey.shade400,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                              child: Text(
+                                "${languagesController.tr('ENTER_WITH_COUNTRY_CODE')} (+93, +98, +90)",
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
-                            ],
+                            ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Colors.grey.shade200,
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.04),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.phone_android,
+                                    color: Color(0xff1890FF),
+                                    size: 22,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: TextField(
+                                      // Rebuilds the input when changing ID / NUMBER,
+                                      // including its keyboard configuration.
+                                      key: ValueKey(
+                                        'account_input_$selectedType',
+                                      ),
+                                      controller:
+                                          confirmPinController.numberController,
+                                      keyboardType: isNumber
+                                          ? TextInputType.phone
+                                          : TextInputType.text,
+                                      // Keep '+' visible and non-removable for NUMBER.
+                                      // The shared controller contains '+930...' directly.
+                                      inputFormatters: isNumber
+                                          ? [
+                                              const _InternationalNumberFormatter(),
+                                            ]
+                                          : null,
+                                      decoration: InputDecoration(
+                                        border: InputBorder.none,
+                                        hintText: widget.isImo
+                                            ? (isNumber
+                                                  ? languagesController.tr(
+                                                      "ENTER_NUMBER",
+                                                    )
+                                                  : languagesController.tr(
+                                                      "ENTER_ID",
+                                                    ))
+                                            : languagesController.tr(
+                                                'ENTER_ID',
+                                              ),
+                                        hintStyle: TextStyle(
+                                          color: Colors.grey.shade400,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       );
                     }),
 
@@ -895,7 +960,7 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                       ),
                     ),
 
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
 
                     // Action Buttons
                     Row(
@@ -923,9 +988,17 @@ class _SocialdialogBoxState extends State<SocialdialogBox> {
                                 return;
                               }
 
-                              if (confirmPinController.numberController.text
-                                  .trim()
-                                  .isEmpty) {
+                              final enteredNumber = confirmPinController
+                                  .numberController
+                                  .text
+                                  .trim();
+                              // A lone '+' is not a valid NUMBER.
+                              if (enteredNumber.isEmpty ||
+                                  (widget.isImo &&
+                                      selectedType == 'NUMBER' &&
+                                      enteredNumber
+                                          .replaceAll(RegExp(r'[^0-9]'), '')
+                                          .isEmpty)) {
                                 Fluttertoast.showToast(
                                   msg: widget.isImo
                                       ? (selectedType == 'ID'

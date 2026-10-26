@@ -70,7 +70,10 @@ class _BaseScreenState extends State<BaseScreen> {
           resizeToAvoidBottomInset: false,
           backgroundColor: Colors.white,
           extendBody: true,
-          body: mypagecontroller.pageStack.last,
+          body: IndexedStack(
+            index: mypagecontroller.pageStack.length - 1,
+            children: mypagecontroller.pageStack.toList(),
+          ),
           floatingActionButton: SizedBox(
             width: 60,
             height: 60,

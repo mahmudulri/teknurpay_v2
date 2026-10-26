@@ -469,5 +469,8 @@
     "SELECT_BALANCE_STATUS": "Select Balance Status",
     "RECEIVABLE": "Receivable",
     "BALANCE_STATUS": "Balance Status",
-    "ENTER_NUMBER": "Enter Number"
+    "ENTER_NUMBER": "Enter Number",
+    "ENTER_WITH_COUNTRY_CODE": "Enter with country code",
+    "ID": "ID",
+    "NUMBER": "Number"
 }

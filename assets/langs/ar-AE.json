@@ -469,5 +469,8 @@
     "SELECT_BALANCE_STATUS": "اختر حالة الرصيد",
     "RECEIVABLE": "مستحق القبض",
     "BALANCE_STATUS": "حالة الرصيد",
-    "ENTER_NUMBER": "أدخل الرقم"
+    "ENTER_NUMBER": "أدخل الرقم",
+    "ENTER_WITH_COUNTRY_CODE": "أدخل مع رمز الدولة",
+    "ID": "المعرف",
+    "NUMBER": "الرقم"
 }
